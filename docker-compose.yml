@@ -11,3 +11,11 @@ services:
             - "5173:5173"
         stdin_open: true
         tty: true
+
+    backend:
+      build:
+        context: ./spring_grpc
+        dockerfile: Dockerfile
+      working_dir: /app
+      ports:
+        - "9090:9090"

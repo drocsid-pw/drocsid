@@ -1,0 +1,21 @@
+syntax = "proto3";
+package say_hello;
+
+
+option java_package = "com.drocsid.grpc.proto";
+option java_multiple_files = true;
+
+
+service Greeter {
+  rpc SayHello (HelloRequest) returns (HelloReply) {}
+}
+
+
+message HelloRequest {
+  string name = 1;
+}
+
+
+message HelloReply {
+  string message = 1;
+}

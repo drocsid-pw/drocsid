@@ -8,3 +8,5 @@ media/
 .devcontainer/
 frontend/skrypt.py
 frontend/output.txt
+.idea/
+spring_grpc/target
