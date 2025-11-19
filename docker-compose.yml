@@ -14,7 +14,7 @@ services:
 
     backend:
       build:
-        context: ./spring_api
+        context: ./spring_grpc
         dockerfile: Dockerfile
       working_dir: /app
       ports:

@@ -1,5 +1,5 @@
 syntax = "proto3";
-package helloworld;
+package say_hello;
 
 
 option java_package = "com.drocsid.grpc.proto";
