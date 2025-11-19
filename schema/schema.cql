@@ -1,7 +1,7 @@
 CREATE TABLE users (
     user_id bigint PRIMARY KEY,
     email   text,
-    nazwa   text
+    nickname   text
 );
 
 CREATE TABLE guilds (
