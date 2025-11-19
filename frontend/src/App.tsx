@@ -6,11 +6,14 @@ import Charts from "./pages/Charts";
 import Analysis from "./pages/Analysis";
 import Login from "./pages/Login";
 
+// do przeniesienia do .env
+const VITE_GOOGLE_CLIENT_ID = "494375853488-nu5h6bsffjafo3s2srddijrgstqvs7nc.apps.googleusercontent.com";
+
 const linkClass = ({ isActive }: { isActive: boolean }) => `px-3 py-2 rounded-xl transition hover:bg-slate-100 ${isActive ? "bg-slate-200 font-medium" : ""}`;
 
 export default function App() {
 	return (
-		<GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || ""}>
+		<GoogleOAuthProvider clientId={VITE_GOOGLE_CLIENT_ID}>
 			<BrowserRouter>
 				<div className="min-h-screen bg-slate-50 text-slate-900">
 					<header className="sticky top-0 z-10 bg-white/80 backdrop-blur border-b">

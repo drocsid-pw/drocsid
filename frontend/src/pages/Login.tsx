@@ -1,11 +1,13 @@
 import React from 'react';
 import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
+import { jwtDecode } from 'jwt-decode';
 
 const Login: React.FC = () => {
     const [user, setUser] = React.useState<CredentialResponse | null>(null);
 
     const handleSuccess = (credentialResponse: CredentialResponse) => {
         console.log('Login Success:', credentialResponse);
+        console.log('Decoded:', jwtDecode(credentialResponse.credential!));
         setUser(credentialResponse);
     };
 
