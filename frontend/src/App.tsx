@@ -1,14 +1,24 @@
 import React from "react";
-import { BrowserRouter, NavLink, Route, Routes } from "react-router-dom";
+import { BrowserRouter, NavLink, Route, Routes, useLocation } from "react-router-dom";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import Landing from "./pages/Landing";
 import DrocsidApp from "./pages/DrocsidApp";
 
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+if (!googleClientId) {
+	throw new Error("Brakuje zmiennej środowiskowej VITE_GOOGLE_CLIENT_ID");
+}
+
 const linkClass = ({ isActive }: { isActive: boolean }) => `px-3 py-2 rounded-xl transition hover:bg-slate-100 ${isActive ? "bg-slate-200 font-medium" : ""}`;
 
-export default function App() {
+function AppShell() {
+	const location = useLocation();
+	const isDrocsidRoute = location.pathname.startsWith("/app");
+
 	return (
-		<BrowserRouter>
-			<div className="min-h-screen bg-slate-50 text-slate-900">
+		<div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
+			{!isDrocsidRoute && (
 				<header className="sticky top-0 z-10 bg-white/80 backdrop-blur border-b">
 					<nav className="max-w-6xl mx-auto flex gap-2 p-4">
 						<NavLink to="/" className={linkClass} end>
@@ -19,16 +29,38 @@ export default function App() {
 						</NavLink>
 					</nav>
 				</header>
+			)}
 
-				<main className="max-w-6xl mx-auto p-6">
-					<Routes>
-						<Route path="/" element={<Landing />} />
-						<Route path="/app" element={<DrocsidApp />} />
-					</Routes>
-				</main>
+			<Routes>
+				<Route
+					path="/"
+					element={
+						<main className="max-w-6xl mx-auto p-6 flex-1">
+							<Landing />
+						</main>
+					}
+				/>
+				<Route
+					path="/app"
+					element={
+						<main className="flex-1 flex">
+							<DrocsidApp />
+						</main>
+					}
+				/>
+			</Routes>
 
-				<footer className="text-center text-sm text-slate-500 py-6">© {new Date().getFullYear()} drocsid</footer>
-			</div>
-		</BrowserRouter>
+			{!isDrocsidRoute && <footer className="text-center text-sm text-slate-500 py-6">© {new Date().getFullYear()} drocsid</footer>}
+		</div>
+	);
+}
+
+export default function App() {
+	return (
+		<GoogleOAuthProvider clientId={googleClientId}>
+			<BrowserRouter>
+				<AppShell />
+			</BrowserRouter>
+		</GoogleOAuthProvider>
 	);
 }

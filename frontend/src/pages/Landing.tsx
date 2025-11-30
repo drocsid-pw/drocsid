@@ -1,5 +1,19 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
+
+function handleGoogleSuccess(response: CredentialResponse) {
+	if (!response.credential) {
+		console.error("Brak tokenu ID z Google");
+		return;
+	}
+
+	console.log("Google ID token:", response.credential);
+}
+
+function handleGoogleError() {
+	console.error("Logowanie Google nie powiodło się");
+}
 
 export default function Landing() {
 	const colors = [
@@ -21,7 +35,7 @@ export default function Landing() {
 							Otwórz demo drocsida
 						</Link>
 
-						{/* TODO: Tu wrzuć auth button */}
+						<GoogleLogin onSuccess={handleGoogleSuccess} onError={handleGoogleError} />
 					</div>
 				</div>
 

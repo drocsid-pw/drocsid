@@ -8,3 +8,5 @@ media/
 .devcontainer/
 frontend/skrypt.py
 frontend/output.txt
+venv
+spring_grpc
