@@ -7,9 +7,18 @@ services:
         volumes:
             - ./frontend:/app
             - /app/node_modules
-        ports:
-            - "5173:5173"
         stdin_open: true
         tty: true
         env_file:
             - ./frontend/.env.local
+
+    backend:
+      build:
+        context: ./spring_grpc
+        dockerfile: Dockerfile
+      working_dir: /app
+    gateway:
+      build:
+        context: ./nginx
+      ports: 
+        - "8080:8080"
