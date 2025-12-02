@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import type { DrocsidChannel, DrocsidServer, DrocsidFriend } from "../types";
+import type { DrocsidChannel, DrocsidGuild, DrocsidFriend } from "../types";
 import { currentUser, mockServers, mockFriends, mockFriendMessages } from "../data/mockData";
 import { DrocsidServersBar } from "./DrocsidServersBar";
 import { DrocsidChannelsBar } from "./DrocsidChannelsBar";
@@ -43,7 +43,7 @@ export function DrocsidMainView() {
 		return mockFriends[0]?.id ?? null;
 	});
 
-	const activeServer = useMemo<DrocsidServer | null>(() => {
+	const activeServer = useMemo<DrocsidGuild | null>(() => {
 		if (!activeServerId) {
 			return mockServers[0] ?? null;
 		}

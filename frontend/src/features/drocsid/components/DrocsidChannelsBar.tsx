@@ -1,12 +1,12 @@
 import React from "react";
-import type { DrocsidChannel, DrocsidServer, DrocsidFriend, DrocsidUser } from "../types";
+import type { DrocsidChannel, DrocsidGuild, DrocsidFriend, DrocsidUser } from "../types";
 import { DROCSID_THEME } from "../theme";
 
 type DrocsidSideMode = "servers" | "friends";
 
 type DrocsidChannelsBarProps = {
 	mode: DrocsidSideMode;
-	server: DrocsidServer | null;
+	server: DrocsidGuild | null;
 	channels: DrocsidChannel[];
 	activeChannelId: string | null;
 	onSelectChannel: (channelId: string) => void;
@@ -94,12 +94,7 @@ export function DrocsidChannelsBar(props: DrocsidChannelsBarProps) {
 											<div className="w-8 h-8 rounded-full grid place-items-center text-sm font-semibold" style={{ backgroundColor: DROCSID_THEME.accentSoft }}>
 												{friend.avatarLetter}
 											</div>
-											<span
-												className="absolute -right-0.5 -bottom-0.5 w-3 h-3 rounded-full border border-slate-900"
-												style={{
-													backgroundColor: friend.status === "online" ? "#22c55e" : friend.status === "idle" ? "#eab308" : friend.status === "dnd" ? "#ef4444" : "#6b7280",
-												}}
-											/>
+											<span className="absolute -right-0.5 -bottom-0.5 w-3 h-3 rounded-full border border-slate-900" style={{ backgroundColor: "#22c55e" }} />
 										</div>
 										<div className="flex flex-col">
 											<span
@@ -109,7 +104,7 @@ export function DrocsidChannelsBar(props: DrocsidChannelsBarProps) {
 												}}>
 												{friend.name}
 											</span>
-											<span className="text-xs text-slate-400">{friend.status}</span>
+											<span className="text-xs text-slate-400">Prywatne wiadomości</span>
 										</div>
 									</div>
 								</button>
@@ -125,19 +120,14 @@ export function DrocsidChannelsBar(props: DrocsidChannelsBarProps) {
 						<div className="w-8 h-8 rounded-full grid place-items-center text-sm font-semibold" style={{ backgroundColor: DROCSID_THEME.accentSoft }}>
 							{currentUser.avatarLetter}
 						</div>
-						<span
-							className="absolute -right-0.5 -bottom-0.5 w-3 h-3 rounded-full border border-slate-900"
-							style={{
-								backgroundColor: currentUser.status === "online" ? "#22c55e" : currentUser.status === "idle" ? "#eab308" : currentUser.status === "dnd" ? "#ef4444" : "#6b7280",
-							}}
-						/>
+						<span className="absolute -right-0.5 -bottom-0.5 w-3 h-3 rounded-full border border-slate-900" style={{ backgroundColor: "#22c55e" }} />
 					</div>
 
 					<div className="flex-1 leading-tight">
 						<div className="text-sm" style={{ color: DROCSID_THEME.channelsBar.headline }}>
 							{currentUser.name}
 						</div>
-						<div className="text-xs text-slate-400">{currentUser.status}</div>
+						<div className="text-xs text-slate-400">online</div>
 					</div>
 
 					<div className="text-slate-400 text-xs">⚙</div>

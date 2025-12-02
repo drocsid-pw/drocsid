@@ -38,11 +38,11 @@ export function DrocsidChatView(props: DrocsidChatViewProps) {
 						<div className="flex-1">
 							<div className="flex items-baseline gap-2">
 								<span className="font-semibold" style={{ color: DROCSID_THEME.mainChat.headline }}>
-									{message.user}
+									{message.author}
 								</span>
-								<span className="text-xs text-slate-500">{message.time}</span>
+								<span className="text-xs text-slate-500">{message.timestamp}</span>
 							</div>
-							<div style={{ color: DROCSID_THEME.mainChat.text }}>{message.text}</div>
+							<div style={{ color: DROCSID_THEME.mainChat.text }}>{message.content}</div>
 						</div>
 					</div>
 				))}

@@ -1,11 +1,11 @@
 import React from "react";
-import type { DrocsidServer } from "../types";
+import type { DrocsidGuild } from "../types";
 import { DROCSID_THEME } from "../theme";
 
 type DrocsidSideMode = "servers" | "friends";
 
 type DrocsidServersBarProps = {
-	servers: DrocsidServer[];
+	servers: DrocsidGuild[];
 	activeServerId: string | null;
 	sideMode: DrocsidSideMode;
 	onSelectSideMode: (mode: DrocsidSideMode) => void;
@@ -15,7 +15,7 @@ type DrocsidServersBarProps = {
 
 /**
  * Pasek serwerów z przyciskiem prywatnych wiadomości u góry,
- * listą serwerów oraz przyciskiem dodania/edycji serwera na dole.
+ * listą serwerów oraz przyciskiem dodania lub edycji serwera na dole.
  */
 export function DrocsidServersBar(props: DrocsidServersBarProps) {
 	const { servers, activeServerId, sideMode, onSelectSideMode, onSelectServer, onOpenServerSettings } = props;
