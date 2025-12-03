@@ -1,0 +1,39 @@
+syntax = "proto3";
+package message;
+option java_package = "com.drocsid.grpc.proto";
+option java_multiple_files = true;
+import "common.proto";
+
+
+service MessageService {
+  rpc CreateMessage(CreateMessageRequest) returns (common.ResponseMessage);
+  rpc GetMessage(MessageId) returns (Message);
+  rpc UpdateMessage(UpdateMessageRequest) returns (common.ResponseMessage);
+  rpc DeleteMessage(MessageId) returns (common.ResponseMessage);
+}
+
+message Message {
+  string id = 1;
+  string user = 2;
+  string time = 3;
+  string text = 4;
+}
+
+message CreateMessageRequest {
+  string userId = 1;
+  string user = 2;
+  string text = 3;
+}
+
+message MessageId {
+  string userId = 1;
+  string id = 2;
+}
+
+message UpdateMessageRequest {
+  string userId = 1;
+  string id = 2;
+  string user = 3;
+  string time = 4;
+  string text = 5;
+}
