@@ -6,10 +6,10 @@ type DrocsidSideMode = "servers" | "friends";
 
 type DrocsidServersBarProps = {
 	servers: DrocsidGuild[];
-	activeServerId: string | null;
+	activeServerId: bigint | null;
 	sideMode: DrocsidSideMode;
 	onSelectSideMode: (mode: DrocsidSideMode) => void;
-	onSelectServer: (serverId: string) => void;
+	onSelectServer: (serverId: bigint) => void;
 	onOpenServerSettings: () => void;
 };
 
@@ -38,11 +38,11 @@ export function DrocsidServersBar(props: DrocsidServersBarProps) {
 			<div className="w-8 h-px my-2" style={{ backgroundColor: DROCSID_THEME.serversBar.divider }} />
 
 			{servers.map((server) => {
-				const isActive = sideMode === "servers" && server.id === activeServerId;
+				const isActive = sideMode === "servers" && activeServerId !== null && server.id === activeServerId;
 
 				return (
 					<button
-						key={server.id}
+						key={String(server.id)}
 						type="button"
 						className={`w-12 h-12 rounded-2xl grid place-items-center transition ${isActive ? "bg-white text-[#1f2937]" : "bg-white/10 hover:bg-white/20"}`}
 						title={server.name}

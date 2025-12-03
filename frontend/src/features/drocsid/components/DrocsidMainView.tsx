@@ -27,11 +27,11 @@ export function DrocsidMainView() {
 	const [viewMode, setViewMode] = useState<DrocsidViewMode>("chat");
 	const [sideMode, setSideMode] = useState<DrocsidSideMode>("servers");
 
-	const [activeServerId, setActiveServerId] = useState<string | null>(() => {
+	const [activeServerId, setActiveServerId] = useState<bigint | null>(() => {
 		return mockServers[0]?.id ?? null;
 	});
 
-	const [activeChannelId, setActiveChannelId] = useState<string | null>(() => {
+	const [activeChannelId, setActiveChannelId] = useState<bigint | null>(() => {
 		const firstServer = mockServers[0];
 		if (!firstServer || firstServer.channels.length === 0) {
 			return null;
@@ -39,7 +39,7 @@ export function DrocsidMainView() {
 		return firstServer.channels[0].id;
 	});
 
-	const [activeFriendId, setActiveFriendId] = useState<string | null>(() => {
+	const [activeFriendId, setActiveFriendId] = useState<bigint | null>(() => {
 		return mockFriends[0]?.id ?? null;
 	});
 
@@ -68,7 +68,7 @@ export function DrocsidMainView() {
 			return;
 		}
 
-		const existsInServer = channels.some((channel) => channel.id === activeChannelId);
+		const existsInServer = activeChannelId !== null && channels.some((channel) => channel.id === activeChannelId);
 
 		if (!existsInServer) {
 			setActiveChannelId(channels[0]?.id ?? null);
@@ -102,7 +102,7 @@ export function DrocsidMainView() {
 		if (!activeFriend) {
 			return [];
 		}
-		return mockFriendMessages[activeFriend.id] ?? [];
+		return mockFriendMessages[String(activeFriend.id)] ?? [];
 	}, [activeFriend]);
 
 	if (mockServers.length === 0) {

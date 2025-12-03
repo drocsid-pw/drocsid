@@ -8,11 +8,11 @@ type DrocsidChannelsBarProps = {
 	mode: DrocsidSideMode;
 	server: DrocsidGuild | null;
 	channels: DrocsidChannel[];
-	activeChannelId: string | null;
-	onSelectChannel: (channelId: string) => void;
+	activeChannelId: bigint | null;
+	onSelectChannel: (channelId: bigint) => void;
 	friends: DrocsidFriend[];
-	activeFriendId: string | null;
-	onSelectFriend: (friendId: string) => void;
+	activeFriendId: bigint | null;
+	onSelectFriend: (friendId: bigint) => void;
 	onOpenServerSettings: () => void;
 	onOpenUserSettings: () => void;
 	currentUser: DrocsidUser;
@@ -53,11 +53,11 @@ export function DrocsidChannelsBar(props: DrocsidChannelsBarProps) {
 						</div>
 
 						{channels.map((channel) => {
-							const isActive = channel.id === activeChannelId;
+							const isActive = activeChannelId !== null && channel.id === activeChannelId;
 
 							return (
 								<button
-									key={channel.id}
+									key={String(channel.id)}
 									type="button"
 									className={`w-full text-left px-3 py-2 rounded-lg transition ${isActive ? "bg-white/10 text-white" : "hover:bg-white/5"}`}
 									title={`#${channel.name}`}
@@ -80,11 +80,11 @@ export function DrocsidChannelsBar(props: DrocsidChannelsBarProps) {
 						</div>
 
 						{friends.map((friend) => {
-							const isActive = friend.id === activeFriendId;
+							const isActive = activeFriendId !== null && friend.id === activeFriendId;
 
 							return (
 								<button
-									key={friend.id}
+									key={String(friend.id)}
 									type="button"
 									className={`w-full text-left px-2 py-2 rounded-lg transition ${isActive ? "bg-white/10 text-white" : "hover:bg-white/5"}`}
 									onClick={() => onSelectFriend(friend.id)}

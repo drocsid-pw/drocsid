@@ -33,12 +33,12 @@ export function DrocsidChatView(props: DrocsidChatViewProps) {
 
 			<div className="overflow-auto p-4 space-y-4">
 				{messages.map((message) => (
-					<div key={message.id} className="flex gap-3">
+					<div key={String(message.id)} className="flex gap-3">
 						<div className="w-10 h-10 rounded-full bg-slate-300 grid place-items-center">👤</div>
 						<div className="flex-1">
 							<div className="flex items-baseline gap-2">
 								<span className="font-semibold" style={{ color: DROCSID_THEME.mainChat.headline }}>
-									{message.author}
+									{message.authorName}
 								</span>
 								<span className="text-xs text-slate-500">{message.timestamp}</span>
 							</div>

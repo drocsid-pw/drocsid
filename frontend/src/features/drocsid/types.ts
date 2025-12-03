@@ -1,22 +1,23 @@
 export type DrocsidStatus = "online" | "idle" | "dnd" | "offline";
 
 export type DrocsidMessage = {
-	id: string;
-	author: string;
+	id: bigint;
+	authorId: bigint;
+	authorName: string;
 	timestamp: string;
 	content: string;
 	channelId: bigint;
 };
 
 export type DrocsidChannel = {
-	id: string;
+	id: bigint;
 	name: string;
 	messages: DrocsidMessage[];
 	guildId: bigint;
 };
 
 export type DrocsidGuild = {
-	id: string;
+	id: bigint;
 	name: string;
 	icon: string;
 	ownerId: bigint;
@@ -24,7 +25,7 @@ export type DrocsidGuild = {
 };
 
 export type DrocsidUser = {
-	id: string;
+	id: bigint;
 	name: string;
 	avatarLetter: string;
 	avatarHash: string;

@@ -1,7 +1,14 @@
 import type { DrocsidGuild, DrocsidMessage, DrocsidFriend, DrocsidUser } from "../types";
 
+const RAFA_ID = 1n;
+const KUBA_ID = 2n;
+const MIRON_ID = 3n;
+const TATA_ID = 4n;
+const ANIA_ID = 5n;
+const PIOTR_ID = 6n;
+
 export const currentUser: DrocsidUser = {
-	id: "user-1",
+	id: RAFA_ID,
 	name: "Rafał",
 	avatarLetter: "R",
 	avatarHash: "hash-user-1",
@@ -9,121 +16,130 @@ export const currentUser: DrocsidUser = {
 
 export const mockServers: DrocsidGuild[] = [
 	{
-		id: "server-1",
+		id: 1n,
 		name: "drocsid / server-1",
 		icon: "🏡",
-		ownerId: 1n,
+		ownerId: RAFA_ID,
 		channels: [
 			{
-				id: "general",
+				id: 11n,
 				name: "general",
 				guildId: 1n,
 				messages: [
 					{
-						id: "m1",
-						author: "Rafał",
+						id: 1n,
+						authorId: RAFA_ID,
+						authorName: "Rafał",
 						timestamp: "09:12",
 						content: "Siemano, oceniajcie design",
-						channelId: 1n,
+						channelId: 11n,
 					},
 					{
-						id: "m2",
-						author: "Twój stary",
+						id: 2n,
+						authorId: TATA_ID,
+						authorName: "Twój stary",
 						timestamp: "09:13",
 						content: "Ej, zajebisty drocsid",
-						channelId: 1n,
+						channelId: 11n,
 					},
 					{
-						id: "m3",
-						author: "Miron",
+						id: 3n,
+						authorId: MIRON_ID,
+						authorName: "Miron",
 						timestamp: "09:15",
 						content: "No i git. Kuba, rób elixira",
-						channelId: 1n,
+						channelId: 11n,
 					},
 				],
 			},
 			{
-				id: "dev",
+				id: 12n,
 				name: "dev",
 				guildId: 1n,
 				messages: [
 					{
-						id: "m4",
-						author: "Kuba",
+						id: 4n,
+						authorId: KUBA_ID,
+						authorName: "Kuba",
 						timestamp: "10:01",
 						content: "Dodałem upload plików, przetestujcie",
-						channelId: 2n,
+						channelId: 12n,
 					},
 					{
-						id: "m5",
-						author: "Rafał",
+						id: 5n,
+						authorId: RAFA_ID,
+						authorName: "Rafał",
 						timestamp: "10:05",
 						content: "Front podpięty pod nowy endpoint",
-						channelId: 2n,
+						channelId: 12n,
 					},
 				],
 			},
 			{
-				id: "design",
+				id: 13n,
 				name: "design",
 				guildId: 1n,
 				messages: [
 					{
-						id: "m6",
-						author: "Rafał",
+						id: 6n,
+						authorId: RAFA_ID,
+						authorName: "Rafał",
 						timestamp: "11:20",
 						content: "Nowy layout sidebaru wrzucony do Figmy",
-						channelId: 3n,
+						channelId: 13n,
 					},
 				],
 			},
 			{
-				id: "random",
+				id: 14n,
 				name: "random",
 				guildId: 1n,
 				messages: [
 					{
-						id: "m7",
-						author: "Twój stary",
+						id: 7n,
+						authorId: TATA_ID,
+						authorName: "Twój stary",
 						timestamp: "12:00",
 						content: "Miał być side project, a znowu wychodzi produkt",
-						channelId: 4n,
+						channelId: 14n,
 					},
 				],
 			},
 		],
 	},
 	{
-		id: "server-2",
+		id: 2n,
 		name: "side-projecty",
 		icon: "🧪",
-		ownerId: 2n,
+		ownerId: KUBA_ID,
 		channels: [
 			{
-				id: "ideas",
+				id: 21n,
 				name: "ideas",
 				guildId: 2n,
 				messages: [
 					{
-						id: "m8",
-						author: "Rafał",
+						id: 8n,
+						authorId: RAFA_ID,
+						authorName: "Rafał",
 						timestamp: "14:10",
 						content: "Zróbmy mini SaaS do boardów kanban jak w Discordzie",
-						channelId: 5n,
+						channelId: 21n,
 					},
 				],
 			},
 			{
-				id: "build-in-public",
+				id: 22n,
 				name: "build-in-public",
 				guildId: 2n,
 				messages: [
 					{
-						id: "m9",
-						author: "Rafał",
+						id: 9n,
+						authorId: RAFA_ID,
+						authorName: "Rafał",
 						timestamp: "14:30",
 						content: "Dzień 1: działa logowanie Google i layout discorda",
-						channelId: 6n,
+						channelId: 22n,
 					},
 				],
 			},
@@ -133,31 +149,31 @@ export const mockServers: DrocsidGuild[] = [
 
 export const mockFriends: DrocsidFriend[] = [
 	{
-		id: "friend-1",
+		id: KUBA_ID,
 		name: "Kuba",
 		avatarLetter: "K",
 		avatarHash: "hash-friend-1",
 	},
 	{
-		id: "friend-2",
+		id: MIRON_ID,
 		name: "Miron",
 		avatarLetter: "M",
 		avatarHash: "hash-friend-2",
 	},
 	{
-		id: "friend-3",
+		id: TATA_ID,
 		name: "Twój stary",
 		avatarLetter: "T",
 		avatarHash: "hash-friend-3",
 	},
 	{
-		id: "friend-4",
+		id: ANIA_ID,
 		name: "Ania",
 		avatarLetter: "A",
 		avatarHash: "hash-friend-4",
 	},
 	{
-		id: "friend-5",
+		id: PIOTR_ID,
 		name: "Piotr",
 		avatarLetter: "P",
 		avatarHash: "hash-friend-5",
@@ -165,53 +181,59 @@ export const mockFriends: DrocsidFriend[] = [
 ];
 
 export const mockFriendMessages: Record<string, DrocsidMessage[]> = {
-	"friend-1": [
+	[String(KUBA_ID)]: [
 		{
-			id: "dm1",
-			author: "Kuba",
+			id: 10001n,
+			authorId: KUBA_ID,
+			authorName: "Kuba",
 			timestamp: "09:00",
 			content: "Zróbmy jeszcze voice chat kiedyś",
 			channelId: 1001n,
 		},
 		{
-			id: "dm2",
-			author: "Rafał",
+			id: 10002n,
+			authorId: RAFA_ID,
+			authorName: "Rafał",
 			timestamp: "09:02",
 			content: "Najpierw tekst, potem reszta",
 			channelId: 1001n,
 		},
 	],
-	"friend-2": [
+	[String(MIRON_ID)]: [
 		{
-			id: "dm3",
-			author: "Miron",
+			id: 10003n,
+			authorId: MIRON_ID,
+			authorName: "Miron",
 			timestamp: "10:15",
 			content: "Elixir backend jeszcze nie działa???",
 			channelId: 1002n,
 		},
 	],
-	"friend-3": [
+	[String(TATA_ID)]: [
 		{
-			id: "dm4",
-			author: "Twój stary",
+			id: 10004n,
+			authorId: TATA_ID,
+			authorName: "Twój stary",
 			timestamp: "11:11",
 			content: "No i co z tym side projectem",
 			channelId: 1003n,
 		},
 	],
-	"friend-4": [
+	[String(ANIA_ID)]: [
 		{
-			id: "dm5",
-			author: "Ania",
+			id: 10005n,
+			authorId: ANIA_ID,
+			authorName: "Ania",
 			timestamp: "12:34",
 			content: "Fajny ten layout pod discorda",
 			channelId: 1004n,
 		},
 	],
-	"friend-5": [
+	[String(PIOTR_ID)]: [
 		{
-			id: "dm6",
-			author: "Piotr",
+			id: 10006n,
+			authorId: PIOTR_ID,
+			authorName: "Piotr",
 			timestamp: "13:37",
 			content: "Jak coś, to testuję ten drocsid",
 			channelId: 1005n,
