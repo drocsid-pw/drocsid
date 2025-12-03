@@ -2,13 +2,14 @@ syntax = "proto3";
 package user;
 option java_package = "com.drocsid.grpc.proto";
 option java_multiple_files = true;
+import "common.proto";
 
 service UserService {
-  rpc CreateUser(CreateUserRequest) returns (ResponseMessage);
+  rpc CreateUser(CreateUserRequest) returns (common.ResponseMessage);
   rpc GetUser(UserId) returns (User);
-  rpc UpdateUser(UpdateUserRequest) returns (ResponseMessage);
-  rpc DeleteUser(UserId) returns (ResponseMessage);
-  rpc ListUsers(Empty) returns (UserList);
+  rpc UpdateUser(UpdateUserRequest) returns (common.ResponseMessage);
+  rpc DeleteUser(UserId) returns (common.ResponseMessage);
+  rpc ListUsers(common.Empty) returns (UserList);
 }
 
 enum DrocsidStatus {
@@ -39,12 +40,6 @@ message UpdateUserRequest {
   string avatarLetter = 3;
   DrocsidStatus status = 4;
 }
-
-message ResponseMessage {
-  string text = 1;
-}
-
-message Empty {}
 
 message UserList {
   repeated User users = 1;
