@@ -1,0 +1,51 @@
+syntax = "proto3";
+package user;
+option java_package = "com.drocsid.grpc.proto";
+option java_multiple_files = true;
+
+service UserService {
+  rpc CreateUser(CreateUserRequest) returns (ResponseMessage);
+  rpc GetUser(UserId) returns (User);
+  rpc UpdateUser(UpdateUserRequest) returns (ResponseMessage);
+  rpc DeleteUser(UserId) returns (ResponseMessage);
+  rpc ListUsers(Empty) returns (UserList);
+}
+
+enum DrocsidStatus {
+  ONLINE = 0;
+  IDLE = 1;
+  DND = 2;
+  OFFLINE = 3;
+}
+
+message User {
+  string id = 1;
+  string name = 2;
+  string avatarLetter = 3;
+  DrocsidStatus status = 4;
+}
+
+message CreateUserRequest {
+  string name = 1;
+}
+
+message UserId {
+  string id = 1;
+}
+
+message UpdateUserRequest {
+  string id = 1;
+  string name = 2;
+  string avatarLetter = 3;
+  DrocsidStatus status = 4;
+}
+
+message ResponseMessage {
+  string text = 1;
+}
+
+message Empty {}
+
+message UserList {
+  repeated User users = 1;
+}
