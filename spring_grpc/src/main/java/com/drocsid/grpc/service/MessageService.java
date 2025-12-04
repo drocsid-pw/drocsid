@@ -1,9 +1,13 @@
 package com.drocsid.grpc.service;
 
+import com.drocsid.grpc.core_requests.CoreCreateMessageRequest;
+import com.drocsid.grpc.core_requests.CoreUpdateMessageRequest;
 import com.drocsid.grpc.mock_classes.CoreClient;
 import com.drocsid.grpc.proto.*;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
+
+import java.math.BigInteger;
 
 @GrpcService
 public class MessageService extends MessageServiceGrpc.MessageServiceImplBase {
@@ -16,7 +20,7 @@ public class MessageService extends MessageServiceGrpc.MessageServiceImplBase {
     @Override
     public void createMessage(CreateMessageRequest request, StreamObserver<ResponseMessage> responseObserver) {
         try {
-            coreClient.createMessage(request);
+            coreClient.createMessage(new CoreCreateMessageRequest(request));
 
             ResponseMessage response = ResponseMessage
                     .newBuilder()
@@ -34,7 +38,8 @@ public class MessageService extends MessageServiceGrpc.MessageServiceImplBase {
     @Override
     public void getMessage(MessageId messageId, StreamObserver<Message> responseObserver) {
         try {
-            Message message = coreClient.getMessage(messageId.getUserId(), messageId.getId());
+            Message message = coreClient.getMessage(new BigInteger(messageId.getUserId()),
+                new BigInteger(messageId.getId()));
 
             responseObserver.onNext(message);
             responseObserver.onCompleted();
@@ -49,7 +54,7 @@ public class MessageService extends MessageServiceGrpc.MessageServiceImplBase {
     public void updateMessage(UpdateMessageRequest request,
                            StreamObserver<ResponseMessage> responseObserver) {
         try {
-            coreClient.updateMessage(request);
+            coreClient.updateMessage(new CoreUpdateMessageRequest(request));
 
             ResponseMessage response = ResponseMessage
                     .newBuilder()
@@ -67,7 +72,7 @@ public class MessageService extends MessageServiceGrpc.MessageServiceImplBase {
     @Override
     public void deleteMessage(MessageId messageId, StreamObserver<ResponseMessage> responseObserver) {
         try {
-            coreClient.deleteMessage(messageId.getUserId(), messageId.getId());
+            coreClient.deleteMessage(new BigInteger(messageId.getUserId()), new BigInteger(messageId.getId()));
 
             ResponseMessage response = ResponseMessage
                     .newBuilder()

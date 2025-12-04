@@ -1,4 +1,5 @@
 package com.drocsid.grpc.service;
+import com.drocsid.grpc.core_requests.CoreUpdateUserRequest;
 import com.drocsid.grpc.mock_classes.CoreClient;
 import com.drocsid.grpc.proto.CreateUserRequest;
 import com.drocsid.grpc.proto.UpdateUserRequest;
@@ -12,6 +13,7 @@ import com.drocsid.grpc.proto.UserId;
 import com.drocsid.grpc.proto.ResponseMessage;
 import com.drocsid.grpc.proto.UserList;
 
+import java.math.BigInteger;
 import java.util.List;
 
 @GrpcService
@@ -44,7 +46,7 @@ public class UserService extends UserServiceGrpc.UserServiceImplBase {
     @Override
     public void getUser(UserId userId, StreamObserver<User> responseObserver) {
         try {
-            User user = coreClient.getUser(userId.getId());
+            User user = coreClient.getUser(new BigInteger(userId.getId()));
 
             responseObserver.onNext(user);
             responseObserver.onCompleted();
@@ -59,7 +61,7 @@ public class UserService extends UserServiceGrpc.UserServiceImplBase {
     public void updateUser(UpdateUserRequest request,
                            StreamObserver<ResponseMessage> responseObserver) {
         try {
-            coreClient.updateUser(request);
+            coreClient.updateUser(new CoreUpdateUserRequest(request));
 
             ResponseMessage response = ResponseMessage
                     .newBuilder()
@@ -77,7 +79,7 @@ public class UserService extends UserServiceGrpc.UserServiceImplBase {
     @Override
     public void deleteUser(UserId userId, StreamObserver<ResponseMessage> responseObserver) {
         try {
-            coreClient.deleteUser(userId.getId());
+            coreClient.deleteUser(new BigInteger(userId.getId()));
 
             ResponseMessage response = ResponseMessage
                     .newBuilder()
@@ -101,7 +103,8 @@ public class UserService extends UserServiceGrpc.UserServiceImplBase {
             responseObserver.onNext(list);
             responseObserver.onCompleted();
 
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             responseObserver.onError(e);
         }
     }
