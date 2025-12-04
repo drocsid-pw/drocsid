@@ -4,7 +4,6 @@ option java_package = "com.drocsid.grpc.proto";
 option java_multiple_files = true;
 import "common.proto";
 import "message.proto";
-import "user.proto";
 
 
 service ChannelService {
@@ -12,8 +11,8 @@ service ChannelService {
   rpc GetChannel(ChannelId) returns (Channel);
   rpc UpdateChannel(UpdateChannelRequest) returns (common.ResponseMessage);
   rpc DeleteChannel(ChannelId) returns (common.ResponseMessage);
-  rpc GetLastMessage(user.UserId) returns (message.Message);
-  rpc GetAllMessages(user.UserId) returns (message.MessageList);
+  rpc GetLastMessage(ChannelId) returns (message.Message);
+  rpc GetAllMessages(ChannelId) returns (message.MessageList);
 }
 
 message Channel {
@@ -40,4 +39,8 @@ message UpdateChannelRequest {
   string name = 3;
   repeated message.Message messages = 4;
   string guildId = 5;
+}
+
+message ChannelList {
+  repeated Channel channels = 1;
 }

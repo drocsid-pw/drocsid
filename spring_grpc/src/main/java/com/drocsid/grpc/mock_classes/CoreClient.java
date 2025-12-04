@@ -66,7 +66,7 @@ public class CoreClient {
 
     public void deleteChannel(BigInteger userId, BigInteger channelId) {}
 
-    public Message getLastMessage(BigInteger userId) {
+    public Message getLastMessage(BigInteger userId, BigInteger channelId) {
         return Message.newBuilder()
                 .setId("id")
                 .setAuthorId("id")
@@ -76,7 +76,7 @@ public class CoreClient {
                 .build();
     }
 
-    public List<Message> getAllMessages(BigInteger userId) {
+    public List<Message> getAllMessages(BigInteger userId, BigInteger channelId) {
         return List.of();
     }
 }

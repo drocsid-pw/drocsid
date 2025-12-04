@@ -91,9 +91,10 @@ public class ChannelService extends ChannelServiceGrpc.ChannelServiceImplBase {
     }
 
     @Override
-    public void getLastMessage(UserId userId, StreamObserver<Message> responseObserver) {
+    public void getLastMessage(ChannelId channelId, StreamObserver<Message> responseObserver) {
         try {
-            Message message = coreClient.getLastMessage(new BigInteger(userId.getId()));
+            Message message = coreClient.getLastMessage(new BigInteger(channelId.getUserId()),
+                new BigInteger(channelId.getId()));
 
             responseObserver.onNext(message);
             responseObserver.onCompleted();
@@ -105,9 +106,10 @@ public class ChannelService extends ChannelServiceGrpc.ChannelServiceImplBase {
     }
 
     @Override
-    public void getAllMessages(UserId userId, StreamObserver<MessageList> responseObserver) {
+    public void getAllMessages(ChannelId channelId, StreamObserver<MessageList> responseObserver) {
         try {
-            List<Message> messages = coreClient.getAllMessages(new BigInteger(userId.getId()));
+            List<Message> messages = coreClient.getAllMessages(new BigInteger(channelId.getUserId()),
+                new BigInteger(channelId.getId()));
 
             MessageList list = MessageList.newBuilder().addAllMessages(messages).build();
             responseObserver.onNext(list);
