@@ -14,15 +14,19 @@ service MessageService {
 
 message Message {
   string id = 1;
-  string user = 2;
-  string time = 3;
-  string text = 4;
+  string authorId = 2;
+  string authorName = 3;
+  string timestamp = 4;
+  string content = 5;
+  string channelId = 6;
 }
 
 message CreateMessageRequest {
   string userId = 1;
-  string user = 2;
-  string text = 3;
+  string authorId = 2;
+  string authorName = 3;
+  string content = 4;
+  string channelId = 5;
 }
 
 message MessageId {
@@ -33,7 +37,6 @@ message MessageId {
 message UpdateMessageRequest {
   string userId = 1;
   string id = 2;
-  string user = 3;
-  string time = 4;
-  string text = 5;
+  string authorName = 3;
+  string content = 4;
 }
