@@ -1,8 +1,10 @@
 package com.drocsid.grpc.mock_classes;
 
 import com.drocsid.grpc.core_requests.create.CoreCreateChannelRequest;
+import com.drocsid.grpc.core_requests.create.CoreCreateGuildRequest;
 import com.drocsid.grpc.core_requests.create.CoreCreateMessageRequest;
 import com.drocsid.grpc.core_requests.update.CoreUpdateChannelRequest;
+import com.drocsid.grpc.core_requests.update.CoreUpdateGuildRequest;
 import com.drocsid.grpc.core_requests.update.CoreUpdateMessageRequest;
 import com.drocsid.grpc.core_requests.update.CoreUpdateUserRequest;
 import com.drocsid.grpc.proto.CreateUserRequest;
@@ -77,6 +79,30 @@ public class CoreClient {
     }
 
     public List<Message> getAllMessages(BigInteger userId, BigInteger channelId) {
+        return List.of();
+    }
+
+    public void createGuild(CoreCreateGuildRequest request) {}
+
+    public Guild getGuild(BigInteger userId, BigInteger guildId) {
+        return Guild.newBuilder()
+                .setId(guildId.toString())
+                .setName("name")
+                .setIcon("icon")
+                .setOwnerId("id")
+                .addAllChannels(new ArrayList<>())
+                .build();
+    }
+
+    public void updateGuild(CoreUpdateGuildRequest request) {}
+
+    public void deleteGuild(BigInteger userId, BigInteger guildId) {}
+
+    public List<Guild> getAllGuilds(BigInteger userId) {
+        return List.of();
+    }
+
+    public List<Channel> getAllChannels(BigInteger userId, BigInteger guildId) {
         return List.of();
     }
 }
