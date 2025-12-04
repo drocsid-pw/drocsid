@@ -12,18 +12,11 @@ service UserService {
   rpc ListUsers(common.Empty) returns (UserList);
 }
 
-enum DrocsidStatus {
-  ONLINE = 0;
-  IDLE = 1;
-  DND = 2;
-  OFFLINE = 3;
-}
-
 message User {
   string id = 1;
   string name = 2;
   string avatarLetter = 3;
-  DrocsidStatus status = 4;
+  string avatarHash = 4;
 }
 
 message CreateUserRequest {
@@ -38,7 +31,7 @@ message UpdateUserRequest {
   string id = 1;
   string name = 2;
   string avatarLetter = 3;
-  DrocsidStatus status = 4;
+  string avatarHash = 4;
 }
 
 message UserList {
