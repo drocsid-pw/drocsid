@@ -40,3 +40,7 @@ message UpdateMessageRequest {
   string authorName = 3;
   string content = 4;
 }
+
+message MessageList {
+  repeated Message messages = 1;
+}
