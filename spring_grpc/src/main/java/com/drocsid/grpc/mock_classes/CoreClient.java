@@ -1,13 +1,16 @@
 package com.drocsid.grpc.mock_classes;
 
-import com.drocsid.grpc.core_requests.CoreCreateMessageRequest;
-import com.drocsid.grpc.core_requests.CoreUpdateMessageRequest;
-import com.drocsid.grpc.core_requests.CoreUpdateUserRequest;
+import com.drocsid.grpc.core_requests.create.CoreCreateChannelRequest;
+import com.drocsid.grpc.core_requests.create.CoreCreateMessageRequest;
+import com.drocsid.grpc.core_requests.update.CoreUpdateChannelRequest;
+import com.drocsid.grpc.core_requests.update.CoreUpdateMessageRequest;
+import com.drocsid.grpc.core_requests.update.CoreUpdateUserRequest;
 import com.drocsid.grpc.proto.CreateUserRequest;
 import org.springframework.stereotype.Component;
 import com.drocsid.grpc.proto.*;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -28,7 +31,7 @@ public class CoreClient {
 
     public void deleteUser(BigInteger userId) {}
 
-    public List<User> listUsers() {
+    public List<User> getAllUsers() {
         return List.of();
     }
 
@@ -47,4 +50,33 @@ public class CoreClient {
     public void updateMessage(CoreUpdateMessageRequest request) {}
 
     public void deleteMessage(BigInteger userId, BigInteger messageId) {}
+
+    public void createChannel(CoreCreateChannelRequest request) {}
+
+    public Channel getChannel(BigInteger userId, BigInteger channelId) {
+        return Channel.newBuilder()
+                .setId(channelId.toString())
+                .setName("name")
+                .addAllMessages(new ArrayList<>())
+                .setGuildId("id")
+                .build();
+    }
+
+    public void updateChannel(CoreUpdateChannelRequest request) {}
+
+    public void deleteChannel(BigInteger userId, BigInteger channelId) {}
+
+    public Message getLastMessage(BigInteger userId) {
+        return Message.newBuilder()
+                .setId("id")
+                .setAuthorId("id")
+                .setAuthorName("name")
+                .setContent("content")
+                .setChannelId("channelId")
+                .build();
+    }
+
+    public List<Message> getAllMessages(BigInteger userId) {
+        return List.of();
+    }
 }
