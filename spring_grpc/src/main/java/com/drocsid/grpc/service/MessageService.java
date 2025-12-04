@@ -1,7 +1,7 @@
 package com.drocsid.grpc.service;
 
-import com.drocsid.grpc.core_requests.CoreCreateMessageRequest;
-import com.drocsid.grpc.core_requests.CoreUpdateMessageRequest;
+import com.drocsid.grpc.core_requests.create.CoreCreateMessageRequest;
+import com.drocsid.grpc.core_requests.update.CoreUpdateMessageRequest;
 import com.drocsid.grpc.mock_classes.CoreClient;
 import com.drocsid.grpc.proto.*;
 import io.grpc.stub.StreamObserver;
