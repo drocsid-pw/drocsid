@@ -1,5 +1,5 @@
 package com.drocsid.grpc.service;
-import com.drocsid.grpc.core_requests.CoreUpdateUserRequest;
+import com.drocsid.grpc.core_requests.update.CoreUpdateUserRequest;
 import com.drocsid.grpc.mock_classes.CoreClient;
 import com.drocsid.grpc.proto.CreateUserRequest;
 import com.drocsid.grpc.proto.UpdateUserRequest;
@@ -95,9 +95,9 @@ public class UserService extends UserServiceGrpc.UserServiceImplBase {
     }
 
     @Override
-    public void listUsers(Empty request, StreamObserver<UserList> responseObserver) {
+    public void getAllUsers(Empty request, StreamObserver<UserList> responseObserver) {
         try {
-            List<User> users = coreClient.listUsers();
+            List<User> users = coreClient.getAllUsers();
 
             UserList list = UserList.newBuilder().addAllUsers(users).build();
             responseObserver.onNext(list);
