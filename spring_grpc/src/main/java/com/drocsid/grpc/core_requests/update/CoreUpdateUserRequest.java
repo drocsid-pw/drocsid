@@ -1,4 +1,4 @@
-package com.drocsid.grpc.core_requests;
+package com.drocsid.grpc.core_requests.update;
 
 import com.drocsid.grpc.proto.UpdateUserRequest;
 import lombok.AllArgsConstructor;

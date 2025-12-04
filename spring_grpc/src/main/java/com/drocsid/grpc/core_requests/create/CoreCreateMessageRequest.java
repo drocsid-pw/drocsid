@@ -1,6 +1,6 @@
-package com.drocsid.grpc.core_requests;
+package com.drocsid.grpc.core_requests.create;
 
-import com.drocsid.grpc.proto.UpdateMessageRequest;
+import com.drocsid.grpc.proto.CreateMessageRequest;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,16 +13,18 @@ import java.time.Instant;
 @AllArgsConstructor
 @Getter
 @Setter
-public class CoreUpdateMessageRequest {
-    private BigInteger id;
+public class CoreCreateMessageRequest {
     private BigInteger userId;
+    private BigInteger authorId;
     private String authorName;
     private Instant timestamp;
+    private BigInteger channelId;
 
-    public CoreUpdateMessageRequest(UpdateMessageRequest request) {
-        id = new BigInteger(request.getId());
+    public CoreCreateMessageRequest(CreateMessageRequest request) {
         userId = new BigInteger(request.getUserId());
+        authorId = new BigInteger(request.getAuthorId());
         authorName = request.getAuthorName();
         timestamp = Instant.now();
+        channelId = new BigInteger(request.getChannelId());
     }
 }
