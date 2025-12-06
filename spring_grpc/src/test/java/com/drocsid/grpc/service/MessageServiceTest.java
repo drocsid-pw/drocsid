@@ -136,6 +136,7 @@ class MessageServiceTest {
         UpdateMessageRequest request = UpdateMessageRequest.newBuilder()
                 .setUserId("1")
                 .setId("5")
+                .setAuthorName("New Name")
                 .setContent("Test")
                 .build();
 
