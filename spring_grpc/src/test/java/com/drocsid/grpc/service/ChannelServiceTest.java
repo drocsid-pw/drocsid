@@ -104,31 +104,10 @@ class ChannelServiceTest {
     }
     @Test
     void testUpdateChannel() {
-        Message message1 = Message.newBuilder()
-                .setId("1")
-                .setContent("Hello")
-                .setAuthorId("2")
-                .setAuthorName("Alex")
-                .setTimestamp("1234")
-                .setChannelId("5")
-                .build();
-
-        Message message2 = Message.newBuilder()
-                .setId("2")
-                .setContent("World")
-                .setAuthorId("3")
-                .setAuthorName("Bob")
-                .setTimestamp("1235")
-                .setChannelId("5")
-                .build();
-
         UpdateChannelRequest request = UpdateChannelRequest.newBuilder()
                 .setUserId("1")
                 .setId("5")
                 .setName("Updated Name")
-                .addMessages(message1)
-                .addMessages(message2)
-                .setGuildId("10")
                 .build();
 
         TestObserver<ResponseMessage> observer = new TestObserver<>();
@@ -142,31 +121,10 @@ class ChannelServiceTest {
 
     @Test
     void testUpdateChannelException() {
-        Message message1 = Message.newBuilder()
-                .setId("1")
-                .setContent("Hello")
-                .setAuthorId("2")
-                .setAuthorName("Alex")
-                .setTimestamp("1234")
-                .setChannelId("5")
-                .build();
-
-        Message message2 = Message.newBuilder()
-                .setId("2")
-                .setContent("World")
-                .setAuthorId("3")
-                .setAuthorName("Bob")
-                .setTimestamp("1235")
-                .setChannelId("5")
-                .build();
-
         UpdateChannelRequest request = UpdateChannelRequest.newBuilder()
                 .setUserId("1")
                 .setId("5")
                 .setName("Updated Name")
-                .addMessages(message1)
-                .addMessages(message2)
-                .setGuildId("10")
                 .build();
 
         doThrow(new RuntimeException("error")).when(coreClient).updateChannel(any());

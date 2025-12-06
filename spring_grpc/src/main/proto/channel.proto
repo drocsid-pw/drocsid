@@ -37,8 +37,6 @@ message UpdateChannelRequest {
   string user_id = 1;
   string id = 2;
   string name = 3;
-  repeated message.Message messages = 4;
-  string guildId = 5;
 }
 
 message ChannelList {
