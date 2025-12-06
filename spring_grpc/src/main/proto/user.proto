@@ -1,0 +1,39 @@
+syntax = "proto3";
+package user;
+option java_package = "com.drocsid.grpc.proto";
+option java_multiple_files = true;
+import "common.proto";
+
+service UserService {
+  rpc CreateUser(CreateUserRequest) returns (common.ResponseMessage);
+  rpc GetUser(UserId) returns (User);
+  rpc UpdateUser(UpdateUserRequest) returns (common.ResponseMessage);
+  rpc DeleteUser(UserId) returns (common.ResponseMessage);
+  rpc GetAllUsers(common.Empty) returns (UserList);
+}
+
+message User {
+  string id = 1;
+  string name = 2;
+  string avatarLetter = 3;
+  string avatarHash = 4;
+}
+
+message CreateUserRequest {
+  string name = 1;
+}
+
+message UserId {
+  string id = 1;
+}
+
+message UpdateUserRequest {
+  string id = 1;
+  string name = 2;
+  string avatarLetter = 3;
+  string avatarHash = 4;
+}
+
+message UserList {
+  repeated User users = 1;
+}

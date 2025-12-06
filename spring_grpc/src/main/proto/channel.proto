@@ -1,0 +1,44 @@
+syntax = "proto3";
+package channel;
+option java_package = "com.drocsid.grpc.proto";
+option java_multiple_files = true;
+import "common.proto";
+import "message.proto";
+
+
+service ChannelService {
+  rpc CreateChannel(CreateChannelRequest) returns (common.ResponseMessage);
+  rpc GetChannel(ChannelId) returns (Channel);
+  rpc UpdateChannel(UpdateChannelRequest) returns (common.ResponseMessage);
+  rpc DeleteChannel(ChannelId) returns (common.ResponseMessage);
+  rpc GetLastMessage(ChannelId) returns (message.Message);
+  rpc GetAllMessages(ChannelId) returns (message.MessageList);
+}
+
+message Channel {
+  string id = 1;
+  string name = 2;
+  repeated message.Message messages = 3;
+  string guildId = 6;
+}
+
+message CreateChannelRequest {
+  string userId = 1;
+  string name = 2;
+  string guildId = 3;
+}
+
+message ChannelId {
+  string userId = 1;
+  string id = 2;
+}
+
+message UpdateChannelRequest {
+  string user_id = 1;
+  string id = 2;
+  string name = 3;
+}
+
+message ChannelList {
+  repeated Channel channels = 1;
+}
