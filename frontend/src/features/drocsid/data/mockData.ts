@@ -39,7 +39,7 @@ export const mockServers: DrocsidGuild[] = [
 						authorId: TATA_ID,
 						authorName: "Twój stary",
 						timestamp: "09:13",
-						content: "Ej, zajebisty drocsid",
+						content: "Ej, drocsid działa",
 						channelId: 11n,
 					},
 					{

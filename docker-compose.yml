@@ -11,14 +11,16 @@ services:
         tty: true
         env_file:
             - ./frontend/.env.local
+        ports:
+            - "5173:5173"
 
     backend:
-      build:
-        context: ./spring_grpc
-        dockerfile: Dockerfile
-      working_dir: /app
+        build:
+            context: ./spring_grpc
+            dockerfile: Dockerfile
+        working_dir: /app
     gateway:
-      build:
-        context: ./nginx
-      ports: 
-        - "8080:8080"
+        build:
+            context: ./nginx
+        ports:
+            - "8080:8080"
