@@ -40,8 +40,6 @@ message UpdateGuildRequest {
   string id = 2;
   string name = 3;
   string icon = 4;
-  string ownerId = 5;
-  repeated channel.Channel channels = 6;
 }
 
 message GuildList {
