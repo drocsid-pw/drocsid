@@ -7,10 +7,11 @@ import "message.proto";
 
 
 service ChannelService {
-  rpc CreateChannel(CreateChannelRequest) returns (common.ResponseMessage);
   rpc GetChannel(ChannelId) returns (Channel);
   rpc UpdateChannel(UpdateChannelRequest) returns (common.ResponseMessage);
-  rpc DeleteChannel(ChannelId) returns (common.ResponseMessage);
+
+  rpc CreateMessage(CreateMessageRequest) returns (common.ResponseMessage);
+  rpc DeleteMessage(message.MessageId) returns (common.ResponseMessage);
   rpc GetLastMessage(ChannelId) returns (message.Message);
   rpc GetAllMessages(ChannelId) returns (message.MessageList);
 }
@@ -19,13 +20,7 @@ message Channel {
   string id = 1;
   string name = 2;
   repeated message.Message messages = 3;
-  string guildId = 6;
-}
-
-message CreateChannelRequest {
-  string userId = 1;
-  string name = 2;
-  string guildId = 3;
+  string guildId = 4;
 }
 
 message ChannelId {
@@ -36,9 +31,17 @@ message ChannelId {
 message UpdateChannelRequest {
   string user_id = 1;
   string id = 2;
-  string name = 3;
+  string name = 4;
 }
 
 message ChannelList {
   repeated Channel channels = 1;
+}
+
+message CreateMessageRequest {
+  string userId = 1;
+  string authorId = 2;
+  string authorName = 3;
+  string content = 4;
+  string channelId = 5;
 }
