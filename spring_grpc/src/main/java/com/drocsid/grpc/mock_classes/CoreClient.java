@@ -1,12 +1,12 @@
 package com.drocsid.grpc.mock_classes;
 
-import com.drocsid.grpc.core_requests.create.CoreCreateChannelRequest;
-import com.drocsid.grpc.core_requests.create.CoreCreateGuildRequest;
-import com.drocsid.grpc.core_requests.create.CoreCreateMessageRequest;
-import com.drocsid.grpc.core_requests.update.CoreUpdateChannelRequest;
-import com.drocsid.grpc.core_requests.update.CoreUpdateGuildRequest;
-import com.drocsid.grpc.core_requests.update.CoreUpdateMessageRequest;
-import com.drocsid.grpc.core_requests.update.CoreUpdateUserRequest;
+import com.drocsid.grpc.core_requests.guild.CoreCreateChannelRequest;
+import com.drocsid.grpc.core_requests.guild.CoreCreateGuildRequest;
+import com.drocsid.grpc.core_requests.channel.CoreCreateMessageRequest;
+import com.drocsid.grpc.core_requests.channel.CoreUpdateChannelRequest;
+import com.drocsid.grpc.core_requests.guild.CoreUpdateGuildRequest;
+import com.drocsid.grpc.core_requests.channel.CoreUpdateMessageRequest;
+import com.drocsid.grpc.core_requests.user.CoreUpdateUserRequest;
 import com.drocsid.grpc.proto.CreateUserRequest;
 import org.springframework.stereotype.Component;
 import com.drocsid.grpc.proto.*;

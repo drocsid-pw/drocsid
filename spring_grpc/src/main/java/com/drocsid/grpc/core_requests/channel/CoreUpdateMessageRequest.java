@@ -1,4 +1,4 @@
-package com.drocsid.grpc.core_requests.update;
+package com.drocsid.grpc.core_requests.channel;
 
 import com.drocsid.grpc.proto.UpdateMessageRequest;
 import lombok.AllArgsConstructor;

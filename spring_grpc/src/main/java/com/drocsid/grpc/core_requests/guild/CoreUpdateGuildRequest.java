@@ -1,4 +1,4 @@
-package com.drocsid.grpc.core_requests.update;
+package com.drocsid.grpc.core_requests.guild;
 
 import com.drocsid.grpc.proto.UpdateGuildRequest;
 import lombok.AllArgsConstructor;

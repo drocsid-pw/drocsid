@@ -1,6 +1,6 @@
-package com.drocsid.grpc.core_requests.create;
+package com.drocsid.grpc.core_requests.channel;
 
-import com.drocsid.grpc.proto.CreateGuildRequest;
+import com.drocsid.grpc.proto.UpdateChannelRequest;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,14 +12,14 @@ import java.math.BigInteger;
 @AllArgsConstructor
 @Getter
 @Setter
-public class CoreCreateGuildRequest {
+public class CoreUpdateChannelRequest {
     private BigInteger userId;
+    private BigInteger id;
     private String name;
-    private String icon;
 
-    public CoreCreateGuildRequest(CreateGuildRequest request) {
+    public CoreUpdateChannelRequest(UpdateChannelRequest request) {
         userId = new BigInteger(request.getUserId());
+        id = new BigInteger(request.getId());
         name = request.getName();
-        icon = request.getIcon();
     }
 }
