@@ -10,6 +10,7 @@
 
 -   usunięcie
 -   edycja: nazwa
+-   zarządzanie rolami
 -   zarządzenie użytkownikiem:
     -   dodanie
     -   wyrzucenie
