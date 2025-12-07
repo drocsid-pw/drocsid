@@ -6,10 +6,8 @@ import "common.proto";
 
 
 service MessageService {
-  rpc CreateMessage(CreateMessageRequest) returns (common.ResponseMessage);
   rpc GetMessage(MessageId) returns (Message);
   rpc UpdateMessage(UpdateMessageRequest) returns (common.ResponseMessage);
-  rpc DeleteMessage(MessageId) returns (common.ResponseMessage);
 }
 
 message Message {
@@ -19,14 +17,6 @@ message Message {
   string timestamp = 4;
   string content = 5;
   string channelId = 6;
-}
-
-message CreateMessageRequest {
-  string userId = 1;
-  string authorId = 2;
-  string authorName = 3;
-  string content = 4;
-  string channelId = 5;
 }
 
 message MessageId {
