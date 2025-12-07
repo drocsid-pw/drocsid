@@ -108,23 +108,11 @@ class GuildServiceTest {
 
     @Test
     void testUpdateGuild() {
-        Channel exampleChannel1 = Channel.newBuilder()
-                .setId("10")
-                .setName("General")
-                .build();
-        Channel exampleChannel2 = Channel.newBuilder()
-                .setId("10")
-                .setName("General")
-                .build();
-
         UpdateGuildRequest request = UpdateGuildRequest.newBuilder()
                 .setUserId("1")
                 .setId("5")
                 .setName("Updated Guild")
                 .setIcon("new_icon.png")
-                .addChannels(exampleChannel1)
-                .addChannels(exampleChannel2)
-                .setOwnerId("2")
                 .build();
 
         TestObserver<ResponseMessage> observer = new TestObserver<>();
@@ -137,23 +125,11 @@ class GuildServiceTest {
 
     @Test
     void testUpdateGuildException() {
-        Channel exampleChannel1 = Channel.newBuilder()
-                .setId("10")
-                .setName("General")
-                .build();
-        Channel exampleChannel2 = Channel.newBuilder()
-                .setId("10")
-                .setName("General")
-                .build();
-
         UpdateGuildRequest request = UpdateGuildRequest.newBuilder()
                 .setUserId("1")
                 .setId("5")
                 .setName("Updated Guild")
                 .setIcon("new_icon.png")
-                .addChannels(exampleChannel1)
-                .addChannels(exampleChannel2)
-                .setOwnerId("2")
                 .build();
 
 
