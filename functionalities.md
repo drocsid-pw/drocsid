@@ -30,10 +30,14 @@ Kiedy ładujemy gildię dla użytkownika, najpierw ładują się do niej dane up
 
 ## Kanał
 
--   Mamy type ChannelAccessLevel = 0 | 1 | 2, czyli HIDDEN, READ, WRITE
-
 -   default poziom uprawnień dla każdego użytkownika
 -   lista overridów dla poszczególnych użytkowników, gdzie podajemy (userId, overridenAccess: ChannelAccessLevel). Ewentualnie (Kuba zweryfikuj) wywalamy to jako odpowiedzialność gildii
+
+{
+rola1: {ADMIN_DELETE_MESSAGES; MANAGE_CHANNEL; READ; WRITE}
+rola2: ...
+...
+}
 
 ## Message
 
@@ -42,10 +46,24 @@ Kiedy ładujemy gildię dla użytkownika, najpierw ładują się do niej dane up
 
 # Uprawnienia w gildiach
 
--   trzymamy flagi per użytkownik:
+-   trzymamy flagi per rola:
+
     -   MANAGE_GUILD_USERS, może robić wszystko z użytkownikami
-    -   MANAGE_CHANNELS, może robić wszystko z kanałami, w tym dodawać te overridy
+    -   MANAGE_CHANNEL, może robić wszystko z kanałami, w tym zmieniać overridy r/w
     -   ADMIN_DELETE_MESSAGES, może usuwać wiadomości
     -   MANAGE_GUILD, może edytować gildię (zmieniać nazwę, zmieniać wartości tych flag per user)
         flagi są 4, więc robimy z tego 4bitową liczbę
-        Ewentualnie (Kuba zweryfikuj) dodajemy OWNER, który jest odporny na zmiany
+    -   READ
+    -   WRITE
+
+-   Mamy role. Każda rola ma:
+    -   poziom
+    -   maska flag
+    -   nazwa
+
+Rola określa jakie domyślnie osoba z rolą ma uprawnienia. Do tego, każdy kanał może nadpisać per rola uprawnienia dotyczące tego kanału: {ADMIN_DELETE_MESSAGES; MANAGE_CHANNEL; READ; WRITE}.
+
+Domyślnie osoba tworząca serwer dostaje @Owner, który ma 4 flagi i poziom 0: {level: 0; name: "@owner"; mask: 1111; }
+@owner ma wszystko, jest nienadpisywalny
+
+Domyślnie powstaje #everynone: {level: inf; name: "@everyone"; mask: 0000}
