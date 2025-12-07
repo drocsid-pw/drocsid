@@ -4,7 +4,8 @@
 
 -   stworzenie
 -   usunięcie
--   stworzenie
+-   stworzenie gildii
+-   pobierz listę gildii
 
 ## Gildia
 
