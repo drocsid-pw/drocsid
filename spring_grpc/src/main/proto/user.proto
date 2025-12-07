@@ -5,18 +5,16 @@ option java_multiple_files = true;
 import "common.proto";
 
 service UserService {
-  rpc CreateUser(CreateUserRequest) returns (common.ResponseMessage);
+  rpc CreateUser(CreateUserRequest) returns (User);
   rpc GetUser(UserId) returns (User);
-  rpc UpdateUser(UpdateUserRequest) returns (common.ResponseMessage);
+  rpc UpdateUser(UpdateUserRequest) returns (User);
   rpc DeleteUser(UserId) returns (common.ResponseMessage);
-  rpc GetAllUsers(common.Empty) returns (UserList);
 }
 
 message User {
   string id = 1;
   string name = 2;
-  string avatarLetter = 3;
-  string avatarHash = 4;
+  string avatarHash = 3; // future
 }
 
 message CreateUserRequest {
@@ -24,16 +22,11 @@ message CreateUserRequest {
 }
 
 message UserId {
-  string id = 1;
+  string user_id = 1;
 }
 
 message UpdateUserRequest {
-  string id = 1;
+  string caller_id = 1;
   string name = 2;
-  string avatarLetter = 3;
-  string avatarHash = 4;
-}
-
-message UserList {
-  repeated User users = 1;
+  string avatarHash = 3; // future
 }

@@ -1,0 +1,31 @@
+syntax = "proto3";
+package guild_user;
+
+import "role.proto";
+
+message GuildUser {
+  string guild_user_id = 1;
+  string nick = 2;
+  repeated role.RoleList roles = 3;
+} 
+
+message GuildUserList {
+  repeated GuildUser guild_users = 1;
+}
+
+message UpdateUserReq {
+  string caller_id = 1;
+  string guild_id = 2;
+  GuildUser user = 3;
+}
+
+message GuildUserReq {
+  string caller_id = 1;
+  string guild_id = 2;
+  string guild_user_id = 3;
+}
+
+message AddUser {
+  string caller_id = 1;
+  string guild_id = 2;
+}

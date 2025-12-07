@@ -3,42 +3,61 @@ package channel;
 option java_package = "com.drocsid.grpc.proto";
 option java_multiple_files = true;
 import "common.proto";
+import "role.proto";
 import "message.proto";
 
 
 service ChannelService {
-  rpc CreateChannel(CreateChannelRequest) returns (common.ResponseMessage);
-  rpc GetChannel(ChannelId) returns (Channel);
-  rpc UpdateChannel(UpdateChannelRequest) returns (common.ResponseMessage);
-  rpc DeleteChannel(ChannelId) returns (common.ResponseMessage);
-  rpc GetLastMessage(ChannelId) returns (message.Message);
-  rpc GetAllMessages(ChannelId) returns (message.MessageList);
+  
+  rpc GetChannel(ChannelInfoReq) returns (Channel);
+  rpc UpdateChannel(UpdateChannelRequest) returns (Channel);
+  rpc DeleteChannel(ChannelInfoReq) returns (common.ResponseMessage);
+
+  // messages
+  rpc GetMessages(MessageBucketReq) returns (dmessage.MessageList);
+  rpc CreateMessage(CreateMessageReq) returns (dmessage.Message);
+  rpc DeleteMessage(MessageReq) returns (common.ResponseMessage);
 }
 
 message Channel {
-  string id = 1;
+  string channel_id = 1;
   string name = 2;
-  repeated message.Message messages = 3;
-  string guildId = 6;
+  string guild_id = 3;
+  role.RoleList overrides = 4;
 }
 
 message CreateChannelRequest {
-  string userId = 1;
+  string caller_id = 1;
   string name = 2;
-  string guildId = 3;
+  string guild_id = 3;
 }
 
-message ChannelId {
-  string userId = 1;
-  string id = 2;
+message ChannelInfoReq {
+  string caller_id = 1;
+  string channel_id = 2;
 }
 
 message UpdateChannelRequest {
-  string user_id = 1;
-  string id = 2;
-  string name = 3;
+  string caller_id = 1;
+  Channel channel = 2;
 }
 
 message ChannelList {
   repeated Channel channels = 1;
+}
+
+message MessageBucketReq {
+  ChannelInfoReq req = 1;
+  int32 offset = 2;
+  int32 count = 3;
+}
+
+message CreateMessageReq {
+  ChannelInfoReq req = 1;
+  dmessage.GeneralCreateMessageRequest message = 2;
+}
+
+message MessageReq {
+  ChannelInfoReq req = 1;
+  dmessage.GeneralMessageReq message_req = 2;
 }
