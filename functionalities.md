@@ -6,20 +6,20 @@
 -   usunięcie
 -   pobierz informacje o userze
 -   stworzenie gildii
--   pobierz listę gildii (per guildId wywoła się od razu getGuildInfo)
+-   pobierz listę gildii (per guildId wywoła się od razu getGuildInfo, seryjne wywołanie pierwszego endpointa z guild)
 
 ## Gildia
 
 -   pobierz informacje o gildii(bez kanałów)
--   pobierz listę kanałów (per channelId wywoła się od razu getChannelInfo)
+-   pobierz listę kanałów (per channelId wywoła się od razu getChannelInfo, seryjne wywołanie pierwszego endpointa z channel)
 -   usunięcie
 -   edycja: nazwa
 -   zarządzanie rolami
 -   zarządzenie użytkownikiem:
     -   generacja zaproszenia
-    -   dodanie
+    -   dodanie po zaproszeniu (wejście na link zaproszenia wysyła request o dodanie z informacją o id użytkownika który kliknął)
     -   wyrzucenie
-    -   edycja uprawnień
+    -   edycja roli użytkownika
 -   zarządzanie kanałem:
     -   stworzenie kanału
 
@@ -36,14 +36,14 @@ Kiedy ładujemy gildię dla użytkownika, najpierw ładują się do niej dane up
 
 -   pobierz informacje o kanale (bez messagów)
 -   pobierz listę messagów
--   default poziom uprawnień dla każdego użytkownika
--   lista overridów dla poszczególnych użytkowników, gdzie podajemy (userId, overridenAccess: ChannelAccessLevel).
+-   lista overridów dla poszczególnych ról i ich edycja.
 -   usunięcie kanału
--   edycja kanału
+-   edycja kanału: nnazwa
 
+Tak wygląda dict overridów:
 {
-rola1: {ADMIN_DELETE_MESSAGES; MANAGE_CHANNEL; READ; WRITE}
-rola2: ...
+@rola1: {ADMIN_DELETE_MESSAGES; MANAGE_CHANNEL; READ; WRITE},
+@rola2: ...
 ...
 }
 
@@ -60,18 +60,18 @@ rola2: ...
     -   MANAGE_CHANNEL, może robić wszystko z kanałami, w tym zmieniać overridy r/w
     -   ADMIN_DELETE_MESSAGES, może usuwać wiadomości
     -   MANAGE_GUILD, może edytować gildię (zmieniać nazwę, zmieniać wartości tych flag per user)
-        flagi są 4, więc robimy z tego 4bitową liczbę
     -   READ
     -   WRITE
+        flag jest 6, więc robimy z tego 6bitową liczbę
 
 -   Mamy role. Każda rola ma:
-    -   poziom
-    -   maska flag
     -   nazwa
+    -   poziom
+    -   maska 6 flag
 
 Rola określa jakie domyślnie osoba z rolą ma uprawnienia. Do tego, każdy kanał może nadpisać per rola uprawnienia dotyczące tego kanału: {ADMIN_DELETE_MESSAGES; MANAGE_CHANNEL; READ; WRITE}.
 
-Domyślnie osoba tworząca serwer dostaje @Owner, który ma 4 flagi i poziom 0: {level: 0; name: "@owner"; mask: 1111; }
+Domyślnie osoba tworząca serwer dostaje @Owner, który ma 6 flag i poziom 0: {level: 0; name: "@owner"; mask: 111111; }
 @owner ma wszystko, jest nienadpisywalny
 
-Domyślnie powstaje #everynone: {level: inf; name: "@everyone"; mask: 0000}
+Domyślnie powstaje #everynone: {level: inf; name: "@everyone"; mask: 000011}
