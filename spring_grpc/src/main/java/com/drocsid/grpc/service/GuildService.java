@@ -1,7 +1,8 @@
 package com.drocsid.grpc.service;
 
-import com.drocsid.grpc.core_requests.create.CoreCreateGuildRequest;
-import com.drocsid.grpc.core_requests.update.CoreUpdateGuildRequest;
+import com.drocsid.grpc.core_requests.guild.CoreCreateChannelRequest;
+import com.drocsid.grpc.core_requests.guild.CoreCreateGuildRequest;
+import com.drocsid.grpc.core_requests.guild.CoreUpdateGuildRequest;
 import com.drocsid.grpc.mock_classes.CoreClient;
 import com.drocsid.grpc.proto.*;
 import com.drocsid.grpc.proto.CreateGuildRequest;
@@ -106,6 +107,42 @@ public class GuildService extends GuildServiceGrpc.GuildServiceImplBase {
     }
 
     @Override
+    public void createChannel(CreateChannelRequest request, StreamObserver<ResponseMessage> responseObserver) {
+        try {
+            coreClient.createChannel(new CoreCreateChannelRequest(request));
+
+            ResponseMessage response = ResponseMessage
+                    .newBuilder()
+                    .setText("Channel created successfully.")
+                    .build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+
+        }
+        catch (Exception e) {
+            responseObserver.onError(e);
+        }
+    }
+
+    @Override
+    public void deleteChannel(DeleteChannelRequest request, StreamObserver<ResponseMessage> responseObserver) {
+        try {
+            coreClient.deleteChannel(new BigInteger(request.getUserId()), new BigInteger(request.getId()));
+
+            ResponseMessage response = ResponseMessage
+                    .newBuilder()
+                    .setText("Channel deleted successfully.")
+                    .build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+
+        }
+        catch (Exception e) {
+            responseObserver.onError(e);
+        }
+    }
+
+    @Override
     public void getAllChannels(GuildId guildId, StreamObserver<ChannelList> responseObserver) {
         try {
             List<Channel> channels = coreClient.getAllChannels(new BigInteger(guildId.getUserId()),
@@ -115,6 +152,36 @@ public class GuildService extends GuildServiceGrpc.GuildServiceImplBase {
             responseObserver.onNext(list);
             responseObserver.onCompleted();
 
+        }
+        catch (Exception e) {
+            responseObserver.onError(e);
+        }
+    }
+
+    @Override
+    public void addUser(GuildUserInfo guildUserInfo, StreamObserver<ResponseMessage> responseObserver) {
+        try {
+            System.out.println("2");
+        }
+        catch (Exception e) {
+            responseObserver.onError(e);
+        }
+    }
+
+    @Override
+    public void removeUser(GuildUserInfo guildUserInfo, StreamObserver<ResponseMessage> responseObserver) {
+        try {
+            System.out.println("2");
+        }
+        catch (Exception e) {
+            responseObserver.onError(e);
+        }
+    }
+
+    @Override
+    public void editUserPermission(GuildEditUserRequest request, StreamObserver<ResponseMessage> responseObserver) {
+        try {
+            System.out.println("2");
         }
         catch (Exception e) {
             responseObserver.onError(e);

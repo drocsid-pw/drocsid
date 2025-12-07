@@ -1,9 +1,8 @@
 package com.drocsid.grpc.service;
-import com.drocsid.grpc.core_requests.create.CoreCreateChannelRequest;
-import com.drocsid.grpc.core_requests.update.CoreUpdateChannelRequest;
+import com.drocsid.grpc.core_requests.channel.CoreUpdateChannelRequest;
+import com.drocsid.grpc.core_requests.channel.CoreCreateMessageRequest;
 import com.drocsid.grpc.mock_classes.CoreClient;
 import com.drocsid.grpc.proto.*;
-import com.drocsid.grpc.proto.CreateChannelRequest;
 import com.drocsid.grpc.proto.UpdateChannelRequest;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
@@ -18,24 +17,6 @@ public class ChannelService extends ChannelServiceGrpc.ChannelServiceImplBase {
 
     public ChannelService(CoreClient coreClient) {
         this.coreClient = coreClient;
-    }
-
-    @Override
-    public void createChannel(CreateChannelRequest request, StreamObserver<ResponseMessage> responseObserver) {
-        try {
-            coreClient.createChannel(new CoreCreateChannelRequest(request));
-
-            ResponseMessage response = ResponseMessage
-                    .newBuilder()
-                    .setText("Channel created successfully.")
-                    .build();
-            responseObserver.onNext(response);
-            responseObserver.onCompleted();
-
-        }
-        catch (Exception e) {
-            responseObserver.onError(e);
-        }
     }
 
     @Override
@@ -73,13 +54,31 @@ public class ChannelService extends ChannelServiceGrpc.ChannelServiceImplBase {
     }
 
     @Override
-    public void deleteChannel(ChannelId channelId, StreamObserver<ResponseMessage> responseObserver) {
+    public void createMessage(CreateMessageRequest request, StreamObserver<ResponseMessage> responseObserver) {
         try {
-            coreClient.deleteChannel(new BigInteger(channelId.getUserId()), new BigInteger(channelId.getId()));
+            coreClient.createMessage(new CoreCreateMessageRequest(request));
 
             ResponseMessage response = ResponseMessage
                     .newBuilder()
-                    .setText("Channel deleted successfully.")
+                    .setText("Message created successfully.")
+                    .build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+
+        }
+        catch (Exception e) {
+            responseObserver.onError(e);
+        }
+    }
+
+    @Override
+    public void deleteMessage(MessageId messageId, StreamObserver<ResponseMessage> responseObserver) {
+        try {
+            coreClient.deleteMessage(new BigInteger(messageId.getUserId()), new BigInteger(messageId.getId()));
+
+            ResponseMessage response = ResponseMessage
+                    .newBuilder()
+                    .setText("Message deleted successfully.")
                     .build();
             responseObserver.onNext(response);
             responseObserver.onCompleted();

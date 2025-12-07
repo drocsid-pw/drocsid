@@ -1,5 +1,5 @@
 package com.drocsid.grpc.service;
-import com.drocsid.grpc.core_requests.update.CoreUpdateUserRequest;
+import com.drocsid.grpc.core_requests.user.CoreUpdateUserRequest;
 import com.drocsid.grpc.mock_classes.CoreClient;
 import com.drocsid.grpc.proto.CreateUserRequest;
 import com.drocsid.grpc.proto.UpdateUserRequest;
