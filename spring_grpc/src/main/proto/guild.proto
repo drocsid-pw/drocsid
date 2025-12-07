@@ -11,9 +11,17 @@ service GuildService {
   rpc CreateGuild(CreateGuildRequest) returns (common.ResponseMessage);
   rpc GetGuild(GuildId) returns (Guild);
   rpc UpdateGuild(UpdateGuildRequest) returns (common.ResponseMessage);
+  rpc ChangeGuildOwner(GuildUserInfo) returns (common.ResponseMessage);
   rpc DeleteGuild(GuildId) returns (common.ResponseMessage);
   rpc GetAllGuilds(user.UserId) returns (GuildList);
+
+  rpc CreateChannel(CreateChannelRequest) returns (common.ResponseMessage);
+  rpc DeleteChannel(DeleteChannelRequest) returns (common.ResponseMessage);
   rpc GetAllChannels(GuildId) returns (channel.ChannelList);
+
+  rpc AddUser(GuildUserInfo) returns (common.ResponseMessage);
+  rpc RemoveUser(GuildUserInfo) returns (common.ResponseMessage);
+  rpc EditUserPermission(GuildEditUserRequest) returns (common.ResponseMessage);
 }
 
 message Guild {
@@ -46,3 +54,28 @@ message GuildList {
   repeated Guild guilds = 1;
 }
 
+message GuildUserInfo {
+  string userId = 1;
+  string id = 2;
+  string guildUserId = 3;
+}
+
+message GuildEditUserRequest {
+  string userId = 1;
+  string id = 2;
+  string guildUserId = 3;
+  int32 role = 4;
+}
+
+message CreateChannelRequest {
+  string userId = 1;
+  string id = 2;
+  string name = 3;
+  string guildId = 6;
+}
+
+message DeleteChannelRequest {
+  string userId = 1;
+  string id = 2;
+  string guildId = 3;
+}
