@@ -19,7 +19,7 @@
     -   generacja zaproszenia
     -   dodanie po zaproszeniu (wejście na link zaproszenia wysyła request o dodanie z informacją o id użytkownika który kliknął)
     -   wyrzucenie
-    -   edycja roli użytkownika
+    -   edycja ról użytkownika
 -   zarządzanie kanałem:
     -   stworzenie kanału
 
@@ -70,6 +70,8 @@ Tak wygląda dict overridów:
     -   maska 6 flag
 
 Rola określa jakie domyślnie osoba z rolą ma uprawnienia. Do tego, każdy kanał może nadpisać per rola uprawnienia dotyczące tego kanału: {ADMIN_DELETE_MESSAGES; MANAGE_CHANNEL; READ; WRITE}.
+
+Użytkownik może mieć kilka ról. W przypadku konfliktu, liczy się najwyższa (bitor po wszystkich maskach)
 
 Domyślnie osoba tworząca serwer dostaje @Owner, który ma 6 flag i poziom 0: {level: 0; name: "@owner"; mask: 111111; }
 @owner ma wszystko, jest nienadpisywalny
