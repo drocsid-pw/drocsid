@@ -4,10 +4,10 @@
 
 -   stworzenie
 -   usunięcie
+-   stworzenie
 
 ## Gildia
 
--   stworzenie
 -   usunięcie
 -   edycja: nazwa
 -   zarządzenie użytkownikiem:
@@ -16,8 +16,7 @@
     -   edycja uprawnień
 -   zarządzanie kanałem:
     -   stworzenie kanału
-    -   usunięcie kanału
-    -   edycja kanału
+-   pobierz listę kanałów
 
 Do tego:
 
@@ -32,6 +31,9 @@ Kiedy ładujemy gildię dla użytkownika, najpierw ładują się do niej dane up
 
 -   default poziom uprawnień dla każdego użytkownika
 -   lista overridów dla poszczególnych użytkowników, gdzie podajemy (userId, overridenAccess: ChannelAccessLevel). Ewentualnie (Kuba zweryfikuj) wywalamy to jako odpowiedzialność gildii
+-   usunięcie kanału
+-   edycja kanału
+-   pobierz listę messagów
 
 {
 rola1: {ADMIN_DELETE_MESSAGES; MANAGE_CHANNEL; READ; WRITE}
