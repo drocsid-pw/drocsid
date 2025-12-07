@@ -4,23 +4,24 @@
 
 -   stworzenie
 -   usunięcie
+-   pobierz informacje o userze
 -   stworzenie gildii
 -   pobierz listę gildii (per guildId wywoła się od razu getGuildInfo)
--   pobierz informacje o userze
 
 ## Gildia
 
+-   pobierz informacje o gildii(bez kanałów)
+-   pobierz listę kanałów (per channelId wywoła się od razu getChannelInfo)
 -   usunięcie
 -   edycja: nazwa
 -   zarządzanie rolami
 -   zarządzenie użytkownikiem:
+    -   generacja zaproszenia
     -   dodanie
     -   wyrzucenie
     -   edycja uprawnień
 -   zarządzanie kanałem:
     -   stworzenie kanału
--   pobierz listę kanałów (per channelId wywoła się od razu getChannelInfo)
--   pobierz informacje o gildii(bez kanałów)
 
 Do tego:
 
@@ -33,12 +34,12 @@ Kiedy ładujemy gildię dla użytkownika, najpierw ładują się do niej dane up
 
 ## Kanał
 
+-   pobierz informacje o kanale (bez messagów)
+-   pobierz listę messagów
 -   default poziom uprawnień dla każdego użytkownika
--   lista overridów dla poszczególnych użytkowników, gdzie podajemy (userId, overridenAccess: ChannelAccessLevel). Ewentualnie (Kuba zweryfikuj) wywalamy to jako odpowiedzialność gildii
+-   lista overridów dla poszczególnych użytkowników, gdzie podajemy (userId, overridenAccess: ChannelAccessLevel).
 -   usunięcie kanału
 -   edycja kanału
--   pobierz listę messagów
--   pobierz informacje o kanale (bez messagów)
 
 {
 rola1: {ADMIN_DELETE_MESSAGES; MANAGE_CHANNEL; READ; WRITE}
