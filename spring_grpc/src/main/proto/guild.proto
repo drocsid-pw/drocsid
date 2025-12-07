@@ -69,7 +69,6 @@ message GuildEditUserRequest {
 
 message CreateChannelRequest {
   string userId = 1;
-  string id = 2;
   string name = 3;
   string guildId = 6;
 }
