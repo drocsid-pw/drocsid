@@ -1,4 +1,4 @@
-package com.drocsid.grpc.core_requests.create;
+package com.drocsid.grpc.core_requests.guild;
 
 import com.drocsid.grpc.proto.CreateChannelRequest;
 import lombok.AllArgsConstructor;
