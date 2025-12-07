@@ -1,7 +1,6 @@
 package com.drocsid.grpc.service;
 
-import com.drocsid.grpc.core_requests.create.CoreCreateMessageRequest;
-import com.drocsid.grpc.core_requests.update.CoreUpdateMessageRequest;
+import com.drocsid.grpc.core_requests.channel.CoreUpdateMessageRequest;
 import com.drocsid.grpc.mock_classes.CoreClient;
 import com.drocsid.grpc.proto.*;
 import io.grpc.stub.StreamObserver;
@@ -22,47 +21,6 @@ class MessageServiceTest {
     void setUp() {
         coreClient = mock(CoreClient.class);
         messageService = new MessageService(coreClient);
-    }
-
-    @Test
-    void testCreateMessage() {
-        CreateMessageRequest request = CreateMessageRequest.newBuilder()
-                .setUserId("1")
-                .setAuthorId("2")
-                .setAuthorName("Alex")
-                .setContent("Hello")
-                .setChannelId("10")
-                .build();
-
-        TestObserver<ResponseMessage> observer = new TestObserver<>();
-
-        messageService.createMessage(request, observer);
-
-        verify(coreClient).createMessage(any(CoreCreateMessageRequest.class));
-
-        assertTrue(observer.completed);
-        assertEquals("Message created successfully.", observer.value.getText());
-    }
-
-    @Test
-    void testCreateMessageException() {
-        CreateMessageRequest request = CreateMessageRequest.newBuilder()
-                .setUserId("1")
-                .setAuthorId("2")
-                .setAuthorName("Alex")
-                .setContent("Hello")
-                .setChannelId("10")
-                .build();
-
-        doThrow(new RuntimeException("error"))
-                .when(coreClient).createMessage(any());
-
-        TestObserver<ResponseMessage> observer = new TestObserver<>();
-
-        messageService.createMessage(request, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
     }
 
     @Test
@@ -146,41 +104,6 @@ class MessageServiceTest {
         TestObserver<ResponseMessage> observer = new TestObserver<>();
 
         messageService.updateMessage(request, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-    @Test
-    void testDeleteMessage() {
-        MessageId id = MessageId.newBuilder()
-                .setUserId("1")
-                .setId("5")
-                .build();
-
-        TestObserver<ResponseMessage> observer = new TestObserver<>();
-
-        messageService.deleteMessage(id, observer);
-
-        verify(coreClient).deleteMessage(new BigInteger("1"), new BigInteger("5"));
-
-        assertTrue(observer.completed);
-        assertEquals("Message deleted successfully.", observer.value.getText());
-    }
-
-    @Test
-    void testDeleteMessageException() {
-        doThrow(new RuntimeException("error"))
-                .when(coreClient).deleteMessage(new BigInteger("1"), new BigInteger("5"));
-
-        MessageId id = MessageId.newBuilder()
-                .setUserId("1")
-                .setId("5")
-                .build();
-
-        TestObserver<ResponseMessage> observer = new TestObserver<>();
-
-        messageService.deleteMessage(id, observer);
 
         assertTrue(observer.error);
         assertFalse(observer.completed);

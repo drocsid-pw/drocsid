@@ -1,7 +1,8 @@
 package com.drocsid.grpc.service;
 
-import com.drocsid.grpc.core_requests.create.CoreCreateGuildRequest;
-import com.drocsid.grpc.core_requests.update.CoreUpdateGuildRequest;
+import com.drocsid.grpc.core_requests.guild.CoreCreateChannelRequest;
+import com.drocsid.grpc.core_requests.guild.CoreCreateGuildRequest;
+import com.drocsid.grpc.core_requests.guild.CoreUpdateGuildRequest;
 import com.drocsid.grpc.mock_classes.CoreClient;
 import com.drocsid.grpc.proto.*;
 import io.grpc.stub.StreamObserver;
@@ -226,6 +227,76 @@ class GuildServiceTest {
         GuildId id = GuildId.newBuilder().setUserId("1").setId("5").build();
 
         guildService.getAllChannels(id, observer);
+
+        assertTrue(observer.error);
+        assertFalse(observer.completed);
+    }
+
+    @Test
+    void testCreateChannel() {
+        CreateChannelRequest request = CreateChannelRequest.newBuilder()
+                .setUserId("1")
+                .setName("General")
+                .setGuildId("100")
+                .build();
+
+        GuildServiceTest.TestObserver<ResponseMessage> observer = new GuildServiceTest.TestObserver<>();
+
+        guildService.createChannel(request, observer);
+
+        verify(coreClient).createChannel(any(CoreCreateChannelRequest.class));
+        assertTrue(observer.completed);
+        assertEquals("Channel created successfully.", observer.value.getText());
+    }
+
+    @Test
+    void testCreateChannelException() {
+        CreateChannelRequest request = CreateChannelRequest.newBuilder()
+                .setUserId("1")
+                .setName("General")
+                .setGuildId("100")
+                .build();
+
+        doThrow(new RuntimeException("error")).when(coreClient).createChannel(any());
+
+        GuildServiceTest.TestObserver<ResponseMessage> observer = new GuildServiceTest.TestObserver<>();
+
+        guildService.createChannel(request, observer);
+
+        assertTrue(observer.error);
+        assertFalse(observer.completed);
+    }
+
+    @Test
+    void testDeleteChannel() {
+        DeleteChannelRequest request = DeleteChannelRequest.newBuilder()
+                .setUserId("1")
+                .setId("2")
+                .setGuildId("3")
+                .build();
+
+        GuildServiceTest.TestObserver<ResponseMessage> observer = new GuildServiceTest.TestObserver<>();
+
+        guildService.deleteChannel(request, observer);
+
+        verify(coreClient).deleteChannel(any(), any());
+        assertTrue(observer.completed);
+        assertEquals("Channel deleted successfully.", observer.value.getText());
+    }
+
+    @Test
+    void testDeleteChannelException() {
+        doThrow(new RuntimeException("error")).when(coreClient).deleteChannel(any(), any());
+
+        GuildServiceTest.TestObserver<ResponseMessage> observer = new GuildServiceTest.TestObserver<>();
+
+        DeleteChannelRequest request = DeleteChannelRequest.newBuilder()
+                .setUserId("1")
+                .setId("2")
+                .setGuildId("3")
+                .build();
+
+        guildService.deleteChannel(request, observer);
 
         assertTrue(observer.error);
         assertFalse(observer.completed);

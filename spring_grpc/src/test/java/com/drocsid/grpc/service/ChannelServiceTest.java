@@ -1,7 +1,7 @@
 package com.drocsid.grpc.service;
 
-import com.drocsid.grpc.core_requests.create.CoreCreateChannelRequest;
-import com.drocsid.grpc.core_requests.update.CoreUpdateChannelRequest;
+import com.drocsid.grpc.core_requests.channel.CoreCreateMessageRequest;
+import com.drocsid.grpc.core_requests.channel.CoreUpdateChannelRequest;
 import com.drocsid.grpc.mock_classes.CoreClient;
 import com.drocsid.grpc.proto.*;
 import io.grpc.stub.StreamObserver;
@@ -25,40 +25,7 @@ class ChannelServiceTest {
         channelService = new ChannelService(coreClient);
     }
 
-    @Test
-    void testCreateChannel() {
-        CreateChannelRequest request = CreateChannelRequest.newBuilder()
-                .setUserId("1")
-                .setName("General")
-                .setGuildId("100")
-                .build();
 
-        TestObserver<ResponseMessage> observer = new TestObserver<>();
-
-        channelService.createChannel(request, observer);
-
-        verify(coreClient).createChannel(any(CoreCreateChannelRequest.class));
-        assertTrue(observer.completed);
-        assertEquals("Channel created successfully.", observer.value.getText());
-    }
-
-    @Test
-    void testCreateChannelException() {
-        CreateChannelRequest request = CreateChannelRequest.newBuilder()
-                .setUserId("1")
-                .setName("General")
-                .setGuildId("100")
-                .build();
-
-        doThrow(new RuntimeException("error")).when(coreClient).createChannel(any());
-
-        TestObserver<ResponseMessage> observer = new TestObserver<>();
-
-        channelService.createChannel(request, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
 
     @Test
     void testGetChannel() {
@@ -138,39 +105,6 @@ class ChannelServiceTest {
     }
 
     @Test
-    void testDeleteChannel() {
-        ChannelId id = ChannelId.newBuilder()
-                .setUserId("1")
-                .setId("5")
-                .build();
-
-        TestObserver<ResponseMessage> observer = new TestObserver<>();
-
-        channelService.deleteChannel(id, observer);
-
-        verify(coreClient).deleteChannel(new BigInteger("1"), new BigInteger("5"));
-        assertTrue(observer.completed);
-        assertEquals("Channel deleted successfully.", observer.value.getText());
-    }
-
-    @Test
-    void testDeleteChannelException() {
-        doThrow(new RuntimeException("error")).when(coreClient).deleteChannel(new BigInteger("1"), new BigInteger("5"));
-
-        TestObserver<ResponseMessage> observer = new TestObserver<>();
-
-        ChannelId id = ChannelId.newBuilder()
-                .setUserId("1")
-                .setId("5")
-                .build();
-
-        channelService.deleteChannel(id, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-    @Test
     void testGetLastMessage() {
         Message expected = Message.newBuilder()
                 .setId("10")
@@ -234,6 +168,83 @@ class ChannelServiceTest {
         assertTrue(observer.error);
         assertFalse(observer.completed);
     }
+
+    @Test
+    void testCreateMessage() {
+        CreateMessageRequest request = CreateMessageRequest.newBuilder()
+                .setUserId("1")
+                .setAuthorId("2")
+                .setAuthorName("Alex")
+                .setContent("Hello")
+                .setChannelId("10")
+                .build();
+
+        ChannelServiceTest.TestObserver<ResponseMessage> observer = new ChannelServiceTest.TestObserver<>();
+
+        channelService.createMessage(request, observer);
+
+        verify(coreClient).createMessage(any(CoreCreateMessageRequest.class));
+
+        assertTrue(observer.completed);
+        assertEquals("Message created successfully.", observer.value.getText());
+    }
+
+    @Test
+    void testCreateMessageException() {
+        CreateMessageRequest request = CreateMessageRequest.newBuilder()
+                .setUserId("1")
+                .setAuthorId("2")
+                .setAuthorName("Alex")
+                .setContent("Hello")
+                .setChannelId("10")
+                .build();
+
+        doThrow(new RuntimeException("error"))
+                .when(coreClient).createMessage(any());
+
+        ChannelServiceTest.TestObserver<ResponseMessage> observer = new ChannelServiceTest.TestObserver<>();
+
+        channelService.createMessage(request, observer);
+
+        assertTrue(observer.error);
+        assertFalse(observer.completed);
+    }
+
+    @Test
+    void testDeleteMessage() {
+        MessageId id = MessageId.newBuilder()
+                .setUserId("1")
+                .setId("5")
+                .build();
+
+        ChannelServiceTest.TestObserver<ResponseMessage> observer = new ChannelServiceTest.TestObserver<>();
+
+        channelService.deleteMessage(id, observer);
+
+        verify(coreClient).deleteMessage(new BigInteger("1"), new BigInteger("5"));
+
+        assertTrue(observer.completed);
+        assertEquals("Message deleted successfully.", observer.value.getText());
+    }
+
+    @Test
+    void testDeleteMessageException() {
+        doThrow(new RuntimeException("error"))
+                .when(coreClient).deleteMessage(new BigInteger("1"), new BigInteger("5"));
+
+        MessageId id = MessageId.newBuilder()
+                .setUserId("1")
+                .setId("5")
+                .build();
+
+        ChannelServiceTest.TestObserver<ResponseMessage> observer = new ChannelServiceTest.TestObserver<>();
+
+        channelService.deleteMessage(id, observer);
+
+        assertTrue(observer.error);
+        assertFalse(observer.completed);
+    }
+
 
     private static class TestObserver<T> implements StreamObserver<T> {
         T value;
