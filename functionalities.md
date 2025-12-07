@@ -5,7 +5,8 @@
 -   stworzenie
 -   usunięcie
 -   stworzenie gildii
--   pobierz listę gildii
+-   pobierz listę gildii (per guildId wywoła się od razu getGuildInfo)
+-   pobierz informacje o userze
 
 ## Gildia
 
@@ -18,7 +19,8 @@
     -   edycja uprawnień
 -   zarządzanie kanałem:
     -   stworzenie kanału
--   pobierz listę kanałów
+-   pobierz listę kanałów (per channelId wywoła się od razu getChannelInfo)
+-   pobierz informacje o gildii(bez kanałów)
 
 Do tego:
 
@@ -36,6 +38,7 @@ Kiedy ładujemy gildię dla użytkownika, najpierw ładują się do niej dane up
 -   usunięcie kanału
 -   edycja kanału
 -   pobierz listę messagów
+-   pobierz informacje o kanale (bez messagów)
 
 {
 rola1: {ADMIN_DELETE_MESSAGES; MANAGE_CHANNEL; READ; WRITE}
