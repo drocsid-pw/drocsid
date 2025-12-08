@@ -1,7 +1,7 @@
 package com.drocsid.grpc.mock_classes;
 
 import com.drocsid.grpc.core_requests.guild.CoreCreateChannelRequest;
-import com.drocsid.grpc.core_requests.guild.CoreCreateGuildRequest;
+import com.drocsid.grpc.core_requests.user.CoreCreateGuildRequest;
 import com.drocsid.grpc.core_requests.channel.CoreCreateMessageRequest;
 import com.drocsid.grpc.core_requests.channel.CoreUpdateChannelRequest;
 import com.drocsid.grpc.core_requests.guild.CoreUpdateGuildRequest;

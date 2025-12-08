@@ -1,4 +1,4 @@
-package com.drocsid.grpc.core_requests.guild;
+package com.drocsid.grpc.core_requests.user;
 
 import com.drocsid.grpc.proto.CreateGuildRequest;
 import lombok.AllArgsConstructor;
