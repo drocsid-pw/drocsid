@@ -1,5 +1,6 @@
 package com.drocsid.grpc.service;
 
+import com.drocsid.grpc.core_requests.user.CoreCreateGuildRequest;
 import com.drocsid.grpc.core_requests.user.CoreUpdateUserRequest;
 import com.drocsid.grpc.mock_classes.CoreClient;
 import com.drocsid.grpc.proto.*;
@@ -218,4 +219,39 @@ class UserServiceTest {
             this.completed = true;
         }
     }
+
+    @Test
+    void testCreateGuild() {
+        CreateGuildRequest request = CreateGuildRequest.newBuilder()
+                .setUserId("1")
+                .setName("Guild1")
+                .setIcon("icon.png")
+                .build();
+
+        UserServiceTest.TestObserver<ResponseMessage> observer = new UserServiceTest.TestObserver<>();
+
+        userService.createGuild(request, observer);
+
+        verify(coreClient).createGuild(any(CoreCreateGuildRequest.class));
+        assertTrue(observer.completed);
+        assertEquals("Guild created successfully.", observer.value.getText());
+    }
+
+    @Test
+    void testCreateGuildException() {
+        CreateGuildRequest request = CreateGuildRequest.newBuilder()
+                .setUserId("1")
+                .setName("Guild1")
+                .setIcon("icon.png")
+                .build();
+
+        doThrow(new RuntimeException("error")).when(coreClient).createGuild(any());
+
+        UserServiceTest.TestObserver<ResponseMessage> observer = new UserServiceTest.TestObserver<>();
+        userService.createGuild(request, observer);
+
+        assertTrue(observer.error);
+        assertFalse(observer.completed);
+    }
+
 }

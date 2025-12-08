@@ -1,7 +1,7 @@
 package com.drocsid.grpc.service;
 
 import com.drocsid.grpc.core_requests.guild.CoreCreateChannelRequest;
-import com.drocsid.grpc.core_requests.guild.CoreCreateGuildRequest;
+import com.drocsid.grpc.core_requests.user.CoreCreateGuildRequest;
 import com.drocsid.grpc.core_requests.guild.CoreUpdateGuildRequest;
 import com.drocsid.grpc.mock_classes.CoreClient;
 import com.drocsid.grpc.proto.*;
@@ -24,40 +24,6 @@ class GuildServiceTest {
     void setUp() {
         coreClient = mock(CoreClient.class);
         guildService = new GuildService(coreClient);
-    }
-
-    @Test
-    void testCreateGuild() {
-        CreateGuildRequest request = CreateGuildRequest.newBuilder()
-                .setUserId("1")
-                .setName("Guild1")
-                .setIcon("icon.png")
-                .build();
-
-        TestObserver<ResponseMessage> observer = new TestObserver<>();
-
-        guildService.createGuild(request, observer);
-
-        verify(coreClient).createGuild(any(CoreCreateGuildRequest.class));
-        assertTrue(observer.completed);
-        assertEquals("Guild created successfully.", observer.value.getText());
-    }
-
-    @Test
-    void testCreateGuildException() {
-        CreateGuildRequest request = CreateGuildRequest.newBuilder()
-                .setUserId("1")
-                .setName("Guild1")
-                .setIcon("icon.png")
-                .build();
-
-        doThrow(new RuntimeException("error")).when(coreClient).createGuild(any());
-
-        TestObserver<ResponseMessage> observer = new TestObserver<>();
-        guildService.createGuild(request, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
     }
 
     @Test
