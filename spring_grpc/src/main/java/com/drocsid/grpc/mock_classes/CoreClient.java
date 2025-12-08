@@ -85,13 +85,12 @@ public class CoreClient {
 
     public void createGuild(CoreCreateGuildRequest request) {}
 
-    public Guild getGuild(BigInteger userId, BigInteger guildId) {
-        return Guild.newBuilder()
+    public GuildInfo getGuildInfo(BigInteger userId, BigInteger guildId) {
+        return GuildInfo.newBuilder()
                 .setId(guildId.toString())
                 .setName("name")
                 .setIcon("icon")
                 .setOwnerId("id")
-                .addAllChannels(new ArrayList<>())
                 .build();
     }
 

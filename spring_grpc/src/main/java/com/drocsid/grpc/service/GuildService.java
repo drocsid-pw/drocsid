@@ -20,12 +20,12 @@ public class GuildService extends GuildServiceGrpc.GuildServiceImplBase {
     }
 
     @Override
-    public void getGuild(GuildId guildId, StreamObserver<Guild> responseObserver) {
+    public void getGuildInfo(GuildId guildId, StreamObserver<GuildInfo> responseObserver) {
         try {
-            Guild guild = coreClient.getGuild(new BigInteger(guildId.getUserId()),
+            GuildInfo guildInfo = coreClient.getGuildInfo(new BigInteger(guildId.getUserId()),
                     new BigInteger(guildId.getId()));
 
-            responseObserver.onNext(guild);
+            responseObserver.onNext(guildInfo);
             responseObserver.onCompleted();
 
         }
