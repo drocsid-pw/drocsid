@@ -26,47 +26,36 @@ class GuildServiceTest {
     }
 
     @Test
-    void testGetGuild() {
-        Channel exampleChannel1 = Channel.newBuilder()
-                .setId("10")
-                .setName("General")
-                .build();
-        Channel exampleChannel2 = Channel.newBuilder()
-                .setId("10")
-                .setName("General")
-                .build();
-
-        Guild expected = Guild.newBuilder()
+    void testGetGuildInfo() {
+        GuildInfo expected = GuildInfo.newBuilder()
                 .setId("5")
                 .setName("Guild1")
                 .setOwnerId("1")
                 .setIcon("icon.png")
-                .addChannels(exampleChannel1)
-                .addChannels(exampleChannel2)
                 .build();
 
-        when(coreClient.getGuild(new BigInteger("1"), new BigInteger("5")))
+        when(coreClient.getGuildInfo(new BigInteger("1"), new BigInteger("5")))
                 .thenReturn(expected);
 
-        TestObserver<Guild> observer = new TestObserver<>();
+        TestObserver<GuildInfo> observer = new TestObserver<>();
         GuildId id = GuildId.newBuilder().setUserId("1").setId("5").build();
 
-        guildService.getGuild(id, observer);
+        guildService.getGuildInfo(id, observer);
 
-        verify(coreClient).getGuild(new BigInteger("1"), new BigInteger("5"));
+        verify(coreClient).getGuildInfo(new BigInteger("1"), new BigInteger("5"));
         assertTrue(observer.completed);
         assertEquals(expected, observer.value);
     }
 
     @Test
     void testGetGuildException() {
-        when(coreClient.getGuild(new BigInteger("1"), new BigInteger("5")))
+        when(coreClient.getGuildInfo(new BigInteger("1"), new BigInteger("5")))
                 .thenThrow(new RuntimeException("error"));
 
-        TestObserver<Guild> observer = new TestObserver<>();
+        TestObserver<GuildInfo> observer = new TestObserver<>();
         GuildId id = GuildId.newBuilder().setUserId("1").setId("5").build();
 
-        guildService.getGuild(id, observer);
+        guildService.getGuildInfo(id, observer);
 
         assertTrue(observer.error);
         assertFalse(observer.completed);
