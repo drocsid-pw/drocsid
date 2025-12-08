@@ -54,6 +54,24 @@ public class GuildService extends GuildServiceGrpc.GuildServiceImplBase {
     }
 
     @Override
+    public void changeGuildOwner(GuildUserInfo guildUserInfo, StreamObserver<ResponseMessage> responseObserver) {
+        try {
+            coreClient.changeGuildOwner(new CoreChangeGuildOwnerRequest(guildUserInfo));
+
+            ResponseMessage response = ResponseMessage
+                    .newBuilder()
+                    .setText("Guild owner changed successfully.")
+                    .build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+
+        }
+        catch (Exception e) {
+            responseObserver.onError(e);
+        }
+    }
+
+    @Override
     public void deleteGuild(GuildId guildId, StreamObserver<ResponseMessage> responseObserver) {
         try {
             coreClient.deleteGuild(new BigInteger(guildId.getUserId()), new BigInteger(guildId.getId()));

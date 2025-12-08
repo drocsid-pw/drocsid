@@ -96,6 +96,8 @@ public class CoreClient {
 
     public void updateGuild(CoreUpdateGuildRequest request) {}
 
+    public void changeGuildOwner(CoreChangeGuildOwnerRequest request) {}
+
     public void deleteGuild(BigInteger userId, BigInteger guildId) {}
 
     public List<Guild> getAllGuilds(BigInteger userId) {
