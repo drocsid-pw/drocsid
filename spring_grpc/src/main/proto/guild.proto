@@ -7,7 +7,7 @@ import "channel.proto";
 
 
 service GuildService {
-  rpc GetGuild(GuildId) returns (Guild);
+  rpc GetGuildInfo(GuildId) returns (GuildInfo);
   rpc UpdateGuild(UpdateGuildRequest) returns (common.ResponseMessage);
   rpc ChangeGuildOwner(GuildUserInfo) returns (common.ResponseMessage);
   rpc DeleteGuild(GuildId) returns (common.ResponseMessage);
@@ -34,6 +34,17 @@ message Guild {
 message GuildId {
   string userId = 1;
   string id = 2;
+}
+
+message GuildInfo {
+  string id = 1;
+  string name = 2;
+  string icon = 3;
+  string ownerId = 4;
+}
+
+message GuildChannels {
+  repeated channel.Channel channels = 5;
 }
 
 message UpdateGuildRequest {
