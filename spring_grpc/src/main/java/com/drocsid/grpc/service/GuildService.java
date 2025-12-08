@@ -1,7 +1,6 @@
 package com.drocsid.grpc.service;
 
-import com.drocsid.grpc.core_requests.guild.CoreCreateChannelRequest;
-import com.drocsid.grpc.core_requests.guild.CoreUpdateGuildRequest;
+import com.drocsid.grpc.core_requests.guild.*;
 import com.drocsid.grpc.mock_classes.CoreClient;
 import com.drocsid.grpc.proto.*;
 import com.drocsid.grpc.proto.UpdateGuildRequest;
@@ -79,7 +78,6 @@ public class GuildService extends GuildServiceGrpc.GuildServiceImplBase {
             GuildList list = GuildList.newBuilder().addAllGuilds(guilds).build();
             responseObserver.onNext(list);
             responseObserver.onCompleted();
-
         }
         catch (Exception e) {
             responseObserver.onError(e);
@@ -97,7 +95,6 @@ public class GuildService extends GuildServiceGrpc.GuildServiceImplBase {
                     .build();
             responseObserver.onNext(response);
             responseObserver.onCompleted();
-
         }
         catch (Exception e) {
             responseObserver.onError(e);
@@ -141,7 +138,14 @@ public class GuildService extends GuildServiceGrpc.GuildServiceImplBase {
     @Override
     public void addUser(GuildUserInfo guildUserInfo, StreamObserver<ResponseMessage> responseObserver) {
         try {
-            System.out.println("2");
+            coreClient.addUser(new CoreAddUserRequest(guildUserInfo));
+
+            ResponseMessage response = ResponseMessage
+                    .newBuilder()
+                    .setText("User added successfully.")
+                    .build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
         }
         catch (Exception e) {
             responseObserver.onError(e);
@@ -151,7 +155,14 @@ public class GuildService extends GuildServiceGrpc.GuildServiceImplBase {
     @Override
     public void removeUser(GuildUserInfo guildUserInfo, StreamObserver<ResponseMessage> responseObserver) {
         try {
-            System.out.println("2");
+            coreClient.removeUser(new CoreRemoveUserRequest(guildUserInfo));
+
+            ResponseMessage response = ResponseMessage
+                    .newBuilder()
+                    .setText("User removed successfully.")
+                    .build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
         }
         catch (Exception e) {
             responseObserver.onError(e);
@@ -161,7 +172,14 @@ public class GuildService extends GuildServiceGrpc.GuildServiceImplBase {
     @Override
     public void editUserPermission(GuildEditUserRequest request, StreamObserver<ResponseMessage> responseObserver) {
         try {
-            System.out.println("2");
+            coreClient.editUserPermissions(new CoreEditUserPermissionInGuildRequest(request));
+
+            ResponseMessage response = ResponseMessage
+                    .newBuilder()
+                    .setText("User's permissions changed successfully.")
+                    .build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
         }
         catch (Exception e) {
             responseObserver.onError(e);
