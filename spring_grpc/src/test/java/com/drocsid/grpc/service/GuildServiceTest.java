@@ -304,6 +304,41 @@ class GuildServiceTest {
     }
 
     @Test
+    void testSendInvitationToUser() {
+        GuildUserInfo guildUserInfo = GuildUserInfo.newBuilder()
+                .setUserId("1")
+                .setId("2")
+                .setGuildUserId("3")
+                .build();
+
+        GuildServiceTest.TestObserver<ResponseMessage> observer = new GuildServiceTest.TestObserver<>();
+
+        guildService.sendInvitationToUser(guildUserInfo, observer);
+
+        verify(coreClient).sendInvitationToUser(any());
+        assertTrue(observer.completed);
+        assertEquals("Invitation sent successfully.", observer.value.getText());
+    }
+
+    @Test
+    void testSendInvitationToUserException() {
+        GuildUserInfo guildUserInfo = GuildUserInfo.newBuilder()
+                .setUserId("1")
+                .setId("2")
+                .setGuildUserId("3")
+                .build();
+
+        doThrow(new RuntimeException("error")).when(coreClient).sendInvitationToUser(any());
+
+        GuildServiceTest.TestObserver<ResponseMessage> observer = new GuildServiceTest.TestObserver<>();
+
+        guildService.sendInvitationToUser(guildUserInfo, observer);
+
+        assertTrue(observer.error);
+        assertFalse(observer.completed);
+    }
+
+    @Test
     void testRemoveUser() {
         GuildUserInfo guildUserInfo = GuildUserInfo.newBuilder()
                 .setUserId("1")
