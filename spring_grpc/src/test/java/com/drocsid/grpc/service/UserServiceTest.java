@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -198,28 +199,6 @@ class UserServiceTest {
         assertFalse(observer.completed);
     }
 
-    private static class TestObserver<T> implements StreamObserver<T> {
-
-        T value;
-        boolean completed = false;
-        boolean error = false;
-
-        @Override
-        public void onNext(T value) {
-            this.value = value;
-        }
-
-        @Override
-        public void onError(Throwable t) {
-            this.error = true;
-        }
-
-        @Override
-        public void onCompleted() {
-            this.completed = true;
-        }
-    }
-
     @Test
     void testCreateGuild() {
         CreateGuildRequest request = CreateGuildRequest.newBuilder()
@@ -254,4 +233,66 @@ class UserServiceTest {
         assertFalse(observer.completed);
     }
 
+    @Test
+    void testGetAllUserGuilds() {
+        Guild guild1 = Guild.newBuilder()
+                .setId("1")
+                .setName("Guild1")
+                .setIcon("icon.png")
+                .setOwnerId("1")
+                .build();
+        Guild guild2 = Guild.newBuilder()
+                .setId("1")
+                .setName("Guild1")
+                .setIcon("icon.png")
+                .setOwnerId("1")
+                .build();
+
+        when(coreClient.getAllUserGuilds(any())).thenReturn(List.of(guild1, guild2));
+
+        TestObserver<GuildList> observer = new TestObserver<>();
+
+        UserId userId = UserId.newBuilder().setId("1").build();
+        userService.getAllUserGuilds(userId, observer);
+
+        verify(coreClient).getAllUserGuilds(any());
+        assertTrue(observer.completed);
+        assertEquals(2, observer.value.getGuildsCount());
+        assertEquals(guild1, observer.value.getGuilds(0));
+        assertEquals(guild2, observer.value.getGuilds(1));
+    }
+
+    @Test
+    void testGetAllUserGuildsException() {
+        doThrow(new RuntimeException("error")).when(coreClient).getAllUserGuilds(any());
+
+        TestObserver<GuildList> observer = new TestObserver<>();
+        UserId userId = UserId.newBuilder().setId("1").build();
+        userService.getAllUserGuilds(userId, observer);
+
+        assertTrue(observer.error);
+        assertFalse(observer.completed);
+    }
+
+    private static class TestObserver<T> implements StreamObserver<T> {
+
+        T value;
+        boolean completed = false;
+        boolean error = false;
+
+        @Override
+        public void onNext(T value) {
+            this.value = value;
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            this.error = true;
+        }
+
+        @Override
+        public void onCompleted() {
+            this.completed = true;
+        }
+    }
 }

@@ -141,7 +141,7 @@ class GuildServiceTest {
         when(coreClient.getAllGuilds(new BigInteger("1"))).thenReturn(List.of(guild1, guild2));
 
         TestObserver<GuildList> observer = new TestObserver<>();
-        UserId userId = UserId.newBuilder().setId("1").build();
+        UserIdForGuild userId = UserIdForGuild.newBuilder().setId("1").build();
 
         guildService.getAllGuilds(userId, observer);
 
@@ -157,7 +157,7 @@ class GuildServiceTest {
         doThrow(new RuntimeException("error")).when(coreClient).getAllGuilds(new BigInteger("1"));
 
         TestObserver<GuildList> observer = new TestObserver<>();
-        UserId userId = UserId.newBuilder().setId("1").build();
+        UserIdForGuild userId = UserIdForGuild.newBuilder().setId("1").build();
 
         guildService.getAllGuilds(userId, observer);
 
