@@ -1,17 +1,10 @@
 package com.drocsid.grpc.service;
+import com.drocsid.grpc.core_requests.user.CoreCreateGuildRequest;
 import com.drocsid.grpc.core_requests.user.CoreUpdateUserRequest;
 import com.drocsid.grpc.mock_classes.CoreClient;
-import com.drocsid.grpc.proto.CreateUserRequest;
-import com.drocsid.grpc.proto.UpdateUserRequest;
-import com.drocsid.grpc.proto.Empty;
+import com.drocsid.grpc.proto.*;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
-import com.drocsid.grpc.proto.UserServiceGrpc;
-
-import com.drocsid.grpc.proto.User;
-import com.drocsid.grpc.proto.UserId;
-import com.drocsid.grpc.proto.ResponseMessage;
-import com.drocsid.grpc.proto.UserList;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -101,6 +94,24 @@ public class UserService extends UserServiceGrpc.UserServiceImplBase {
 
             UserList list = UserList.newBuilder().addAllUsers(users).build();
             responseObserver.onNext(list);
+            responseObserver.onCompleted();
+
+        }
+        catch (Exception e) {
+            responseObserver.onError(e);
+        }
+    }
+
+    @Override
+    public void createGuild(CreateGuildRequest request, StreamObserver<ResponseMessage> responseObserver) {
+        try {
+            coreClient.createGuild(new CoreCreateGuildRequest(request));
+
+            ResponseMessage response = ResponseMessage
+                    .newBuilder()
+                    .setText("Guild created successfully.")
+                    .build();
+            responseObserver.onNext(response);
             responseObserver.onCompleted();
 
         }

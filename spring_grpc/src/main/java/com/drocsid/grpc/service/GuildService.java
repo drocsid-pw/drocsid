@@ -1,11 +1,9 @@
 package com.drocsid.grpc.service;
 
 import com.drocsid.grpc.core_requests.guild.CoreCreateChannelRequest;
-import com.drocsid.grpc.core_requests.guild.CoreCreateGuildRequest;
 import com.drocsid.grpc.core_requests.guild.CoreUpdateGuildRequest;
 import com.drocsid.grpc.mock_classes.CoreClient;
 import com.drocsid.grpc.proto.*;
-import com.drocsid.grpc.proto.CreateGuildRequest;
 import com.drocsid.grpc.proto.UpdateGuildRequest;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
@@ -20,24 +18,6 @@ public class GuildService extends GuildServiceGrpc.GuildServiceImplBase {
 
     public GuildService(CoreClient coreClient) {
         this.coreClient = coreClient;
-    }
-
-    @Override
-    public void createGuild(CreateGuildRequest request, StreamObserver<ResponseMessage> responseObserver) {
-        try {
-            coreClient.createGuild(new CoreCreateGuildRequest(request));
-
-            ResponseMessage response = ResponseMessage
-                    .newBuilder()
-                    .setText("Guild created successfully.")
-                    .build();
-            responseObserver.onNext(response);
-            responseObserver.onCompleted();
-
-        }
-        catch (Exception e) {
-            responseObserver.onError(e);
-        }
     }
 
     @Override

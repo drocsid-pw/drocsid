@@ -10,6 +10,8 @@ service UserService {
   rpc UpdateUser(UpdateUserRequest) returns (common.ResponseMessage);
   rpc DeleteUser(UserId) returns (common.ResponseMessage);
   rpc GetAllUsers(common.Empty) returns (UserList);
+
+  rpc CreateGuild(CreateGuildRequest) returns (common.ResponseMessage);
 }
 
 message User {
@@ -37,3 +39,10 @@ message UpdateUserRequest {
 message UserList {
   repeated User users = 1;
 }
+
+message CreateGuildRequest {
+  string userId = 1;
+  string name = 2;
+  string icon = 3;
+}
+
