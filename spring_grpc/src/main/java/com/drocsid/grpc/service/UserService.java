@@ -119,4 +119,18 @@ public class UserService extends UserServiceGrpc.UserServiceImplBase {
             responseObserver.onError(e);
         }
     }
+
+    @Override
+    public void getAllUserGuilds(UserId userId, StreamObserver<GuildList> responseObserver) {
+        try {
+            List<Guild> guilds = coreClient.getAllUserGuilds(new BigInteger(userId.getId()));
+
+            GuildList list = GuildList.newBuilder().addAllGuilds(guilds).build();
+            responseObserver.onNext(list);
+            responseObserver.onCompleted();
+        }
+        catch (Exception e) {
+            responseObserver.onError(e);
+        }
+    }
 }
