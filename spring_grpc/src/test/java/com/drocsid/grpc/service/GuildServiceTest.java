@@ -98,6 +98,39 @@ class GuildServiceTest {
     }
 
     @Test
+    void testChangeGuildOwner() {
+        GuildUserInfo guildUserInfo = GuildUserInfo.newBuilder()
+                .setUserId("1")
+                .setId("3")
+                .setGuildUserId("3")
+                .build();
+
+        TestObserver<ResponseMessage> observer = new TestObserver<>();
+        guildService.changeGuildOwner(guildUserInfo, observer);
+
+        verify(coreClient).changeGuildOwner(any());
+        assertTrue(observer.completed);
+        assertEquals("Guild owner changed successfully.", observer.value.getText());
+    }
+
+    @Test
+    void testChangeGuildOwnerException() {
+        GuildUserInfo guildUserInfo = GuildUserInfo.newBuilder()
+                .setUserId("1")
+                .setId("3")
+                .setGuildUserId("3")
+                .build();
+
+        doThrow(new RuntimeException("error")).when(coreClient).changeGuildOwner(any());
+
+        TestObserver<ResponseMessage> observer = new TestObserver<>();
+        guildService.changeGuildOwner(guildUserInfo, observer);
+
+        assertTrue(observer.error);
+        assertFalse(observer.completed);
+    }
+
+    @Test
     void testDeleteGuild() {
         GuildId id = GuildId.newBuilder().setUserId("1").setId("5").build();
         TestObserver<ResponseMessage> observer = new TestObserver<>();
