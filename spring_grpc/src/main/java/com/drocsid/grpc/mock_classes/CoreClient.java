@@ -1,10 +1,9 @@
 package com.drocsid.grpc.mock_classes;
 
-import com.drocsid.grpc.core_requests.guild.CoreCreateChannelRequest;
+import com.drocsid.grpc.core_requests.guild.*;
 import com.drocsid.grpc.core_requests.user.CoreCreateGuildRequest;
 import com.drocsid.grpc.core_requests.channel.CoreCreateMessageRequest;
 import com.drocsid.grpc.core_requests.channel.CoreUpdateChannelRequest;
-import com.drocsid.grpc.core_requests.guild.CoreUpdateGuildRequest;
 import com.drocsid.grpc.core_requests.channel.CoreUpdateMessageRequest;
 import com.drocsid.grpc.core_requests.user.CoreUpdateUserRequest;
 import com.drocsid.grpc.proto.CreateUserRequest;
@@ -103,6 +102,12 @@ public class CoreClient {
     public List<Guild> getAllGuilds(BigInteger userId) {
         return List.of();
     }
+
+    public void addUser(CoreAddUserRequest request) {}
+
+    public void removeUser(CoreRemoveUserRequest request) {}
+
+    public void editUserPermissions(CoreEditUserPermissionInGuildRequest request) {}
 
     public List<Channel> getAllChannels(BigInteger userId, BigInteger guildId) {
         return List.of();
