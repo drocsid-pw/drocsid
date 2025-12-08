@@ -56,11 +56,10 @@ public class CoreClient {
 
     public void createChannel(CoreCreateChannelRequest request) {}
 
-    public Channel getChannel(BigInteger userId, BigInteger channelId) {
-        return Channel.newBuilder()
+    public ChannelInfo getChannelInfo(BigInteger userId, BigInteger channelId) {
+        return ChannelInfo.newBuilder()
                 .setId(channelId.toString())
                 .setName("name")
-                .addAllMessages(new ArrayList<>())
                 .setGuildId("id")
                 .build();
     }

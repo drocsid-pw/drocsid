@@ -20,9 +20,9 @@ public class ChannelService extends ChannelServiceGrpc.ChannelServiceImplBase {
     }
 
     @Override
-    public void getChannel(ChannelId channelId, StreamObserver<Channel> responseObserver) {
+    public void getChannelInfo(ChannelId channelId, StreamObserver<ChannelInfo> responseObserver) {
         try {
-            Channel channel = coreClient.getChannel(new BigInteger(channelId.getUserId()),
+            ChannelInfo channel = coreClient.getChannelInfo(new BigInteger(channelId.getUserId()),
                 new BigInteger(channelId.getId()));
 
             responseObserver.onNext(channel);
