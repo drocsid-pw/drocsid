@@ -7,7 +7,7 @@ import "message.proto";
 
 
 service ChannelService {
-  rpc GetChannel(ChannelId) returns (Channel);
+  rpc GetChannelInfo(ChannelId) returns (ChannelInfo);
   rpc UpdateChannel(UpdateChannelRequest) returns (common.ResponseMessage);
 
   rpc CreateMessage(CreateMessageRequest) returns (common.ResponseMessage);
@@ -26,6 +26,12 @@ message Channel {
 message ChannelId {
   string userId = 1;
   string id = 2;
+}
+
+message ChannelInfo {
+  string id = 1;
+  string name = 2;
+  string guildId = 4;
 }
 
 message UpdateChannelRequest {
