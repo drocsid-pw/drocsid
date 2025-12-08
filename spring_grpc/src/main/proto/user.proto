@@ -3,6 +3,7 @@ package user;
 option java_package = "com.drocsid.grpc.proto";
 option java_multiple_files = true;
 import "common.proto";
+import "guild.proto";
 
 service UserService {
   rpc CreateUser(CreateUserRequest) returns (common.ResponseMessage);
@@ -12,6 +13,7 @@ service UserService {
   rpc GetAllUsers(common.Empty) returns (UserList);
 
   rpc CreateGuild(CreateGuildRequest) returns (common.ResponseMessage);
+  rpc GetAllUserGuilds(UserId) returns (guild.GuildList);
 }
 
 message User {
