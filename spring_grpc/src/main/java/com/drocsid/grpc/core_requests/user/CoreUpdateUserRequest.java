@@ -1,17 +1,13 @@
 package com.drocsid.grpc.core_requests.user;
 
 import com.drocsid.grpc.proto.UpdateUserRequest;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigInteger;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
-@Setter
+@Data
 public class CoreUpdateUserRequest {
     private BigInteger id;
     private String name;

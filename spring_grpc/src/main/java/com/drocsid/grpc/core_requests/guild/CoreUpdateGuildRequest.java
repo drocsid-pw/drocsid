@@ -1,17 +1,13 @@
 package com.drocsid.grpc.core_requests.guild;
 
 import com.drocsid.grpc.proto.UpdateGuildRequest;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigInteger;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
-@Setter
+@Data
 public class CoreUpdateGuildRequest {
     private BigInteger userId;
     private BigInteger id;

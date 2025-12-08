@@ -1,18 +1,14 @@
 package com.drocsid.grpc.core_requests.channel;
 
 import com.drocsid.grpc.proto.UpdateMessageRequest;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigInteger;
 import java.time.Instant;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
-@Setter
+@Data
 public class CoreUpdateMessageRequest {
     private BigInteger id;
     private BigInteger userId;
