@@ -73,7 +73,7 @@ public class GuildService extends GuildServiceGrpc.GuildServiceImplBase {
     }
 
     @Override
-    public void getAllGuilds(UserId userId, StreamObserver<GuildList> responseObserver) {
+    public void getAllGuilds(UserIdForGuild userId, StreamObserver<GuildList> responseObserver) {
         try {
             List<Guild> guilds = coreClient.getAllGuilds(new BigInteger(userId.getId()));
             GuildList list = GuildList.newBuilder().addAllGuilds(guilds).build();
