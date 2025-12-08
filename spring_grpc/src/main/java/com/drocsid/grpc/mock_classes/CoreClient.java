@@ -37,6 +37,8 @@ public class CoreClient {
         return List.of();
     }
 
+    public List<Guild> getAllUserGuilds(BigInteger userId) {return List.of();}
+
     public void createMessage(CoreCreateMessageRequest request) {}
 
     public Message getMessage(BigInteger userId, BigInteger messageId) {
