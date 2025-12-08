@@ -107,6 +107,8 @@ public class CoreClient {
 
     public void removeUser(CoreRemoveUserRequest request) {}
 
+    public void sendInvitationToUser(CoreSendInvitationToUserRequest request) {}
+
     public void editUserPermissions(CoreEditUserPermissionInGuildRequest request) {}
 
     public List<Channel> getAllChannels(BigInteger userId, BigInteger guildId) {

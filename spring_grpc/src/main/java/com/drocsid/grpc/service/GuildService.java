@@ -153,6 +153,23 @@ public class GuildService extends GuildServiceGrpc.GuildServiceImplBase {
     }
 
     @Override
+    public void sendInvitationToUser(GuildUserInfo guildUserInfo, StreamObserver<ResponseMessage> responseObserver) {
+        try {
+            coreClient.sendInvitationToUser(new CoreSendInvitationToUserRequest(guildUserInfo));
+
+            ResponseMessage response = ResponseMessage
+                    .newBuilder()
+                    .setText("Invitation sent successfully.")
+                    .build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        }
+        catch (Exception e) {
+            responseObserver.onError(e);
+        }
+    }
+
+    @Override
     public void removeUser(GuildUserInfo guildUserInfo, StreamObserver<ResponseMessage> responseObserver) {
         try {
             coreClient.removeUser(new CoreRemoveUserRequest(guildUserInfo));

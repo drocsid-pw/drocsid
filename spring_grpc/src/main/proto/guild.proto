@@ -18,6 +18,7 @@ service GuildService {
   rpc GetAllChannels(GuildId) returns (channel.ChannelList);
 
   rpc AddUser(GuildUserInfo) returns (common.ResponseMessage);
+  rpc SendInvitationToUser(GuildUserInfo) returns (common.ResponseMessage);
   rpc RemoveUser(GuildUserInfo) returns (common.ResponseMessage);
   rpc EditUserPermission(GuildEditUserRequest) returns (common.ResponseMessage);
 }
