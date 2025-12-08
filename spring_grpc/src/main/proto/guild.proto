@@ -3,7 +3,6 @@ package guild;
 option java_package = "com.drocsid.grpc.proto";
 option java_multiple_files = true;
 import "common.proto";
-import "user.proto";
 import "channel.proto";
 
 
@@ -12,7 +11,7 @@ service GuildService {
   rpc UpdateGuild(UpdateGuildRequest) returns (common.ResponseMessage);
   rpc ChangeGuildOwner(GuildUserInfo) returns (common.ResponseMessage);
   rpc DeleteGuild(GuildId) returns (common.ResponseMessage);
-  rpc GetAllGuilds(user.UserId) returns (GuildList);
+  rpc GetAllGuilds(UserIdForGuild) returns (GuildList);
 
   rpc CreateChannel(CreateChannelRequest) returns (common.ResponseMessage);
   rpc DeleteChannel(DeleteChannelRequest) returns (common.ResponseMessage);
@@ -70,4 +69,8 @@ message DeleteChannelRequest {
   string userId = 1;
   string id = 2;
   string guildId = 3;
+}
+
+message UserIdForGuild {
+  string id = 1;
 }
