@@ -1,44 +1,22 @@
 syntax = "proto3";
-package message;
+package dmessage;
 option java_package = "com.drocsid.grpc.proto";
 option java_multiple_files = true;
-import "common.proto";
+import "guild_user.proto";
 
-
-service MessageService {
-  rpc CreateMessage(CreateMessageRequest) returns (common.ResponseMessage);
-  rpc GetMessage(MessageId) returns (Message);
-  rpc UpdateMessage(UpdateMessageRequest) returns (common.ResponseMessage);
-  rpc DeleteMessage(MessageId) returns (common.ResponseMessage);
-}
 
 message Message {
-  string id = 1;
-  string authorId = 2;
-  string authorName = 3;
-  string timestamp = 4;
-  string content = 5;
-  string channelId = 6;
+  string message_id = 1;
+  guild_user.GuildUser author = 2;
+  string content = 3;
 }
 
-message CreateMessageRequest {
-  string userId = 1;
-  string authorId = 2;
-  string authorName = 3;
+message GeneralCreateMessageRequest {
   string content = 4;
-  string channelId = 5;
 }
 
-message MessageId {
-  string userId = 1;
-  string id = 2;
-}
-
-message UpdateMessageRequest {
-  string userId = 1;
-  string id = 2;
-  string authorName = 3;
-  string content = 4;
+message GeneralMessageReq {
+  string message_id = 1;
 }
 
 message MessageList {
