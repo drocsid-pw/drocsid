@@ -62,4 +62,3 @@ message UpdateGuildRequest {
 message GuildList {
   repeated Guild guilds = 1;
 }
-
