@@ -3,86 +3,62 @@ package guild;
 option java_package = "com.drocsid.grpc.proto";
 option java_multiple_files = true;
 import "common.proto";
+import "role.proto";
+import "guild_user.proto";
+import "user.proto";
 import "channel.proto";
 
 
 service GuildService {
-  rpc GetGuildInfo(GuildId) returns (GuildInfo);
-  rpc UpdateGuild(UpdateGuildRequest) returns (common.ResponseMessage);
-  rpc ChangeGuildOwner(GuildUserInfo) returns (common.ResponseMessage);
-  rpc DeleteGuild(GuildId) returns (common.ResponseMessage);
-  rpc GetAllGuilds(UserIdForGuild) returns (GuildList);
+  // basic management
+  rpc CreateGuild(CreateGuildRequest) returns (Guild);
+  rpc GetGuild(GuildInfoReq) returns (Guild);
+  rpc UpdateGuild(UpdateGuildRequest) returns (Guild);
+  rpc DeleteGuild(GuildInfoReq) returns (common.ResponseMessage);
+  rpc GetAllGuilds(user.UserId) returns (GuildList);
+  rpc GetAllChannels(GuildInfoReq) returns (channel.ChannelList);
 
-  rpc CreateChannel(CreateChannelRequest) returns (common.ResponseMessage);
-  rpc DeleteChannel(DeleteChannelRequest) returns (common.ResponseMessage);
-  rpc GetAllChannels(GuildId) returns (channel.ChannelList);
+  // role management
+  rpc GetRole(role.RoleReq) returns (role.Role);
+  rpc CreateRole(role.CreateRoleReq) returns (role.Role);
+  rpc GetRoles(GuildInfoReq) returns (role.RoleList);
+  rpc UpdateRole(role.UpdateRoleReq) returns (role.Role);
 
-  rpc AddUser(GuildUserInfo) returns (common.ResponseMessage);
-  rpc SendInvitationToUser(GuildUserInfo) returns (common.ResponseMessage);
-  rpc RemoveUser(GuildUserInfo) returns (common.ResponseMessage);
-  rpc EditUserPermission(GuildEditUserRequest) returns (common.ResponseMessage);
+  // channel creation
+  rpc CreateChannel(channel.CreateChannelRequest) returns (channel.Channel);
+
+  // guild user management
+  rpc AddUser(guild_user.AddUser) returns (guild_user.GuildUser);
+  rpc UpdateUser(guild_user.UpdateUserReq) returns (guild_user.GuildUser); // future
+  rpc GetUser(guild_user.GuildUserReq) returns (guild_user.GuildUser);
+  rpc GetUsers(GuildInfoReq) returns (guild_user.GuildUserList);
+  rpc DeleteUser(guild_user.GuildUserReq) returns (common.ResponseMessage);
 }
 
 message Guild {
-  string id = 1;
+  string guild_id = 1;
   string name = 2;
-  string icon = 3;
-  string ownerId = 4;
-  repeated channel.Channel channels = 5;
+  string icon = 3; // not used, future
+  string owner_id = 4;
+  repeated role.Role roles = 5;
 }
 
-message GuildId {
-  string userId = 1;
-  string id = 2;
-}
-
-message GuildInfo {
-  string id = 1;
+message CreateGuildRequest {
+  string token = 1;
   string name = 2;
-  string icon = 3;
-  string ownerId = 4;
+  string icon = 3; // not used, future
 }
 
-message GuildChannels {
-  repeated channel.Channel channels = 5;
+message GuildInfoReq {
+  string guild_id = 1;
+  string token = 2;
 }
 
 message UpdateGuildRequest {
-  string user_id = 1;
-  string id = 2;
-  string name = 3;
-  string icon = 4;
+  string token = 1;
+  Guild guild = 2;
 }
 
 message GuildList {
   repeated Guild guilds = 1;
-}
-
-message GuildUserInfo {
-  string userId = 1;
-  string id = 2;
-  string guildUserId = 3;
-}
-
-message GuildEditUserRequest {
-  string userId = 1;
-  string id = 2;
-  string guildUserId = 3;
-  int32 role = 4;
-}
-
-message CreateChannelRequest {
-  string userId = 1;
-  string name = 3;
-  string guildId = 6;
-}
-
-message DeleteChannelRequest {
-  string userId = 1;
-  string id = 2;
-  string guildId = 3;
-}
-
-message UserIdForGuild {
-  string id = 1;
 }
