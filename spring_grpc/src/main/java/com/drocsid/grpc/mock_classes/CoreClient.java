@@ -1,52 +1,60 @@
 package com.drocsid.grpc.mock_classes;
 
+import com.drocsid.grpc.core_requests.channel.CoreGetMessagesRequest;
 import com.drocsid.grpc.core_requests.guild.*;
-import com.drocsid.grpc.core_requests.user.CoreCreateGuildRequest;
+import com.drocsid.grpc.core_requests.guild.CoreCreateGuildRequest;
 import com.drocsid.grpc.core_requests.channel.CoreCreateMessageRequest;
 import com.drocsid.grpc.core_requests.channel.CoreUpdateChannelRequest;
 import com.drocsid.grpc.core_requests.channel.CoreUpdateMessageRequest;
 import com.drocsid.grpc.core_requests.user.CoreUpdateUserRequest;
 import com.drocsid.grpc.proto.CreateUserRequest;
+import com.drocsid.grpc.proto.GuildUser;
 import org.springframework.stereotype.Component;
 import com.drocsid.grpc.proto.*;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.List;
 
 @Component
 public class CoreClient {
 
-    public void createUser(CreateUserRequest request) {}
+    public User createUser(CreateUserRequest request) {
+        return User.newBuilder()
+                .setId("1")
+                .setName("Mock User")
+                .setAvatarHash("hash")
+                .build();
+    }
 
     public User getUser(BigInteger id) {
         return User.newBuilder()
                 .setId(id.toString())
                 .setName("Mock User")
-                .setAvatarLetter("M")
                 .setAvatarHash("hash")
                 .build();
     }
 
-    public void updateUser(CoreUpdateUserRequest request) {}
+    public GuildUser getGuildUser(CoreGetGuildUserRequest request) {
+        return GuildUser.newBuilder().build();
+    }
+
+    public User updateUser(CoreUpdateUserRequest request) {return User.newBuilder().build();}
+
+    public GuildUser updateGuildUser(CoreUpdateGuildUserRequest request) {return GuildUser.newBuilder().build();}
 
     public void deleteUser(BigInteger userId) {}
 
-    public List<User> getAllUsers() {
+    public List<GuildUser> getGuildUsers(CoreGetGuildUsersRequest request) {
         return List.of();
     }
 
     public List<Guild> getAllUserGuilds(BigInteger userId) {return List.of();}
 
-    public void createMessage(CoreCreateMessageRequest request) {}
-
-    public Message getMessage(BigInteger userId, BigInteger messageId) {
+    public Message createMessage(CoreCreateMessageRequest request) {
         return Message.newBuilder()
-                .setId(messageId.toString())
-                .setAuthorId("id")
-                .setAuthorName("name")
+                .setMessageId("id")
+                .setAuthor(GuildUser.newBuilder().build())
                 .setContent("content")
-                .setChannelId("channelId")
                 .build();
     }
 
@@ -54,46 +62,37 @@ public class CoreClient {
 
     public void deleteMessage(BigInteger userId, BigInteger messageId) {}
 
-    public void createChannel(CoreCreateChannelRequest request) {}
+    public Channel createChannel(CoreCreateChannelRequest request) {
+        return Channel.newBuilder().build();
+    }
 
-    public ChannelInfo getChannelInfo(BigInteger userId, BigInteger channelId) {
-        return ChannelInfo.newBuilder()
-                .setId(channelId.toString())
+    public Channel getChannel(BigInteger userId, BigInteger channelId) {
+        return Channel.newBuilder()
+                .setChannelId(channelId.toString())
                 .setName("name")
                 .setGuildId("id")
                 .build();
     }
 
-    public void updateChannel(CoreUpdateChannelRequest request) {}
+    public Channel updateChannel(CoreUpdateChannelRequest request) {
+        return Channel.newBuilder()
+                .setChannelId("2")
+                .setName("name")
+                .setGuildId("id")
+                .build();
+    }
 
     public void deleteChannel(BigInteger userId, BigInteger channelId) {}
 
-    public Message getLastMessage(BigInteger userId, BigInteger channelId) {
-        return Message.newBuilder()
-                .setId("id")
-                .setAuthorId("id")
-                .setAuthorName("name")
-                .setContent("content")
-                .setChannelId("channelId")
-                .build();
+    public List<Message> getMessages(CoreGetMessagesRequest request) { return List.of(); }
+
+    public Guild createGuild(CoreCreateGuildRequest request) {return Guild.newBuilder().build();}
+
+    public Guild getGuild(CoreGetGuildRequest request) {
+        return Guild.newBuilder().build();
     }
 
-    public List<Message> getAllMessages(BigInteger userId, BigInteger channelId) {
-        return List.of();
-    }
-
-    public void createGuild(CoreCreateGuildRequest request) {}
-
-    public GuildInfo getGuildInfo(BigInteger userId, BigInteger guildId) {
-        return GuildInfo.newBuilder()
-                .setId(guildId.toString())
-                .setName("name")
-                .setIcon("icon")
-                .setOwnerId("id")
-                .build();
-    }
-
-    public void updateGuild(CoreUpdateGuildRequest request) {}
+    public Guild updateGuild(CoreUpdateGuildRequest request) {return Guild.newBuilder().build();}
 
     public void changeGuildOwner(CoreChangeGuildOwnerRequest request) {}
 
@@ -103,15 +102,15 @@ public class CoreClient {
         return List.of();
     }
 
-    public void addUser(CoreAddUserRequest request) {}
-
-    public void removeUser(CoreRemoveUserRequest request) {}
+    public GuildUser addUser(CoreAddUserRequest request) { return GuildUser.newBuilder().build();}
 
     public void sendInvitationToUser(CoreSendInvitationToUserRequest request) {}
 
     public void editUserPermissions(CoreEditUserPermissionInGuildRequest request) {}
 
-    public List<Channel> getAllChannels(BigInteger userId, BigInteger guildId) {
+    public List<Channel> getAllChannels(CoreGetAllChannelsRequest request) {
         return List.of();
     }
+
+    public void deleteGuildUser(CoreDeleteGuildUserRequest request) {}
 }
