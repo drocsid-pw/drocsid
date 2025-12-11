@@ -1,6 +1,6 @@
 package com.drocsid.grpc.service;
 
-import com.drocsid.grpc.core_requests.user.CoreCreateGuildRequest;
+import com.drocsid.grpc.core_requests.guild.CoreCreateGuildRequest;
 import com.drocsid.grpc.core_requests.user.CoreUpdateUserRequest;
 import com.drocsid.grpc.mock_classes.CoreClient;
 import com.drocsid.grpc.proto.*;
@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
