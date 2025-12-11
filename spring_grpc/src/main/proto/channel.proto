@@ -27,7 +27,7 @@ message Channel {
 }
 
 message CreateChannelRequest {
-  string caller_id = 1;
+  string token = 1;
   string name = 2;
   string guild_id = 3;
 }
