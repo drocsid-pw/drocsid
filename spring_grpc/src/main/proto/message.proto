@@ -11,12 +11,13 @@ service MessageService {
 }
 
 message Message {
-  string id = 1;
-  string authorId = 2;
-  string authorName = 3;
-  string timestamp = 4;
-  string content = 5;
-  string channelId = 6;
+  string jwt = 1;
+  string id = 2;
+  string authorId = 3;
+  string authorName = 4;
+  string timestamp = 5;
+  string content = 6;
+  string channelId = 7;
 }
 
 message MessageId {

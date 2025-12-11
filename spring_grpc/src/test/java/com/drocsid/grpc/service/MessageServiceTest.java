@@ -1,5 +1,6 @@
 package com.drocsid.grpc.service;
 
+import com.drocsid.grpc.auth.JwtAuthService;
 import com.drocsid.grpc.core_requests.channel.CoreUpdateMessageRequest;
 import com.drocsid.grpc.mock_classes.CoreClient;
 import com.drocsid.grpc.proto.*;
@@ -15,12 +16,14 @@ import static org.mockito.Mockito.*;
 class MessageServiceTest {
 
     private CoreClient coreClient;
+    private JwtAuthService jwtAuthService;
     private MessageService messageService;
 
     @BeforeEach
     void setUp() {
         coreClient = mock(CoreClient.class);
-        messageService = new MessageService(coreClient);
+        jwtAuthService = mock(JwtAuthService.class);
+        messageService = new MessageService(coreClient, jwtAuthService);
     }
 
     @Test

@@ -8,7 +8,12 @@ grpc:
 logging:
   level:
     root: INFO
+    com.drocsid.grpc.auth: INFO
 
 spring:
   main:
     banner-mode: "off"
+
+google:
+  oauth:
+    client-id: ${GOOGLE_CLIENT_ID:494375853488-nu5h6bsffjafo3s2srddijrgstqvs7nc.apps.googleusercontent.com}

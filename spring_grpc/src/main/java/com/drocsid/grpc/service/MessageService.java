@@ -1,5 +1,6 @@
 package com.drocsid.grpc.service;
 
+import com.drocsid.grpc.auth.JwtAuthService;
 import com.drocsid.grpc.core_requests.channel.CoreUpdateMessageRequest;
 import com.drocsid.grpc.mock_classes.CoreClient;
 import com.drocsid.grpc.proto.*;
@@ -11,9 +12,11 @@ import java.math.BigInteger;
 @GrpcService
 public class MessageService extends MessageServiceGrpc.MessageServiceImplBase {
     private final CoreClient coreClient;
+    private final JwtAuthService jwtAuthService;
 
-    public MessageService(CoreClient coreClient) {
+    public MessageService(CoreClient coreClient, JwtAuthService jwtAuthService) {
         this.coreClient = coreClient;
+        this.jwtAuthService = jwtAuthService;
     }
 
 
@@ -49,6 +52,17 @@ public class MessageService extends MessageServiceGrpc.MessageServiceImplBase {
         }
         catch (Exception e) {
             responseObserver.onError(e);
+        }
+    }
+    
+    // Mockup function demonstrating JWT validation.
+    public void mockupAuthDemo(Message message) {
+        try {
+            // Validate JWT and get userId
+            String authenticatedUserId = jwtAuthService.checkAuth(message.getJwt());
+            
+        } catch (Exception e) {
+            System.out.println("Authentication failed: " + e.getMessage());
         }
     }
 }
