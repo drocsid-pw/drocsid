@@ -9,15 +9,13 @@ import java.math.BigInteger;
 @AllArgsConstructor
 @Data
 public class CoreUpdateUserRequest {
-    private BigInteger id;
+    private BigInteger userId;
     private String name;
-    private String avatarLetter;
     private String avatarHash;
 
-    public CoreUpdateUserRequest(UpdateUserRequest request) {
-        id = new BigInteger(request.getId());
+    public CoreUpdateUserRequest(String userIdString, UpdateUserRequest request) {
+        userId = new BigInteger(userIdString);
         name = request.getName();
-        avatarLetter = request.getAvatarLetter();
         avatarHash = request.getAvatarHash();
     }
 }
