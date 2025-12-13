@@ -1,6 +1,7 @@
 package com.drocsid.grpc.service;
 
-import com.drocsid.grpc.core_requests.update.CoreUpdateUserRequest;
+import com.drocsid.grpc.core_requests.user.CoreCreateGuildRequest;
+import com.drocsid.grpc.core_requests.user.CoreUpdateUserRequest;
 import com.drocsid.grpc.mock_classes.CoreClient;
 import com.drocsid.grpc.proto.*;
 import io.grpc.stub.StreamObserver;
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -192,6 +194,81 @@ class UserServiceTest {
         TestObserver<UserList> observer = new TestObserver<>();
 
         userService.getAllUsers(Empty.newBuilder().build(), observer);
+
+        assertTrue(observer.error);
+        assertFalse(observer.completed);
+    }
+
+    @Test
+    void testCreateGuild() {
+        CreateGuildRequest request = CreateGuildRequest.newBuilder()
+                .setUserId("1")
+                .setName("Guild1")
+                .setIcon("icon.png")
+                .build();
+
+        UserServiceTest.TestObserver<ResponseMessage> observer = new UserServiceTest.TestObserver<>();
+
+        userService.createGuild(request, observer);
+
+        verify(coreClient).createGuild(any(CoreCreateGuildRequest.class));
+        assertTrue(observer.completed);
+        assertEquals("Guild created successfully.", observer.value.getText());
+    }
+
+    @Test
+    void testCreateGuildException() {
+        CreateGuildRequest request = CreateGuildRequest.newBuilder()
+                .setUserId("1")
+                .setName("Guild1")
+                .setIcon("icon.png")
+                .build();
+
+        doThrow(new RuntimeException("error")).when(coreClient).createGuild(any());
+
+        UserServiceTest.TestObserver<ResponseMessage> observer = new UserServiceTest.TestObserver<>();
+        userService.createGuild(request, observer);
+
+        assertTrue(observer.error);
+        assertFalse(observer.completed);
+    }
+
+    @Test
+    void testGetAllUserGuilds() {
+        Guild guild1 = Guild.newBuilder()
+                .setId("1")
+                .setName("Guild1")
+                .setIcon("icon.png")
+                .setOwnerId("1")
+                .build();
+        Guild guild2 = Guild.newBuilder()
+                .setId("1")
+                .setName("Guild1")
+                .setIcon("icon.png")
+                .setOwnerId("1")
+                .build();
+
+        when(coreClient.getAllUserGuilds(any())).thenReturn(List.of(guild1, guild2));
+
+        TestObserver<GuildList> observer = new TestObserver<>();
+
+        UserId userId = UserId.newBuilder().setId("1").build();
+        userService.getAllUserGuilds(userId, observer);
+
+        verify(coreClient).getAllUserGuilds(any());
+        assertTrue(observer.completed);
+        assertEquals(2, observer.value.getGuildsCount());
+        assertEquals(guild1, observer.value.getGuilds(0));
+        assertEquals(guild2, observer.value.getGuilds(1));
+    }
+
+    @Test
+    void testGetAllUserGuildsException() {
+        doThrow(new RuntimeException("error")).when(coreClient).getAllUserGuilds(any());
+
+        TestObserver<GuildList> observer = new TestObserver<>();
+        UserId userId = UserId.newBuilder().setId("1").build();
+        userService.getAllUserGuilds(userId, observer);
 
         assertTrue(observer.error);
         assertFalse(observer.completed);

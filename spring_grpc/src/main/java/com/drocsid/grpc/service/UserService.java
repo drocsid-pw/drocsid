@@ -1,85 +1,96 @@
 package com.drocsid.grpc.service;
-import com.drocsid.grpc.core_requests.update.CoreUpdateUserRequest;
+import com.drocsid.grpc.auth.JwtAuthService;
+import com.drocsid.grpc.core_requests.user.CoreUpdateUserRequest;
 import com.drocsid.grpc.mock_classes.CoreClient;
-import com.drocsid.grpc.proto.CreateUserRequest;
-import com.drocsid.grpc.proto.UpdateUserRequest;
-import com.drocsid.grpc.proto.Empty;
+import com.drocsid.grpc.proto.*;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
-import com.drocsid.grpc.proto.UserServiceGrpc;
-
-import com.drocsid.grpc.proto.User;
-import com.drocsid.grpc.proto.UserId;
-import com.drocsid.grpc.proto.ResponseMessage;
-import com.drocsid.grpc.proto.UserList;
-
 import java.math.BigInteger;
-import java.util.List;
 
 @GrpcService
 public class UserService extends UserServiceGrpc.UserServiceImplBase {
 
     private final CoreClient coreClient;
+    private final JwtAuthService jwtAuthService;
 
-    public UserService(CoreClient coreClient) {
+    public UserService(CoreClient coreClient, JwtAuthService jwtAuthService) {
         this.coreClient = coreClient;
+        this.jwtAuthService = jwtAuthService;
     }
 
     @Override
-    public void createUser(CreateUserRequest request, StreamObserver<ResponseMessage> responseObserver) {
+    public void createUser(CreateUserRequest request, StreamObserver<User> responseObserver) {
         try {
-            coreClient.createUser(request);
+            User user = coreClient.createUser(request);
 
-            ResponseMessage response = ResponseMessage
-                    .newBuilder()
-                    .setText("User created successfully.")
-                    .build();
-            responseObserver.onNext(response);
+            responseObserver.onNext(user);
             responseObserver.onCompleted();
-
         }
-        catch (Exception e) {
+        catch (StatusRuntimeException e) {
             responseObserver.onError(e);
         }
+        catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Unexpected server error: " + e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+        }
     }
 
     @Override
-    public void getUser(UserId userId, StreamObserver<User> responseObserver) {
+    public void getUser(UserId userIdObj, StreamObserver<User> responseObserver) {
         try {
-            User user = coreClient.getUser(new BigInteger(userId.getId()));
+            String userId = jwtAuthService.checkAuth(userIdObj.getUserId());
+            User user = coreClient.getUser(new BigInteger(userId));
+
+            responseObserver.onNext(user);
+            responseObserver.onCompleted();
+        }
+        catch (StatusRuntimeException e) {
+            responseObserver.onError(e);
+        }
+        catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Unexpected server error: " + e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+        }
+    }
+
+    @Override
+    public void updateUser(UpdateUserRequest request, StreamObserver<User> responseObserver) {
+        try {
+            String userId = jwtAuthService.checkAuth(request.getToken());
+            User user = coreClient.updateUser(new CoreUpdateUserRequest(userId, request));
 
             responseObserver.onNext(user);
             responseObserver.onCompleted();
 
         }
-        catch (Exception e) {
+        catch (StatusRuntimeException e) {
             responseObserver.onError(e);
+        }
+        catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Unexpected server error: " + e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
         }
     }
 
     @Override
-    public void updateUser(UpdateUserRequest request,
-                           StreamObserver<ResponseMessage> responseObserver) {
+    public void deleteUser(UserId userIdObj, StreamObserver<ResponseMessage> responseObserver) {
         try {
-            coreClient.updateUser(new CoreUpdateUserRequest(request));
-
-            ResponseMessage response = ResponseMessage
-                    .newBuilder()
-                    .setText("User updated successfully.")
-                    .build();
-            responseObserver.onNext(response);
-            responseObserver.onCompleted();
-
-        }
-        catch (Exception e) {
-            responseObserver.onError(e);
-        }
-    }
-
-    @Override
-    public void deleteUser(UserId userId, StreamObserver<ResponseMessage> responseObserver) {
-        try {
-            coreClient.deleteUser(new BigInteger(userId.getId()));
+            String userId = jwtAuthService.checkAuth(userIdObj.getToken());
+            coreClient.deleteUser(new BigInteger(userId));
 
             ResponseMessage response = ResponseMessage
                     .newBuilder()
@@ -89,23 +100,16 @@ public class UserService extends UserServiceGrpc.UserServiceImplBase {
             responseObserver.onCompleted();
 
         }
-        catch (Exception e) {
+        catch (StatusRuntimeException e) {
             responseObserver.onError(e);
         }
-    }
-
-    @Override
-    public void getAllUsers(Empty request, StreamObserver<UserList> responseObserver) {
-        try {
-            List<User> users = coreClient.getAllUsers();
-
-            UserList list = UserList.newBuilder().addAllUsers(users).build();
-            responseObserver.onNext(list);
-            responseObserver.onCompleted();
-
-        }
         catch (Exception e) {
-            responseObserver.onError(e);
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Unexpected server error: " + e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
         }
     }
 }
