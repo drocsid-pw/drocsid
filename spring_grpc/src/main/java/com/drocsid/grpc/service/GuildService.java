@@ -98,7 +98,7 @@ public class GuildService extends GuildServiceGrpc.GuildServiceImplBase {
     public void deleteGuild(GuildInfoReq request, StreamObserver<ResponseMessage> responseObserver) {
         try {
             String userId = jwtAuthService.checkAuth(request.getToken());
-            coreClient.deleteGuild(new BigInteger(userId), new BigInteger(request.getGuildId()));
+            coreClient.deleteGuild(new CoreDeleteGuildRequest(userId, request));
 
             ResponseMessage response = ResponseMessage
                     .newBuilder()

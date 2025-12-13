@@ -1,17 +1,13 @@
 package com.drocsid.grpc.service;
 import com.drocsid.grpc.auth.JwtAuthService;
-import com.drocsid.grpc.core_requests.channel.CoreGetMessagesRequest;
-import com.drocsid.grpc.core_requests.channel.CoreUpdateChannelRequest;
-import com.drocsid.grpc.core_requests.channel.CoreCreateMessageRequest;
+import com.drocsid.grpc.core_requests.channel.*;
 import com.drocsid.grpc.mock_classes.CoreClient;
 import com.drocsid.grpc.proto.*;
-import com.drocsid.grpc.proto.UpdateChannelRequest;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
 
-import java.math.BigInteger;
 import java.util.List;
 
 @GrpcService
@@ -29,8 +25,7 @@ public class ChannelService extends ChannelServiceGrpc.ChannelServiceImplBase {
     public void getChannel(ChannelInfoReq request, StreamObserver<Channel> responseObserver) {
         try {
             String userId = jwtAuthService.checkAuth(request.getToken());
-            Channel channel = coreClient.getChannel(new BigInteger(userId),
-                new BigInteger(request.getChannelId()));
+            Channel channel = coreClient.getChannel(new CoreGetChannelRequest(userId, request));
 
             responseObserver.onNext(channel);
             responseObserver.onCompleted();
@@ -78,7 +73,7 @@ public class ChannelService extends ChannelServiceGrpc.ChannelServiceImplBase {
     public void deleteChannel(ChannelInfoReq request, StreamObserver<ResponseMessage> responseObserver) {
         try {
             String userId = jwtAuthService.checkAuth(request.getToken());
-            coreClient.deleteChannel(new BigInteger(userId), new BigInteger(request.getChannelId()));
+            coreClient.deleteChannel(new CoreDeleteChannelRequest(userId, request));
 
             ResponseMessage response = ResponseMessage
                     .newBuilder()
@@ -154,8 +149,7 @@ public class ChannelService extends ChannelServiceGrpc.ChannelServiceImplBase {
     public void deleteMessage(MessageReq request, StreamObserver<ResponseMessage> responseObserver) {
         try {
             String userId = jwtAuthService.checkAuth(request.getReq().getToken());
-            coreClient.deleteMessage(new BigInteger(userId),
-                new BigInteger(request.getMessageReq().getMessageId()));
+            coreClient.deleteMessage(new CoreDeleteMessageRequest(userId, request));
 
             ResponseMessage response = ResponseMessage
                     .newBuilder()
