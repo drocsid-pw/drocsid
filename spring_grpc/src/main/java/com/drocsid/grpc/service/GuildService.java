@@ -168,6 +168,95 @@ public class GuildService extends GuildServiceGrpc.GuildServiceImplBase {
     }
 
     @Override
+    public void getRole(RoleReq request, StreamObserver<Role> responseObserver) {
+        try {
+            String userId = jwtAuthService.checkAuth(request.getToken());
+            Role role = coreClient.getRole(new CoreGetRoleRequest(userId, request));
+
+            responseObserver.onNext(role);
+            responseObserver.onCompleted();
+        }
+        catch (StatusRuntimeException e) {
+            responseObserver.onError(e);
+        }
+        catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Unexpected server error: " + e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+        }
+    }
+
+    @Override
+    public void createRole(CreateRoleReq request, StreamObserver<Role> responseObserver) {
+        try {
+            String userId = jwtAuthService.checkAuth(request.getToken());
+            Role role = coreClient.createRole(new CoreCreateRoleRequest(userId, request));
+
+            responseObserver.onNext(role);
+            responseObserver.onCompleted();
+        }
+        catch (StatusRuntimeException e) {
+            responseObserver.onError(e);
+        }
+        catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Unexpected server error: " + e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+        }
+    }
+
+    @Override
+    public void getRoles(GuildInfoReq request, StreamObserver<RoleList> responseObserver) {
+        try {
+            String userId = jwtAuthService.checkAuth(request.getToken());
+            List<Role> role = coreClient.getRoles(new CoreGetRolesRequest(userId, request));
+            RoleList list = RoleList.newBuilder().addAllRoles(role).build();
+
+            responseObserver.onNext(list);
+            responseObserver.onCompleted();
+        }
+        catch (StatusRuntimeException e) {
+            responseObserver.onError(e);
+        }
+        catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Unexpected server error: " + e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+        }
+    }
+
+    @Override
+    public void updateRole(UpdateRoleReq request, StreamObserver<Role> responseObserver) {
+        try {
+            String userId = jwtAuthService.checkAuth(request.getToken());
+            Role role = coreClient.updateRole(new CoreUpdateRoleRequest(userId, request));
+
+            responseObserver.onNext(role);
+            responseObserver.onCompleted();
+        }
+        catch (StatusRuntimeException e) {
+            responseObserver.onError(e);
+        }
+        catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Unexpected server error: " + e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+        }
+    }
+
+    @Override
     public void createChannel(CreateChannelRequest request, StreamObserver<Channel> responseObserver) {
         try {
             String userId = jwtAuthService.checkAuth(request.getToken());
