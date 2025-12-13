@@ -6,9 +6,10 @@ import { DrocsidChannelsBar } from "./DrocsidChannelsBar";
 import { DrocsidChatView } from "./DrocsidChatView";
 import { DrocsidUserSettings } from "./DrocsidUserSettings";
 import { DrocsidServerSettings } from "./DrocsidServerSettings";
-import { DROCSID_THEME } from "../theme";
+import { DrocsidCreateServer } from "./DrocsidCreateServer";
+import { useDrocsidTheme } from "../theme-provider";
 
-type DrocsidViewMode = "chat" | "userSettings" | "serverSettings";
+type DrocsidViewMode = "chat" | "userSettings" | "serverSettings" | "createServer";
 type DrocsidSideMode = "servers" | "friends";
 
 const DROCSID_LAYOUT = {
@@ -17,46 +18,44 @@ const DROCSID_LAYOUT = {
 	mainWidth: "74vw",
 };
 
-/**
- * Główny widok drocsida:
- * - tryb serwerów (kanały tekstowe)
- * - tryb znajomych (prywatne wiadomości)
- * - settings usera i serwera
- */
+function replaceServer(servers: DrocsidServer[], next: DrocsidServer) {
+	return servers.map((s) => (s.id === next.id ? next : s));
+}
+
 export function DrocsidMainView() {
+	const { theme } = useDrocsidTheme();
+
+	const callerId = currentUser.id;
+
+	const [servers, setServers] = useState<DrocsidServer[]>(() => mockServers);
+
 	const [viewMode, setViewMode] = useState<DrocsidViewMode>("chat");
 	const [sideMode, setSideMode] = useState<DrocsidSideMode>("servers");
 
-	const [activeServerId, setActiveServerId] = useState<bigint | null>(() => {
-		return mockServers[0]?.id ?? null;
-	});
+	const [activeServerId, setActiveServerId] = useState<string | null>(() => servers[0]?.id ?? null);
 
-	const [activeChannelId, setActiveChannelId] = useState<bigint | null>(() => {
-		const firstServer = mockServers[0];
+	const [activeChannelId, setActiveChannelId] = useState<string | null>(() => {
+		const firstServer = servers[0];
 		if (!firstServer || firstServer.channels.length === 0) {
 			return null;
 		}
 		return firstServer.channels[0].id;
 	});
 
-	const [activeFriendId, setActiveFriendId] = useState<bigint | null>(() => {
-		return mockFriends[0]?.id ?? null;
-	});
+	const [activeFriendId, setActiveFriendId] = useState<string | null>(() => mockFriends[0]?.id ?? null);
 
-	const activeServer = useMemo<DrocsidGuild | null>(() => {
+	const activeServer = useMemo<DrocsidServer | null>(() => {
+		if (servers.length === 0) {
+			return null;
+		}
 		if (!activeServerId) {
-			return mockServers[0] ?? null;
+			return servers[0] ?? null;
 		}
-		const found = mockServers.find((server) => server.id === activeServerId);
-		return found ?? mockServers[0] ?? null;
-	}, [activeServerId]);
+		const found = servers.find((server) => server.id === activeServerId);
+		return found ?? servers[0] ?? null;
+	}, [servers, activeServerId]);
 
-	const channels = useMemo<DrocsidChannel[]>(() => {
-		if (!activeServer) {
-			return [];
-		}
-		return activeServer.channels;
-	}, [activeServer]);
+	const channels = useMemo<DrocsidChannel[]>(() => activeServer?.channels ?? [], [activeServer]);
 
 	useEffect(() => {
 		if (!activeServer) {
@@ -68,27 +67,24 @@ export function DrocsidMainView() {
 			return;
 		}
 
-		const existsInServer = activeChannelId !== null && channels.some((channel) => channel.id === activeChannelId);
-
+		const existsInServer = channels.some((channel) => channel.id === activeChannelId);
 		if (!existsInServer) {
 			setActiveChannelId(channels[0]?.id ?? null);
 		}
 	}, [activeServerId, activeServer, channels, activeChannelId]);
 
 	const activeChannel = useMemo<DrocsidChannel | null>(() => {
-		if (!activeServer || !activeChannelId) {
+		if (!activeServer || channels.length === 0) {
+			return null;
+		}
+		if (!activeChannelId) {
 			return channels[0] ?? null;
 		}
 		const found = channels.find((channel) => channel.id === activeChannelId);
 		return found ?? channels[0] ?? null;
 	}, [activeServer, channels, activeChannelId]);
 
-	const serverMessages = useMemo(() => {
-		if (!activeChannel) {
-			return [];
-		}
-		return activeChannel.messages ?? [];
-	}, [activeChannel]);
+	const serverMessages = useMemo(() => activeChannel?.messages ?? [], [activeChannel]);
 
 	const activeFriend = useMemo<DrocsidFriend | null>(() => {
 		if (!activeFriendId) {
@@ -98,14 +94,9 @@ export function DrocsidMainView() {
 		return found ?? mockFriends[0] ?? null;
 	}, [activeFriendId]);
 
-	const dmMessages = useMemo(() => {
-		if (!activeFriend) {
-			return [];
-		}
-		return mockFriendMessages[String(activeFriend.id)] ?? [];
-	}, [activeFriend]);
+	const dmMessages = useMemo(() => (activeFriend ? mockFriendMessages[activeFriend.id] ?? [] : []), [activeFriend]);
 
-	if (mockServers.length === 0) {
+	if (servers.length === 0) {
 		return (
 			<section className="rounded-3xl overflow-hidden border shadow-sm p-6">
 				<p className="text-sm text-slate-600">Brak serwerów w mockowanych danych.</p>
@@ -115,16 +106,39 @@ export function DrocsidMainView() {
 
 	let mainContent: React.ReactNode;
 
-	if (viewMode === "userSettings") {
+	if (viewMode === "createServer") {
 		mainContent = (
-			<div className="h-full p-4" style={{ backgroundColor: DROCSID_THEME.mainChat.background }}>
+			<div className="h-full p-4" style={{ backgroundColor: theme.mainChat.background }}>
+				<DrocsidCreateServer
+					callerId={callerId}
+					onCancel={() => setViewMode("chat")}
+					onCreated={(server) => {
+						setServers((current) => [...current, server]);
+						setSideMode("servers");
+						setActiveServerId(server.id);
+						setActiveChannelId(server.channels[0]?.id ?? null);
+						setViewMode("chat");
+					}}
+				/>
+			</div>
+		);
+	} else if (viewMode === "userSettings") {
+		mainContent = (
+			<div className="h-full p-4" style={{ backgroundColor: theme.mainChat.background }}>
 				<DrocsidUserSettings />
 			</div>
 		);
 	} else if (viewMode === "serverSettings") {
 		mainContent = (
-			<div className="h-full p-4" style={{ backgroundColor: DROCSID_THEME.mainChat.background }}>
-				<DrocsidServerSettings />
+			<div className="h-full p-4" style={{ backgroundColor: theme.mainChat.background }}>
+				<DrocsidServerSettings
+					server={activeServer}
+					callerId={callerId}
+					initialChannelId={activeChannel?.id ?? null}
+					onSaved={(nextServer) => {
+						setServers((current) => replaceServer(current, nextServer));
+					}}
+				/>
 			</div>
 		);
 	} else if (sideMode === "friends") {
@@ -138,11 +152,11 @@ export function DrocsidMainView() {
 			<div
 				className="h-full min-h-screen grid"
 				style={{
-					backgroundColor: DROCSID_THEME.appBackground,
+					backgroundColor: theme.appBackground,
 					gridTemplateColumns: `${DROCSID_LAYOUT.serversWidth} ${DROCSID_LAYOUT.channelsWidth} ${DROCSID_LAYOUT.mainWidth}`,
 				}}>
 				<DrocsidServersBar
-					servers={mockServers}
+					servers={servers}
 					activeServerId={sideMode === "servers" ? activeServer?.id ?? null : null}
 					sideMode={sideMode}
 					onSelectSideMode={(mode) => {
@@ -154,7 +168,7 @@ export function DrocsidMainView() {
 						setViewMode("chat");
 						setActiveServerId(serverId);
 					}}
-					onOpenServerSettings={() => setViewMode("serverSettings")}
+					onOpenCreateServer={() => setViewMode("createServer")}
 				/>
 
 				<DrocsidChannelsBar

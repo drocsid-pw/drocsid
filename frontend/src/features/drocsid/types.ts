@@ -9,11 +9,26 @@ export type DrocsidMessage = {
 	channelId: bigint;
 };
 
+export type DrocsidPermission = "MANAGE_GUILD_USERS" | "MANAGE_CHANNEL" | "ADMIN_DELETE_MESSAGES" | "MANAGE_GUILD" | "READ" | "WRITE";
+
+export type DrocsidRole = {
+	id: string;
+	name: string;
+	permissions: DrocsidPermission[];
+	system?: boolean;
+};
+
 export type DrocsidChannel = {
 	id: bigint;
 	name: string;
 	messages: DrocsidMessage[];
-	guildId: bigint;
+	overrides?: DrocsidRole[];
+};
+
+export type DrocsidGuildUser = {
+	id: string;
+	nick: string;
+	roleIds: string[];
 };
 
 export type DrocsidGuild = {
@@ -22,6 +37,8 @@ export type DrocsidGuild = {
 	icon: string;
 	ownerId: bigint;
 	channels: DrocsidChannel[];
+	roles?: DrocsidRole[];
+	users?: DrocsidGuildUser[];
 };
 
 export type DrocsidUser = {

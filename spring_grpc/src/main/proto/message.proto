@@ -1,0 +1,24 @@
+syntax = "proto3";
+package dmessage;
+option java_package = "com.drocsid.grpc.proto";
+option java_multiple_files = true;
+import "guild_user.proto";
+
+
+message Message {
+  string message_id = 1;
+  guild_user.GuildUser author = 2;
+  string content = 3;
+}
+
+message GeneralCreateMessageRequest {
+  string content = 4;
+}
+
+message GeneralMessageReq {
+  string message_id = 1;
+}
+
+message MessageList {
+  repeated Message messages = 1;
+}

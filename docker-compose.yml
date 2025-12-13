@@ -14,13 +14,13 @@ services:
         ports:
             - "5173:5173"
 
-    backend:
-        build:
-            context: ./spring_grpc
-            dockerfile: Dockerfile
-        working_dir: /app
-    gateway:
-        build:
-            context: ./nginx
-        ports:
-            - "8080:8080"
+    # backend:
+    #     build:
+    #         context: ./spring_grpc
+    #         dockerfile: Dockerfile
+    #     working_dir: /app
+    # gateway:
+    #     build:
+    #         context: ./nginx
+    #     ports:
+    #         - "8080:8080"
