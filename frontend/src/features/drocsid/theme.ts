@@ -99,7 +99,3 @@ export const DROCSID_THEMES: Record<DrocsidThemeKey, DrocsidTheme> = {
 		accentSoftHover: "rgba(88,101,242,0.18)",
 	},
 };
-
-export const DROCSID_ACTIVE_THEME_KEY: DrocsidThemeKey = "dark";
-
-export const DROCSID_THEME = DROCSID_THEMES[DROCSID_ACTIVE_THEME_KEY];
