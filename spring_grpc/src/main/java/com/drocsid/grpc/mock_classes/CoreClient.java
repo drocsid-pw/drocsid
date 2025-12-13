@@ -1,10 +1,8 @@
 package com.drocsid.grpc.mock_classes;
 
-import com.drocsid.grpc.core_requests.channel.CoreGetMessagesRequest;
+import com.drocsid.grpc.core_requests.channel.*;
 import com.drocsid.grpc.core_requests.guild.*;
 import com.drocsid.grpc.core_requests.guild.CoreCreateGuildRequest;
-import com.drocsid.grpc.core_requests.channel.CoreCreateMessageRequest;
-import com.drocsid.grpc.core_requests.channel.CoreUpdateChannelRequest;
 import com.drocsid.grpc.core_requests.user.CoreUpdateUserRequest;
 import com.drocsid.grpc.proto.CreateUserRequest;
 import com.drocsid.grpc.proto.GuildUser;
@@ -23,7 +21,7 @@ public class CoreClient {
 
     public Guild updateGuild(CoreUpdateGuildRequest request) { return Guild.newBuilder().build(); }
 
-    public void deleteGuild(BigInteger userId, BigInteger guildId) {}
+    public void deleteGuild(CoreDeleteGuildRequest request) {}
 
     public List<Guild> getAllGuilds(BigInteger userId) {
         return List.of();
@@ -55,17 +53,17 @@ public class CoreClient {
 
     public void deleteGuildUser(CoreDeleteGuildUserRequest request) {}
 
-    public Channel getChannel(BigInteger userId, BigInteger channelId) { return Channel.newBuilder().build(); }
+    public Channel getChannel(CoreGetChannelRequest request) { return Channel.newBuilder().build(); }
 
     public Channel updateChannel(CoreUpdateChannelRequest request) { return Channel.newBuilder().build(); }
 
-    public void deleteChannel(BigInteger userId, BigInteger channelId) {}
+    public void deleteChannel(CoreDeleteChannelRequest request) {}
 
     public List<Message> getMessages(CoreGetMessagesRequest request) { return List.of(); }
 
     public Message createMessage(CoreCreateMessageRequest request) { return Message.newBuilder().build(); }
 
-    public void deleteMessage(BigInteger userId, BigInteger messageId) {}
+    public void deleteMessage(CoreDeleteMessageRequest request) {}
 
     public User createUser(CreateUserRequest request) { return User.newBuilder().build(); }
 
