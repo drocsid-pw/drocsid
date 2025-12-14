@@ -1,7 +1,6 @@
 package com.drocsid.grpc.service;
 
 import com.drocsid.grpc.auth.JwtAuthService;
-import com.drocsid.grpc.core_requests.channel.CoreGetChannelRequest;
 import com.drocsid.grpc.core_requests.user.CoreUpdateUserRequest;
 import com.drocsid.grpc.mock_classes.CoreClient;
 import com.drocsid.grpc.proto.*;
