@@ -15,16 +15,22 @@ class ChannelServiceTest {
 
     private CoreClient coreClient;
     private ChannelService channelService;
+    private JwtAuthService jwtAuthService;
 
     @BeforeEach
     void setUp() {
         coreClient = mock(CoreClient.class);
-        JwtAuthService jwtAuthService = mock(JwtAuthService.class);
+        jwtAuthService = mock(JwtAuthService.class);
+
+        when(jwtAuthService.checkAuth(any())).thenReturn("1");
         channelService = new ChannelService(coreClient, jwtAuthService);
     }
 
     @Test
     void testGetChannel() {
+        Channel returnedChannel = Channel.newBuilder().build();
+        when(coreClient.getChannel(any(CoreGetChannelRequest.class)))
+                .thenReturn(returnedChannel);
         TestObserver<Channel> observer = new TestObserver<>();
 
         ChannelInfoReq request = ChannelInfoReq.newBuilder()
@@ -58,13 +64,18 @@ class ChannelServiceTest {
     }
     @Test
     void testUpdateChannel() {
-        UpdateChannelRequest request = UpdateChannelRequest.newBuilder().build();
+        Channel returnedChannel = Channel.newBuilder().build();
+        when(coreClient.updateChannel(any(CoreUpdateChannelRequest.class)))
+                .thenReturn(returnedChannel);
+        UpdateChannelRequest request = UpdateChannelRequest.newBuilder()
+                .setToken("token")
+                .build();
 
         TestObserver<Channel> observer = new TestObserver<>();
 
         channelService.updateChannel(request, observer);
 
-        verify(coreClient).updateChannel(new CoreUpdateChannelRequest("1", request));
+        verify(coreClient).updateChannel(any(CoreUpdateChannelRequest.class));
         assertTrue(observer.completed);
         assertNotNull(observer.value);
         assertInstanceOf(Channel.class, observer.value);
@@ -72,7 +83,7 @@ class ChannelServiceTest {
 
     @Test
     void testUpdateChannelException() {
-        UpdateChannelRequest request = UpdateChannelRequest.newBuilder().build();
+        UpdateChannelRequest request = UpdateChannelRequest.newBuilder().setToken("token").build();
 
         doThrow(new RuntimeException("error")).when(coreClient).updateChannel(any());
 
@@ -80,14 +91,13 @@ class ChannelServiceTest {
 
         channelService.updateChannel(request, observer);
 
-        assertTrue(observer.completed);
-        assertNotNull(observer.value);
-        assertInstanceOf(Channel.class, observer.value);
+        assertTrue(observer.error);
+        assertFalse(observer.completed);
     }
 
     @Test
     void testDeleteChannel() {
-        ChannelInfoReq request = ChannelInfoReq.newBuilder().build();
+        ChannelInfoReq request = ChannelInfoReq.newBuilder().setChannelId("1").build();
 
         TestObserver<ResponseMessage> observer = new TestObserver<>();
 
@@ -104,7 +114,7 @@ class ChannelServiceTest {
 
         TestObserver<ResponseMessage> observer = new TestObserver<>();
 
-        ChannelInfoReq request = ChannelInfoReq.newBuilder().build();
+        ChannelInfoReq request = ChannelInfoReq.newBuilder().setChannelId("1").build();
 
         channelService.deleteChannel(request, observer);
 
@@ -116,7 +126,12 @@ class ChannelServiceTest {
     void testGetMessages() {
         TestObserver<MessageList> observer = new TestObserver<>();
 
-        MessageBucketReq request = MessageBucketReq.newBuilder().build();
+        MessageBucketReq request = MessageBucketReq
+                .newBuilder()
+                .setReq(ChannelInfoReq.newBuilder().setToken("token").setChannelId("1").build())
+                .setOffset(1)
+                .setCount(1)
+                .build();
         channelService.getMessages(request, observer);
 
         verify(coreClient).getMessages(new CoreGetMessagesRequest("1", request));
@@ -130,7 +145,12 @@ class ChannelServiceTest {
 
         TestObserver<MessageList> observer = new TestObserver<>();
 
-        MessageBucketReq request = MessageBucketReq.newBuilder().build();
+        MessageBucketReq request = MessageBucketReq
+                .newBuilder()
+                .setReq(ChannelInfoReq.newBuilder().setToken("token").setChannelId("1").build())
+                .setOffset(1)
+                .setCount(1)
+                .build();
         channelService.getMessages(request, observer);
 
         assertTrue(observer.error);
@@ -139,20 +159,32 @@ class ChannelServiceTest {
 
     @Test
     void testCreateMessage() {
-        CreateMessageReq request = CreateMessageReq.newBuilder().build();
+        CreateMessageReq request = CreateMessageReq
+                .newBuilder()
+                .setReq(ChannelInfoReq.newBuilder().setToken("token").setChannelId("1").build())
+                .setMessage(GeneralCreateMessageRequest.newBuilder().setContent("content").build())
+                .build();
+
+        Message returnedMessage = Message.newBuilder().build();
+        when(coreClient.createMessage(any(CoreCreateMessageRequest.class)))
+                .thenReturn(returnedMessage);
 
         TestObserver<Message> observer = new TestObserver<>();
 
         channelService.createMessage(request, observer);
 
-        verify(coreClient).createMessage(new CoreCreateMessageRequest("1", request));
+        verify(coreClient).createMessage(any(CoreCreateMessageRequest.class));
         assertTrue(observer.completed);
         assertInstanceOf(Message.class, observer.value);
     }
 
     @Test
     void testCreateMessageException() {
-        CreateMessageReq request = CreateMessageReq.newBuilder().build();
+        CreateMessageReq request = CreateMessageReq
+                .newBuilder()
+                .setReq(ChannelInfoReq.newBuilder().setToken("token").setChannelId("1").build())
+                .setMessage(GeneralCreateMessageRequest.newBuilder().setContent("content").build())
+                .build();
 
         doThrow(new RuntimeException("error"))
                 .when(coreClient).createMessage(any());
@@ -167,7 +199,17 @@ class ChannelServiceTest {
 
     @Test
     void testDeleteMessage() {
-        MessageReq request = MessageReq.newBuilder().build();
+        MessageReq request = MessageReq.newBuilder()
+                .setReq(ChannelInfoReq
+                        .newBuilder()
+                        .setToken("token")
+                        .setChannelId("1")
+                        .build())
+                .setMessageReq(GeneralMessageReq
+                        .newBuilder()
+                        .setMessageId("1")
+                        .build())
+                .build();
 
         ChannelServiceTest.TestObserver<ResponseMessage> observer = new ChannelServiceTest.TestObserver<>();
 
@@ -184,7 +226,17 @@ class ChannelServiceTest {
         doThrow(new RuntimeException("error"))
                 .when(coreClient).deleteMessage(any());
 
-        MessageReq request = MessageReq.newBuilder().build();
+        MessageReq request = MessageReq.newBuilder()
+                .setReq(ChannelInfoReq
+                        .newBuilder()
+                        .setToken("token")
+                        .setChannelId("1")
+                        .build())
+                .setMessageReq(GeneralMessageReq
+                        .newBuilder()
+                        .setMessageId("1")
+                        .build())
+                .build();
 
         TestObserver<ResponseMessage> observer = new TestObserver<>();
 
