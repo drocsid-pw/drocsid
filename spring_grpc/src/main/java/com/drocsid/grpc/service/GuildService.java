@@ -377,7 +377,7 @@ public class GuildService extends GuildServiceGrpc.GuildServiceImplBase {
 
             ResponseMessage response = ResponseMessage
                     .newBuilder()
-                    .setText("User removed successfully.")
+                    .setText("User deleted successfully.")
                     .build();
             responseObserver.onNext(response);
             responseObserver.onCompleted();
