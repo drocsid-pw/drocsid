@@ -1,6 +1,7 @@
 package com.drocsid.grpc.service;
 
 import com.drocsid.grpc.auth.JwtAuthService;
+import com.drocsid.grpc.core_requests.channel.CoreGetChannelRequest;
 import com.drocsid.grpc.core_requests.user.CoreUpdateUserRequest;
 import com.drocsid.grpc.mock_classes.CoreClient;
 import com.drocsid.grpc.proto.*;
@@ -17,11 +18,14 @@ class UserServiceTest {
 
     private CoreClient coreClient;
     private UserService userService;
+    private JwtAuthService jwtAuthService;
 
     @BeforeEach
     void setUp() {
         coreClient = mock(CoreClient.class);
-        JwtAuthService jwtAuthService = mock(JwtAuthService.class);
+        jwtAuthService = mock(JwtAuthService.class);
+
+        when(jwtAuthService.checkAuth(any())).thenReturn("1");
         userService = new UserService(coreClient, jwtAuthService);
     }
 
@@ -30,6 +34,10 @@ class UserServiceTest {
         CreateUserRequest request = CreateUserRequest.newBuilder()
                 .setName("John")
                 .build();
+
+        User returnedUser = User.newBuilder().build();
+        when(coreClient.createUser(request))
+                .thenReturn(returnedUser);
 
         TestObserver<User> observer = new TestObserver<>();
 
@@ -47,6 +55,12 @@ class UserServiceTest {
                 .setName("John")
                 .build();
 
+        User returnedUser = User.newBuilder().build();
+        when(coreClient.createUser(request))
+                .thenReturn(returnedUser);
+
+
+
         doThrow(new RuntimeException("error"))
                 .when(coreClient).createUser(request);
 
@@ -60,6 +74,10 @@ class UserServiceTest {
 
     @Test
     void testGetUser() {
+        User returnedUser = User.newBuilder().build();
+        when(coreClient.getUser(new BigInteger("1")))
+                .thenReturn(returnedUser);
+
         UserId userIdRequest = UserId.newBuilder().setToken("token").build();
 
         TestObserver<User> observer = new TestObserver<>();
@@ -76,6 +94,9 @@ class UserServiceTest {
     void testGetUserException() {
         UserId userIdRequest = UserId.newBuilder().setToken("token").build();
 
+        doThrow(new RuntimeException("error"))
+                .when(coreClient).getUser(any());
+
         TestObserver<User> observer = new TestObserver<>();
 
         userService.getUser(userIdRequest, observer);
@@ -86,6 +107,10 @@ class UserServiceTest {
 
     @Test
     void testUpdateUser() {
+        User returnedUser = User.newBuilder().build();
+        when(coreClient.updateUser(any(CoreUpdateUserRequest.class)))
+                .thenReturn(returnedUser);
+
         UpdateUserRequest request = UpdateUserRequest.newBuilder()
                 .setToken("token")
                 .setName("name")
@@ -139,7 +164,7 @@ class UserServiceTest {
         UserId userIdRequest = UserId.newBuilder().setToken("token").build();
 
         doThrow(new RuntimeException("error"))
-                .when(coreClient).deleteUser(new BigInteger("99"));
+                .when(coreClient).deleteUser(any());
 
         TestObserver<ResponseMessage> observer = new TestObserver<>();
 
