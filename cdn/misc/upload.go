@@ -16,8 +16,8 @@ func main() {
 	sasToken := string(tokenBytes)
 
 	container := "drocsid"
-	blobName := "papaj.png"
-	filePath := "image2.png"
+	blobName := "image.png"
+	filePath := "image.png"
 	account := "devstoreaccount1"
 	url := fmt.Sprintf("http://127.0.0.1:10000/%s/%s/%s?%s", account, container, blobName, sasToken)
 
