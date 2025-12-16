@@ -9,6 +9,7 @@ import (
 type Request struct {
 	File     []byte `json:"file"`
 	FileName string `json:"filename"`
+	CdnUrl   string `json:"cdnUrl"`
 	SASToken string `json:"sasToken"`
 }
 
@@ -62,41 +63,26 @@ func uploadImageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// small_compressed, err := CompressJPG(req.File, 10, 4)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// 	http.Error(w, "Error while compressing file", http.StatusInternalServerError)
-	// 	return
-	// }
-
-	// os.WriteFile("media/standard_jpg.jpg", standard_jpg, 0644)
-	// os.WriteFile("media/standard_compressed.jpg", standard_compressed, 0644)
-	// os.WriteFile("media/small_standard.jpg", small_standard, 0644)
-	// os.WriteFile("media/small_compressed.jpg", small_compressed, 0644)
-
-	// var url string
-	// UploadImage(original, "original.png", sasToken)
-	url, err := UploadImage(standard_jpg, req.FileName+".jpg", req.SASToken)
+	url, err := AzuriteUploadImage(standard_jpg, req.CdnUrl, req.FileName+".jpg", req.SASToken)
 	if err != nil {
 		log.Fatal(err)
 		http.Error(w, "Error while compressing file", http.StatusInternalServerError)
 		return
 	}
 
-	_, err = UploadImage(standard_compressed, req.FileName+"_.jpg", req.SASToken)
+	_, err = AzuriteUploadImage(standard_compressed, req.CdnUrl, req.FileName+"_.jpg", req.SASToken)
 	if err != nil {
 		log.Fatal(err)
 		http.Error(w, "Error while compressing file", http.StatusInternalServerError)
 		return
 	}
 
-	_, err = UploadImage(extreme_compressed, req.FileName+"__.jpg", req.SASToken)
+	_, err = AzuriteUploadImage(extreme_compressed, req.CdnUrl, req.FileName+"__.jpg", req.SASToken)
 	if err != nil {
 		log.Fatal(err)
 		http.Error(w, "Error while compressing file", http.StatusInternalServerError)
 		return
 	}
-	// UploadImage(small_compressed, "small_compressed.jpg", req.SASToken)
 
 	resp := Response{
 		Message: "File(s) uploaded successfully",

@@ -4,6 +4,7 @@ import requests
 from pathlib import Path
 
 API_URL = "http://localhost:8080/uploadImage"
+CDN_URL = "http://127.0.0.1:10000/devstoreaccount1/drocsid"
 FILE_PATH = "image.png"   # file to upload
 SAS_FILE = "sas.txt"
 
@@ -17,6 +18,7 @@ sas_token = Path(SAS_FILE).read_text().strip()
 payload = {
     "file": file_b64,
     "filename": Path(FILE_PATH).stem,
+    "cdnUrl": CDN_URL,
     "sasToken": sas_token
 }
 

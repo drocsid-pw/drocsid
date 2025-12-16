@@ -8,15 +8,9 @@ import (
 	"net/http"
 )
 
-const (
-	account    = "devstoreaccount1"
-	container  = "drocsid"
-	azuriteURL = "http://127.0.0.1:10000"
-)
+func AzuriteUploadImage(file []byte, azuriteURL string, name string, sasToken string) (string, error) {
 
-func UploadImage(file []byte, name string, sasToken string) (string, error) {
-
-	url := fmt.Sprintf("%s/%s/%s/%s?%s", azuriteURL, account, container, name, sasToken)
+	url := fmt.Sprintf("%s/%s?%s", azuriteURL, name, sasToken)
 
 	reader := bytes.NewReader(file)
 
@@ -44,9 +38,9 @@ func UploadImage(file []byte, name string, sasToken string) (string, error) {
 	return url, nil
 }
 
-func UploadVideo(file []byte, name string, sasToken string) (string, error) {
+func AzuriteUploadVideo(file []byte, azuriteURL string, name string, sasToken string) (string, error) {
 
-	url := fmt.Sprintf("%s/%s/%s/%s?%s", azuriteURL, account, container, name, sasToken)
+	url := fmt.Sprintf("%s/%s?%s", azuriteURL, name, sasToken)
 
 	reader := bytes.NewReader(file)
 
