@@ -22,11 +22,11 @@ message CreateUserRequest {
 }
 
 message UserId {
-  string user_id = 1;
+  string token = 1;
 }
 
 message UpdateUserRequest {
-  string caller_id = 1;
+  string token = 1;
   string name = 2;
   string avatarHash = 3; // future
 }

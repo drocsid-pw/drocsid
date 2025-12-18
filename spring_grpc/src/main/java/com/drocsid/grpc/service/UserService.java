@@ -44,7 +44,7 @@ public class UserService extends UserServiceGrpc.UserServiceImplBase {
     @Override
     public void getUser(UserId userIdObj, StreamObserver<User> responseObserver) {
         try {
-            String userId = jwtAuthService.checkAuth(userIdObj.getUserId());
+            String userId = jwtAuthService.checkAuth(userIdObj.getToken());
             User user = coreClient.getUser(new BigInteger(userId));
 
             responseObserver.onNext(user);

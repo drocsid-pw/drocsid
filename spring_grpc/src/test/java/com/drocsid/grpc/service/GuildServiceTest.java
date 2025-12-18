@@ -1,7 +1,7 @@
 package com.drocsid.grpc.service;
 
-import com.drocsid.grpc.core_requests.guild.CoreCreateChannelRequest;
-import com.drocsid.grpc.core_requests.guild.CoreUpdateGuildRequest;
+import com.drocsid.grpc.auth.JwtAuthService;
+import com.drocsid.grpc.core_requests.guild.*;
 import com.drocsid.grpc.mock_classes.CoreClient;
 import com.drocsid.grpc.proto.*;
 import io.grpc.stub.StreamObserver;
@@ -18,44 +18,70 @@ class GuildServiceTest {
 
     private CoreClient coreClient;
     private GuildService guildService;
+    private JwtAuthService jwtAuthService;
 
     @BeforeEach
     void setUp() {
         coreClient = mock(CoreClient.class);
-        guildService = new GuildService(coreClient);
+        jwtAuthService = mock(JwtAuthService.class);
+
+        when(jwtAuthService.checkAuth(any())).thenReturn("1");
+        guildService = new GuildService(coreClient, jwtAuthService);
     }
 
     @Test
-    void testGetGuildInfo() {
-        GuildInfo expected = GuildInfo.newBuilder()
-                .setId("5")
-                .setName("Guild1")
-                .setOwnerId("1")
-                .setIcon("icon.png")
-                .build();
+    void testCreateGuild() {
+        CreateGuildRequest request = CreateGuildRequest.newBuilder().build();
 
-        when(coreClient.getGuildInfo(new BigInteger("1"), new BigInteger("5")))
-                .thenReturn(expected);
+        TestObserver<Guild> observer = new TestObserver<>();
+        Guild returnedGuild = Guild.newBuilder().build();
+        when(coreClient.createGuild(any(CoreCreateGuildRequest.class)))
+                .thenReturn(returnedGuild);
 
-        TestObserver<GuildInfo> observer = new TestObserver<>();
-        GuildId id = GuildId.newBuilder().setUserId("1").setId("5").build();
+        guildService.createGuild(request, observer);
 
-        guildService.getGuildInfo(id, observer);
-
-        verify(coreClient).getGuildInfo(new BigInteger("1"), new BigInteger("5"));
+        verify(coreClient).createGuild(new CoreCreateGuildRequest("1", request));
         assertTrue(observer.completed);
-        assertEquals(expected, observer.value);
+        assertInstanceOf(Guild.class, observer.value);
+    }
+
+    @Test
+    void testCreateGuildException() {
+        CreateGuildRequest request = CreateGuildRequest.newBuilder().build();
+
+        doThrow(new RuntimeException("error")).when(coreClient).createGuild(any());
+
+        TestObserver<Guild> observer = new TestObserver<>();
+        guildService.createGuild(request, observer);
+
+        assertTrue(observer.error);
+        assertFalse(observer.completed);
+    }
+
+    @Test
+    void testGetGuild() {
+        GuildInfoReq request = GuildInfoReq.newBuilder().setToken("token").setGuildId("1").build();
+
+        TestObserver<Guild> observer = new TestObserver<>();
+        Guild returnedGuild = Guild.newBuilder().build();
+        when(coreClient.getGuild(any(CoreGetGuildRequest.class)))
+                .thenReturn(returnedGuild);
+
+        guildService.getGuild(request, observer);
+
+        verify(coreClient).getGuild(new CoreGetGuildRequest("1", request));
+        assertTrue(observer.completed);
+        assertInstanceOf(Guild.class, observer.value);
     }
 
     @Test
     void testGetGuildException() {
-        when(coreClient.getGuildInfo(new BigInteger("1"), new BigInteger("5")))
-                .thenThrow(new RuntimeException("error"));
+        when(coreClient.getGuild(any())).thenThrow(new RuntimeException("error"));
 
-        TestObserver<GuildInfo> observer = new TestObserver<>();
-        GuildId id = GuildId.newBuilder().setUserId("1").setId("5").build();
+        TestObserver<Guild> observer = new TestObserver<>();
+        GuildInfoReq request = GuildInfoReq.newBuilder().setToken("token").setGuildId("1").build();
 
-        guildService.getGuildInfo(id, observer);
+        guildService.getGuild(request, observer);
 
         assertTrue(observer.error);
         assertFalse(observer.completed);
@@ -63,68 +89,37 @@ class GuildServiceTest {
 
     @Test
     void testUpdateGuild() {
-        UpdateGuildRequest request = UpdateGuildRequest.newBuilder()
-                .setUserId("1")
-                .setId("5")
-                .setName("Updated Guild")
-                .setIcon("new_icon.png")
+        UpdateGuildRequest request = UpdateGuildRequest
+                .newBuilder()
+                .setToken("token")
+                .setGuild(Guild
+                        .newBuilder()
+                        .setGuildId("1")
+                        .setName("name")
+                        .setIcon("icon")
+                        .setOwnerId("1")
+                        .build())
                 .build();
 
-        TestObserver<ResponseMessage> observer = new TestObserver<>();
+        Guild returnedGuild = Guild.newBuilder().build();
+        when(coreClient.updateGuild(any(CoreUpdateGuildRequest.class)))
+                .thenReturn(returnedGuild);
+        TestObserver<Guild> observer = new TestObserver<>();
         guildService.updateGuild(request, observer);
 
-        verify(coreClient).updateGuild(any(CoreUpdateGuildRequest.class));
+        verify(coreClient).updateGuild(new CoreUpdateGuildRequest("1", request));
         assertTrue(observer.completed);
-        assertEquals("Guild updated successfully.", observer.value.getText());
+        assertInstanceOf(Guild.class, observer.value);
     }
 
     @Test
     void testUpdateGuildException() {
-        UpdateGuildRequest request = UpdateGuildRequest.newBuilder()
-                .setUserId("1")
-                .setId("5")
-                .setName("Updated Guild")
-                .setIcon("new_icon.png")
-                .build();
-
+        UpdateGuildRequest request = UpdateGuildRequest.newBuilder().build();
 
         doThrow(new RuntimeException("error")).when(coreClient).updateGuild(any());
 
-        TestObserver<ResponseMessage> observer = new TestObserver<>();
+        TestObserver<Guild> observer = new TestObserver<>();
         guildService.updateGuild(request, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-    @Test
-    void testChangeGuildOwner() {
-        GuildUserInfo guildUserInfo = GuildUserInfo.newBuilder()
-                .setUserId("1")
-                .setId("3")
-                .setGuildUserId("3")
-                .build();
-
-        TestObserver<ResponseMessage> observer = new TestObserver<>();
-        guildService.changeGuildOwner(guildUserInfo, observer);
-
-        verify(coreClient).changeGuildOwner(any());
-        assertTrue(observer.completed);
-        assertEquals("Guild owner changed successfully.", observer.value.getText());
-    }
-
-    @Test
-    void testChangeGuildOwnerException() {
-        GuildUserInfo guildUserInfo = GuildUserInfo.newBuilder()
-                .setUserId("1")
-                .setId("3")
-                .setGuildUserId("3")
-                .build();
-
-        doThrow(new RuntimeException("error")).when(coreClient).changeGuildOwner(any());
-
-        TestObserver<ResponseMessage> observer = new TestObserver<>();
-        guildService.changeGuildOwner(guildUserInfo, observer);
 
         assertTrue(observer.error);
         assertFalse(observer.completed);
@@ -132,11 +127,11 @@ class GuildServiceTest {
 
     @Test
     void testDeleteGuild() {
-        GuildId id = GuildId.newBuilder().setUserId("1").setId("5").build();
+        GuildInfoReq request = GuildInfoReq.newBuilder().setToken("token").setGuildId("1").build();
         TestObserver<ResponseMessage> observer = new TestObserver<>();
-        guildService.deleteGuild(id, observer);
+        guildService.deleteGuild(request, observer);
 
-        verify(coreClient).deleteGuild(new BigInteger("1"), new BigInteger("5"));
+        verify(coreClient).deleteGuild(new CoreDeleteGuildRequest("1", request));
         assertTrue(observer.completed);
         assertEquals("Guild deleted successfully.", observer.value.getText());
     }
@@ -144,11 +139,11 @@ class GuildServiceTest {
     @Test
     void testDeleteGuildException() {
         doThrow(new RuntimeException("error")).when(coreClient)
-                .deleteGuild(new BigInteger("1"), new BigInteger("5"));
+                .deleteGuild(any());
 
-        GuildId id = GuildId.newBuilder().setUserId("1").setId("5").build();
+        GuildInfoReq request = GuildInfoReq.newBuilder().setToken("token").setGuildId("1").build();
         TestObserver<ResponseMessage> observer = new TestObserver<>();
-        guildService.deleteGuild(id, observer);
+        guildService.deleteGuild(request, observer);
 
         assertTrue(observer.error);
         assertFalse(observer.completed);
@@ -156,21 +151,16 @@ class GuildServiceTest {
 
     @Test
     void testGetAllGuilds() {
-        Guild guild1 = Guild.newBuilder().setId("1").setName("Guild1").build();
-        Guild guild2 = Guild.newBuilder().setId("2").setName("Guild2").build();
-
-        when(coreClient.getAllGuilds(new BigInteger("1"))).thenReturn(List.of(guild1, guild2));
+        when(coreClient.getAllGuilds(new BigInteger("1"))).thenReturn(List.of());
 
         TestObserver<GuildList> observer = new TestObserver<>();
-        UserIdForGuild userId = UserIdForGuild.newBuilder().setId("1").build();
+        UserId userId = UserId.newBuilder().build();
 
         guildService.getAllGuilds(userId, observer);
 
         verify(coreClient).getAllGuilds(new BigInteger("1"));
         assertTrue(observer.completed);
-        assertEquals(2, observer.value.getGuildsCount());
-        assertEquals(guild1, observer.value.getGuilds(0));
-        assertEquals(guild2, observer.value.getGuilds(1));
+        assertInstanceOf(GuildList.class, observer.value);
     }
 
     @Test
@@ -178,7 +168,7 @@ class GuildServiceTest {
         doThrow(new RuntimeException("error")).when(coreClient).getAllGuilds(new BigInteger("1"));
 
         TestObserver<GuildList> observer = new TestObserver<>();
-        UserIdForGuild userId = UserIdForGuild.newBuilder().setId("1").build();
+        UserId userId = UserId.newBuilder().build();
 
         guildService.getAllGuilds(userId, observer);
 
@@ -187,103 +177,191 @@ class GuildServiceTest {
     }
 
     @Test
-    void testCreateChannel() {
-        CreateChannelRequest request = CreateChannelRequest.newBuilder()
-                .setUserId("1")
-                .setName("General")
-                .setGuildId("100")
-                .build();
-
-        GuildServiceTest.TestObserver<ResponseMessage> observer = new GuildServiceTest.TestObserver<>();
-
-        guildService.createChannel(request, observer);
-
-        verify(coreClient).createChannel(any(CoreCreateChannelRequest.class));
-        assertTrue(observer.completed);
-        assertEquals("Channel created successfully.", observer.value.getText());
-    }
-
-    @Test
-    void testCreateChannelException() {
-        CreateChannelRequest request = CreateChannelRequest.newBuilder()
-                .setUserId("1")
-                .setName("General")
-                .setGuildId("100")
-                .build();
-
-        doThrow(new RuntimeException("error")).when(coreClient).createChannel(any());
-
-        GuildServiceTest.TestObserver<ResponseMessage> observer = new GuildServiceTest.TestObserver<>();
-
-        guildService.createChannel(request, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-    @Test
-    void testDeleteChannel() {
-        DeleteChannelRequest request = DeleteChannelRequest.newBuilder()
-                .setUserId("1")
-                .setId("2")
-                .setGuildId("3")
-                .build();
-
-        GuildServiceTest.TestObserver<ResponseMessage> observer = new GuildServiceTest.TestObserver<>();
-
-        guildService.deleteChannel(request, observer);
-
-        verify(coreClient).deleteChannel(any(), any());
-        assertTrue(observer.completed);
-        assertEquals("Channel deleted successfully.", observer.value.getText());
-    }
-
-    @Test
-    void testDeleteChannelException() {
-        doThrow(new RuntimeException("error")).when(coreClient).deleteChannel(any(), any());
-
-        GuildServiceTest.TestObserver<ResponseMessage> observer = new GuildServiceTest.TestObserver<>();
-
-        DeleteChannelRequest request = DeleteChannelRequest.newBuilder()
-                .setUserId("1")
-                .setId("2")
-                .setGuildId("3")
-                .build();
-
-        guildService.deleteChannel(request, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-    @Test
     void testGetAllChannels() {
-        Channel ch1 = Channel.newBuilder().setId("1").setName("Chan1").build();
-        Channel ch2 = Channel.newBuilder().setId("2").setName("Chan2").build();
-
-        when(coreClient.getAllChannels(new BigInteger("1"), new BigInteger("5")))
-                .thenReturn(List.of(ch1, ch2));
-
         TestObserver<ChannelList> observer = new TestObserver<>();
-        GuildId id = GuildId.newBuilder().setUserId("1").setId("5").build();
+        GuildInfoReq request = GuildInfoReq
+                .newBuilder()
+                .setToken("token")
+                .setGuildId("1")
+                .build();
 
-        guildService.getAllChannels(id, observer);
+        guildService.getAllChannels(request, observer);
 
-        verify(coreClient).getAllChannels(new BigInteger("1"), new BigInteger("5"));
+        verify(coreClient).getAllChannels(new CoreGetAllChannelsRequest("1", request));
         assertTrue(observer.completed);
-        assertEquals(2, observer.value.getChannelsCount());
-        assertEquals(ch1, observer.value.getChannels(0));
-        assertEquals(ch2, observer.value.getChannels(1));
+        assertInstanceOf(ChannelList.class, observer.value);
     }
 
     @Test
     void testGetAllChannelsException() {
-        doThrow(new RuntimeException("error")).when(coreClient).getAllChannels(new BigInteger("1"), new BigInteger("5"));
+        doThrow(new RuntimeException("error")).when(coreClient).getAllChannels(any());
 
         TestObserver<ChannelList> observer = new TestObserver<>();
-        GuildId id = GuildId.newBuilder().setUserId("1").setId("5").build();
+        GuildInfoReq request = GuildInfoReq.newBuilder().build();
 
-        guildService.getAllChannels(id, observer);
+        guildService.getAllChannels(request, observer);
+
+        assertTrue(observer.error);
+        assertFalse(observer.completed);
+    }
+
+    @Test
+    void testGetRole() {
+        RoleReq request = RoleReq.newBuilder().setToken("token").setGuildId("1").setGuildRoleId("1").build();
+
+        Role returnedRole = Role.newBuilder().build();
+        when(coreClient.getRole(any(CoreGetRoleRequest.class)))
+                .thenReturn(returnedRole);
+        TestObserver<Role> observer = new TestObserver<>();
+
+        guildService.getRole(request, observer);
+
+        verify(coreClient).getRole(new CoreGetRoleRequest("1", request));
+        assertTrue(observer.completed);
+        assertInstanceOf(Role.class, observer.value);
+    }
+
+    @Test
+    void testGetRoleException() {
+        doThrow(new RuntimeException("error")).when(coreClient).getRole(any());
+
+        TestObserver<Role> observer = new TestObserver<>();
+        RoleReq request = RoleReq.newBuilder().setToken("token").setGuildId("1").setGuildRoleId("1").build();
+
+        guildService.getRole(request, observer);
+
+        assertTrue(observer.error);
+        assertFalse(observer.completed);
+    }
+
+    @Test
+    void testCreateRole() {
+        CreateRoleReq request = CreateRoleReq
+                .newBuilder()
+                .setToken("token")
+                .setGuildId("1")
+                .build();
+
+        Role returnedRole = Role.newBuilder().build();
+        when(coreClient.createRole(any(CoreCreateRoleRequest.class)))
+                .thenReturn(returnedRole);
+        TestObserver<Role> observer = new TestObserver<>();
+
+        guildService.createRole(request, observer);
+
+        verify(coreClient).createRole(new CoreCreateRoleRequest("1", request));
+        assertTrue(observer.completed);
+        assertInstanceOf(Role.class, observer.value);
+    }
+
+    @Test
+    void testCreateRoleException() {
+        doThrow(new RuntimeException("error")).when(coreClient).createRole(any());
+
+        TestObserver<Role> observer = new TestObserver<>();
+        CreateRoleReq request = CreateRoleReq.newBuilder().build();
+
+        guildService.createRole(request, observer);
+
+        assertTrue(observer.error);
+        assertFalse(observer.completed);
+    }
+
+    @Test
+    void testGetRoles() {
+        GuildInfoReq request = GuildInfoReq.newBuilder().setToken("token").setGuildId("1").build();
+
+        TestObserver<RoleList> observer = new TestObserver<>();
+
+        guildService.getRoles(request, observer);
+
+        verify(coreClient).getRoles(new CoreGetRolesRequest("1", request));
+        assertTrue(observer.completed);
+        assertInstanceOf(RoleList.class, observer.value);
+    }
+
+    @Test
+    void testGetRolesException() {
+        doThrow(new RuntimeException("error")).when(coreClient).getRole(any());
+
+        TestObserver<RoleList> observer = new TestObserver<>();
+        GuildInfoReq request = GuildInfoReq.newBuilder().build();
+
+        guildService.getRoles(request, observer);
+
+        assertTrue(observer.error);
+        assertFalse(observer.completed);
+    }
+
+    @Test
+    void testUpdateRole() {
+        UpdateRoleReq request = UpdateRoleReq.newBuilder()
+                .setGuildId("1")
+                .setRole(Role
+                        .newBuilder()
+                        .setGuildRoleId("1")
+                        .build())
+                .build();
+
+        Role returnedRole = Role.newBuilder().build();
+        when(coreClient.updateRole(any(CoreUpdateRoleRequest.class)))
+                .thenReturn(returnedRole);
+        TestObserver<Role> observer = new TestObserver<>();
+
+        guildService.updateRole(request, observer);
+
+        verify(coreClient).updateRole(new CoreUpdateRoleRequest("1", request));
+        assertTrue(observer.completed);
+        assertInstanceOf(Role.class, observer.value);
+    }
+
+    @Test
+    void testUpdateRoleException() {
+        doThrow(new RuntimeException("error")).when(coreClient).getRole(any());
+
+        TestObserver<Role> observer = new TestObserver<>();
+        UpdateRoleReq request = UpdateRoleReq.newBuilder()
+                .setRole(Role
+                        .newBuilder()
+                        .setGuildRoleId("1")
+                        .build())
+                .build();
+
+        guildService.updateRole(request, observer);
+
+        assertTrue(observer.error);
+        assertFalse(observer.completed);
+    }
+
+    @Test
+    void testCreateChannel() {
+        CreateChannelRequest request = CreateChannelRequest
+                .newBuilder()
+                .setToken("token")
+                .setGuildId("1")
+                .build();
+
+        Channel returnedChannel = Channel.newBuilder().build();
+        when(coreClient.createChannel(any(CoreCreateChannelRequest.class)))
+                .thenReturn(returnedChannel);
+        TestObserver<Channel> observer = new TestObserver<>();
+
+        guildService.createChannel(request, observer);
+
+        verify(coreClient).createChannel(new CoreCreateChannelRequest("1", request));
+        assertTrue(observer.completed);
+        assertInstanceOf(Channel.class, observer.value);
+    }
+
+    @Test
+    void testCreateChannelException() {
+        CreateChannelRequest request = CreateChannelRequest.newBuilder().build();
+
+        doThrow(new RuntimeException("error")).when(coreClient).createChannel(any());
+
+        TestObserver<Channel> observer = new TestObserver<>();
+
+        guildService.createChannel(request, observer);
 
         assertTrue(observer.error);
         assertFalse(observer.completed);
@@ -291,142 +369,166 @@ class GuildServiceTest {
 
     @Test
     void testAddUser() {
-        GuildUserInfo guildUserInfo = GuildUserInfo.newBuilder()
-                .setUserId("1")
-                .setId("2")
-                .setGuildUserId("3")
-                .build();
+        AddUser addUserObj = AddUser.newBuilder().setToken("token").setGuildId("1").build();
 
-        GuildServiceTest.TestObserver<ResponseMessage> observer = new GuildServiceTest.TestObserver<>();
+        TestObserver<GuildUser> observer = new TestObserver<>();
+        GuildUser returnedGuildUser = GuildUser.newBuilder().build();
+        when(coreClient.addUser(any(CoreAddUserRequest.class)))
+                .thenReturn(returnedGuildUser);
 
-        guildService.addUser(guildUserInfo, observer);
+        guildService.addUser(addUserObj, observer);
 
-        verify(coreClient).addUser(any());
+        verify(coreClient).addUser(new CoreAddUserRequest("1", addUserObj));
         assertTrue(observer.completed);
-        assertEquals("User added successfully.", observer.value.getText());
+        assertInstanceOf(GuildUser.class, observer.value);
     }
 
     @Test
     void testAddUserException() {
-        GuildUserInfo guildUserInfo = GuildUserInfo.newBuilder()
-                .setUserId("1")
-                .setId("2")
-                .setGuildUserId("3")
-                .build();
-
+        AddUser addUserObj = AddUser.newBuilder().setToken("token").setGuildId("1").build();
 
         doThrow(new RuntimeException("error")).when(coreClient).addUser(any());
 
-        GuildServiceTest.TestObserver<ResponseMessage> observer = new GuildServiceTest.TestObserver<>();
+        TestObserver<GuildUser> observer = new TestObserver<>();
 
-        guildService.addUser(guildUserInfo, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-    @Test
-    void testSendInvitationToUser() {
-        GuildUserInfo guildUserInfo = GuildUserInfo.newBuilder()
-                .setUserId("1")
-                .setId("2")
-                .setGuildUserId("3")
-                .build();
-
-        GuildServiceTest.TestObserver<ResponseMessage> observer = new GuildServiceTest.TestObserver<>();
-
-        guildService.sendInvitationToUser(guildUserInfo, observer);
-
-        verify(coreClient).sendInvitationToUser(any());
-        assertTrue(observer.completed);
-        assertEquals("Invitation sent successfully.", observer.value.getText());
-    }
-
-    @Test
-    void testSendInvitationToUserException() {
-        GuildUserInfo guildUserInfo = GuildUserInfo.newBuilder()
-                .setUserId("1")
-                .setId("2")
-                .setGuildUserId("3")
-                .build();
-
-        doThrow(new RuntimeException("error")).when(coreClient).sendInvitationToUser(any());
-
-        GuildServiceTest.TestObserver<ResponseMessage> observer = new GuildServiceTest.TestObserver<>();
-
-        guildService.sendInvitationToUser(guildUserInfo, observer);
+        guildService.addUser(addUserObj, observer);
 
         assertTrue(observer.error);
         assertFalse(observer.completed);
     }
 
     @Test
-    void testRemoveUser() {
-        GuildUserInfo guildUserInfo = GuildUserInfo.newBuilder()
-                .setUserId("1")
-                .setId("2")
-                .setGuildUserId("3")
+    void testUpdateUser() {
+        UpdateUserReq request = UpdateUserReq
+                .newBuilder()
+                .setToken("token")
+                .setGuildId("1")
+                .setUser(GuildUser
+                        .newBuilder()
+                        .setGuildUserId("1")
+                        .build())
                 .build();
 
-        GuildServiceTest.TestObserver<ResponseMessage> observer = new GuildServiceTest.TestObserver<>();
+        GuildUser returnedGuildUser = GuildUser.newBuilder().build();
+        when(coreClient.updateGuildUser(any(CoreUpdateGuildUserRequest.class)))
+                .thenReturn(returnedGuildUser);
+        TestObserver<GuildUser> observer = new TestObserver<>();
 
-        guildService.removeUser(guildUserInfo, observer);
+        guildService.updateUser(request, observer);
 
-        verify(coreClient).removeUser(any());
+        verify(coreClient).updateGuildUser(new CoreUpdateGuildUserRequest("1", request));
         assertTrue(observer.completed);
-        assertEquals("User removed successfully.", observer.value.getText());
+        assertInstanceOf(GuildUser.class, observer.value);
     }
 
     @Test
-    void testRemoveUserException() {
-        GuildUserInfo guildUserInfo = GuildUserInfo.newBuilder()
-                .setUserId("1")
-                .setId("2")
-                .setGuildUserId("3")
-                .build();
+    void testUpdateUserException() {
+        UpdateUserReq request = UpdateUserReq.newBuilder().build();
 
-        doThrow(new RuntimeException("error")).when(coreClient).removeUser(any());
+        doThrow(new RuntimeException("error")).when(coreClient).addUser(any());
 
-        GuildServiceTest.TestObserver<ResponseMessage> observer = new GuildServiceTest.TestObserver<>();
+        TestObserver<GuildUser> observer = new TestObserver<>();
 
-        guildService.removeUser(guildUserInfo, observer);
+        guildService.updateUser(request, observer);
 
         assertTrue(observer.error);
         assertFalse(observer.completed);
     }
 
     @Test
-    void testEditUserPermissions() {
-        GuildEditUserRequest request = GuildEditUserRequest.newBuilder()
-                .setUserId("1")
-                .setId("2")
-                .setGuildUserId("3")
-                .setRole(15)
+    void testGetUser() {
+        GuildUserReq request = GuildUserReq
+                .newBuilder()
+                .setToken("token")
+                .setGuildId("1")
+                .setGuildUserId("1")
                 .build();
 
-        GuildServiceTest.TestObserver<ResponseMessage> observer = new GuildServiceTest.TestObserver<>();
+        GuildUser returnedGuildUser = GuildUser.newBuilder().build();
+        when(coreClient.getGuildUser(any(CoreGetGuildUserRequest.class)))
+                .thenReturn(returnedGuildUser);
+        TestObserver<GuildUser> observer = new TestObserver<>();
 
-        guildService.editUserPermission(request, observer);
+        guildService.getUser(request, observer);
 
-        verify(coreClient).editUserPermissions(any());
+        verify(coreClient).getGuildUser(new CoreGetGuildUserRequest("1", request));
         assertTrue(observer.completed);
-        assertEquals("User's permissions changed successfully.", observer.value.getText());
+        assertInstanceOf(GuildUser.class, observer.value);
     }
 
     @Test
-    void testEditUserPermissionsException() {
-        GuildEditUserRequest request = GuildEditUserRequest.newBuilder()
-                .setUserId("1")
-                .setId("2")
-                .setGuildUserId("3")
-                .setRole(15)
+    void testGetUserException() {
+        GuildUserReq request = GuildUserReq
+                .newBuilder()
+                .setToken("token")
+                .setGuildId("1")
+                .setGuildUserId("1")
                 .build();
 
-        doThrow(new RuntimeException("error")).when(coreClient).editUserPermissions(any());
 
-        GuildServiceTest.TestObserver<ResponseMessage> observer = new GuildServiceTest.TestObserver<>();
+        doThrow(new RuntimeException("error")).when(coreClient).getGuildUser(any());
 
-        guildService.editUserPermission(request, observer);
+        TestObserver<GuildUser> observer = new TestObserver<>();
+
+        guildService.getUser(request, observer);
+
+        assertTrue(observer.error);
+        assertFalse(observer.completed);
+    }
+
+    @Test
+    void testGetUsers() {
+        GuildInfoReq request = GuildInfoReq.newBuilder().setToken("token").setGuildId("1").build();
+
+        TestObserver<GuildUserList> observer = new TestObserver<>();
+
+        guildService.getUsers(request, observer);
+
+        verify(coreClient).getGuildUsers(new CoreGetGuildUsersRequest("1", request));
+        assertTrue(observer.completed);
+        assertInstanceOf(GuildUserList.class, observer.value);
+    }
+
+    @Test
+    void testGetUsersException() {
+        GuildInfoReq request = GuildInfoReq.newBuilder().setToken("token").setGuildId("1").build();
+
+        doThrow(new RuntimeException("error")).when(coreClient).getGuildUsers(any());
+
+        TestObserver<GuildUserList> observer = new TestObserver<>();
+
+        guildService.getUsers(request, observer);
+
+        assertTrue(observer.error);
+        assertFalse(observer.completed);
+    }
+
+    @Test
+    void testDeleteUser() {
+        GuildUserReq request = GuildUserReq
+                .newBuilder()
+                .setToken("token")
+                .setGuildId("1")
+                .setGuildUserId("1")
+                .build();
+
+        TestObserver<ResponseMessage> observer = new TestObserver<>();
+        guildService.deleteUser(request, observer);
+
+        verify(coreClient).deleteGuildUser(new CoreDeleteGuildUserRequest("1", request));
+        assertTrue(observer.completed);
+        assertEquals("User deleted successfully.", observer.value.getText());
+    }
+
+    @Test
+    void testDeleteUserException() {
+        GuildUserReq request = GuildUserReq.newBuilder().build();
+
+        doThrow(new RuntimeException("error")).when(coreClient).addUser(any());
+
+        TestObserver<ResponseMessage> observer = new TestObserver<>();
+
+        guildService.deleteUser(request, observer);
 
         assertTrue(observer.error);
         assertFalse(observer.completed);
