@@ -11,3 +11,6 @@ frontend/output.txt
 venv
 .idea/
 spring_grpc/target
+
+jenkins/jenkins_home/
+.m2/

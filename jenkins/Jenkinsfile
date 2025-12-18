@@ -1,0 +1,91 @@
+pipeline {
+    agent any
+    
+    environment {
+        DOCKER_COMPOSE = 'docker-compose'
+        MAVEN_OPTS = '-Dmaven.repo.local=.m2/repository'
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Checking out code...'
+                checkout scm
+            }
+        }
+        
+        stage('Build Backend') {
+            steps {
+                echo 'Building Spring gRPC Backend...'
+                dir('spring_grpc') {
+                    sh '''
+                        mvn clean install -DskipTests
+                    '''
+                }
+            }
+        }
+        
+        stage('Test Backend') {
+            steps {
+                echo 'Running Backend Tests...'
+                dir('spring_grpc') {
+                    sh '''
+                        mvn test
+                    '''
+                }
+            }
+            post {
+                always {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        
+        stage('Build Frontend') {
+            steps {
+                echo 'Installing Frontend Dependencies...'
+                dir('frontend') {
+                    sh '''
+                        npm ci
+                        npm run build
+                    '''
+                }
+            }
+        }
+        
+        stage('Build Docker Images') {
+            steps {
+                echo 'Building Docker Images...'
+                sh '''
+                    docker-compose build
+                '''
+            }
+        }
+        
+        stage('Deploy') {
+            when {
+                branch 'jenkins'
+            }
+            steps {
+                echo 'Deploying Application...'
+                sh '''
+                    docker-compose down
+                    docker-compose up -d frontend backend gateway
+                '''
+            }
+        }
+    }
+    
+    post {
+        always {
+            echo 'Cleaning up...'
+            cleanWs()
+        }
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed!'
+        }
+    }
+}
