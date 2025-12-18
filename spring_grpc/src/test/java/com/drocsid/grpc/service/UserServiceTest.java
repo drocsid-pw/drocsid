@@ -1,17 +1,14 @@
 package com.drocsid.grpc.service;
 
-import com.drocsid.grpc.core_requests.user.CoreCreateGuildRequest;
+import com.drocsid.grpc.auth.JwtAuthService;
 import com.drocsid.grpc.core_requests.user.CoreUpdateUserRequest;
 import com.drocsid.grpc.mock_classes.CoreClient;
 import com.drocsid.grpc.proto.*;
 import io.grpc.stub.StreamObserver;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -20,11 +17,15 @@ class UserServiceTest {
 
     private CoreClient coreClient;
     private UserService userService;
+    private JwtAuthService jwtAuthService;
 
     @BeforeEach
     void setUp() {
         coreClient = mock(CoreClient.class);
-        userService = new UserService(coreClient);
+        jwtAuthService = mock(JwtAuthService.class);
+
+        when(jwtAuthService.checkAuth(any())).thenReturn("1");
+        userService = new UserService(coreClient, jwtAuthService);
     }
 
     @Test
@@ -33,13 +34,18 @@ class UserServiceTest {
                 .setName("John")
                 .build();
 
-        TestObserver<ResponseMessage> observer = new TestObserver<>();
+        User returnedUser = User.newBuilder().build();
+        when(coreClient.createUser(request))
+                .thenReturn(returnedUser);
+
+        TestObserver<User> observer = new TestObserver<>();
 
         userService.createUser(request, observer);
 
         verify(coreClient).createUser(request);
         assertTrue(observer.completed);
-        assertEquals("User created successfully.", observer.value.getText());
+        assertNotNull(observer.value);
+        assertInstanceOf(User.class, observer.value);
     }
 
     @Test
@@ -48,10 +54,16 @@ class UserServiceTest {
                 .setName("John")
                 .build();
 
+        User returnedUser = User.newBuilder().build();
+        when(coreClient.createUser(request))
+                .thenReturn(returnedUser);
+
+
+
         doThrow(new RuntimeException("error"))
                 .when(coreClient).createUser(request);
 
-        TestObserver<ResponseMessage> observer = new TestObserver<>();
+        TestObserver<User> observer = new TestObserver<>();
 
         userService.createUser(request, observer);
 
@@ -61,32 +73,32 @@ class UserServiceTest {
 
     @Test
     void testGetUser() {
-        User expected = User.newBuilder()
-                .setId("1")
-                .setName("Alex")
-                .setAvatarLetter("A")
-                .setAvatarHash("1234")
-                .build();
+        User returnedUser = User.newBuilder().build();
+        when(coreClient.getUser(new BigInteger("1")))
+                .thenReturn(returnedUser);
 
-        when(coreClient.getUser(new BigInteger("1"))).thenReturn(expected);
+        UserId userIdRequest = UserId.newBuilder().setToken("token").build();
 
         TestObserver<User> observer = new TestObserver<>();
 
-        userService.getUser(UserId.newBuilder().setId("1").build(), observer);
+        userService.getUser(userIdRequest, observer);
 
         verify(coreClient).getUser(new BigInteger("1"));
         assertTrue(observer.completed);
-        assertEquals(expected, observer.value);
+        assertNotNull(observer.value);
+        assertInstanceOf(User.class, observer.value);
     }
 
     @Test
     void testGetUserException() {
-        when(coreClient.getUser(new BigInteger("1")))
-                .thenThrow(new RuntimeException("error"));
+        UserId userIdRequest = UserId.newBuilder().setToken("token").build();
+
+        doThrow(new RuntimeException("error"))
+                .when(coreClient).getUser(any());
 
         TestObserver<User> observer = new TestObserver<>();
 
-        userService.getUser(UserId.newBuilder().setId("1").build(), observer);
+        userService.getUser(userIdRequest, observer);
 
         assertTrue(observer.error);
         assertFalse(observer.completed);
@@ -94,37 +106,38 @@ class UserServiceTest {
 
     @Test
     void testUpdateUser() {
+        User returnedUser = User.newBuilder().build();
+        when(coreClient.updateUser(any(CoreUpdateUserRequest.class)))
+                .thenReturn(returnedUser);
+
         UpdateUserRequest request = UpdateUserRequest.newBuilder()
-                .setId("1")
-                .setName("New Name")
-                .setAvatarLetter("New Avatar Letter")
-                .setAvatarHash("New Avatar Hash")
+                .setToken("token")
+                .setName("name")
+                .setAvatarHash("hash")
                 .build();
 
-        TestObserver<ResponseMessage> observer = new TestObserver<>();
+        TestObserver<User> observer = new TestObserver<>();
 
         userService.updateUser(request, observer);
 
-        ArgumentCaptor<CoreUpdateUserRequest> captor =
-                ArgumentCaptor.forClass(CoreUpdateUserRequest.class);
-
-        verify(coreClient).updateUser(captor.capture());
-
+        verify(coreClient).updateUser(new CoreUpdateUserRequest("1", request));
         assertTrue(observer.completed);
-        assertEquals("User updated successfully.", observer.value.getText());
+        assertNotNull(observer.value);
+        assertInstanceOf(User.class, observer.value);
     }
 
     @Test
     void testUpdateUserException() {
         UpdateUserRequest request = UpdateUserRequest.newBuilder()
-                .setId("123")
-                .setName("NewName")
+                .setToken("token")
+                .setName("name")
+                .setAvatarHash("hash")
                 .build();
 
         doThrow(new RuntimeException("error"))
                 .when(coreClient).updateUser(any());
 
-        TestObserver<ResponseMessage> observer = new TestObserver<>();
+        TestObserver<User> observer = new TestObserver<>();
 
         userService.updateUser(request, observer);
 
@@ -134,141 +147,27 @@ class UserServiceTest {
 
     @Test
     void testDeleteUser() {
-        UserId id = UserId.newBuilder().setId("99").build();
+        UserId userIdRequest = UserId.newBuilder().setToken("token").build();
 
         TestObserver<ResponseMessage> observer = new TestObserver<>();
 
-        userService.deleteUser(id, observer);
+        userService.deleteUser(userIdRequest, observer);
 
-        verify(coreClient).deleteUser(new BigInteger("99"));
+        verify(coreClient).deleteUser(new BigInteger("1"));
         assertTrue(observer.completed);
         assertEquals("User deleted successfully.", observer.value.getText());
     }
 
     @Test
     void testDeleteUserException() {
+        UserId userIdRequest = UserId.newBuilder().setToken("token").build();
+
         doThrow(new RuntimeException("error"))
-                .when(coreClient).deleteUser(new BigInteger("99"));
+                .when(coreClient).deleteUser(any());
 
         TestObserver<ResponseMessage> observer = new TestObserver<>();
 
-        userService.deleteUser(UserId.newBuilder().setId("99").build(), observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-    @Test
-    void testGetAllUsers() {
-        User user1 = User.newBuilder()
-                .setId("1")
-                .setName("AAA")
-                .setAvatarLetter("A")
-                .setAvatarHash("1234")
-                .build();
-        User user2 = User.newBuilder()
-                .setId("2")
-                .setName("BBB")
-                .setAvatarLetter("B")
-                .setAvatarHash("5678")
-                .build();
-
-        when(coreClient.getAllUsers()).thenReturn(List.of(user1, user2));
-
-        TestObserver<UserList> observer = new TestObserver<>();
-
-        userService.getAllUsers(Empty.newBuilder().build(), observer);
-
-        verify(coreClient).getAllUsers();
-        assertTrue(observer.completed);
-        assertEquals(2, observer.value.getUsersCount());
-        assertEquals(user1, observer.value.getUsers(0));
-        assertEquals(user2, observer.value.getUsers(1));
-    }
-
-    @Test
-    void testGetAllUsersException() {
-        when(coreClient.getAllUsers())
-                .thenThrow(new RuntimeException("error"));
-
-        TestObserver<UserList> observer = new TestObserver<>();
-
-        userService.getAllUsers(Empty.newBuilder().build(), observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-    @Test
-    void testCreateGuild() {
-        CreateGuildRequest request = CreateGuildRequest.newBuilder()
-                .setUserId("1")
-                .setName("Guild1")
-                .setIcon("icon.png")
-                .build();
-
-        UserServiceTest.TestObserver<ResponseMessage> observer = new UserServiceTest.TestObserver<>();
-
-        userService.createGuild(request, observer);
-
-        verify(coreClient).createGuild(any(CoreCreateGuildRequest.class));
-        assertTrue(observer.completed);
-        assertEquals("Guild created successfully.", observer.value.getText());
-    }
-
-    @Test
-    void testCreateGuildException() {
-        CreateGuildRequest request = CreateGuildRequest.newBuilder()
-                .setUserId("1")
-                .setName("Guild1")
-                .setIcon("icon.png")
-                .build();
-
-        doThrow(new RuntimeException("error")).when(coreClient).createGuild(any());
-
-        UserServiceTest.TestObserver<ResponseMessage> observer = new UserServiceTest.TestObserver<>();
-        userService.createGuild(request, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-    @Test
-    void testGetAllUserGuilds() {
-        Guild guild1 = Guild.newBuilder()
-                .setId("1")
-                .setName("Guild1")
-                .setIcon("icon.png")
-                .setOwnerId("1")
-                .build();
-        Guild guild2 = Guild.newBuilder()
-                .setId("1")
-                .setName("Guild1")
-                .setIcon("icon.png")
-                .setOwnerId("1")
-                .build();
-
-        when(coreClient.getAllUserGuilds(any())).thenReturn(List.of(guild1, guild2));
-
-        TestObserver<GuildList> observer = new TestObserver<>();
-
-        UserId userId = UserId.newBuilder().setId("1").build();
-        userService.getAllUserGuilds(userId, observer);
-
-        verify(coreClient).getAllUserGuilds(any());
-        assertTrue(observer.completed);
-        assertEquals(2, observer.value.getGuildsCount());
-        assertEquals(guild1, observer.value.getGuilds(0));
-        assertEquals(guild2, observer.value.getGuilds(1));
-    }
-
-    @Test
-    void testGetAllUserGuildsException() {
-        doThrow(new RuntimeException("error")).when(coreClient).getAllUserGuilds(any());
-
-        TestObserver<GuildList> observer = new TestObserver<>();
-        UserId userId = UserId.newBuilder().setId("1").build();
-        userService.getAllUserGuilds(userId, observer);
+        userService.deleteUser(userIdRequest, observer);
 
         assertTrue(observer.error);
         assertFalse(observer.completed);

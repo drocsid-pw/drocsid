@@ -13,8 +13,8 @@ public class CoreCreateChannelRequest {
     private String name;
     private BigInteger guildId;
 
-    public CoreCreateChannelRequest(CreateChannelRequest request) {
-        userId = new BigInteger(request.getUserId());
+    public CoreCreateChannelRequest(String userIdString, CreateChannelRequest request) {
+        userId = new BigInteger(userIdString);
         name = request.getName();
         guildId = new BigInteger(request.getGuildId());
     }

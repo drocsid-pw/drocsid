@@ -1,4 +1,4 @@
-package com.drocsid.grpc.core_requests.user;
+package com.drocsid.grpc.core_requests.guild;
 
 import com.drocsid.grpc.proto.CreateGuildRequest;
 import lombok.*;
@@ -13,8 +13,8 @@ public class CoreCreateGuildRequest {
     private String name;
     private String icon;
 
-    public CoreCreateGuildRequest(CreateGuildRequest request) {
-        userId = new BigInteger(request.getUserId());
+    public CoreCreateGuildRequest(String userIdString, CreateGuildRequest request) {
+        userId = new BigInteger(userIdString);
         name = request.getName();
         icon = request.getIcon();
     }

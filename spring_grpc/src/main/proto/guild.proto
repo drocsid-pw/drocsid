@@ -10,7 +10,7 @@ import "channel.proto";
 
 
 service GuildService {
-  // basic managment
+  // basic management
   rpc CreateGuild(CreateGuildRequest) returns (Guild);
   rpc GetGuild(GuildInfoReq) returns (Guild);
   rpc UpdateGuild(UpdateGuildRequest) returns (Guild);
@@ -18,7 +18,7 @@ service GuildService {
   rpc GetAllGuilds(user.UserId) returns (GuildList);
   rpc GetAllChannels(GuildInfoReq) returns (channel.ChannelList);
 
-  // role managment
+  // role management
   rpc GetRole(role.RoleReq) returns (role.Role);
   rpc CreateRole(role.CreateRoleReq) returns (role.Role);
   rpc GetRoles(GuildInfoReq) returns (role.RoleList);
@@ -27,7 +27,7 @@ service GuildService {
   // channel creation
   rpc CreateChannel(channel.CreateChannelRequest) returns (channel.Channel);
 
-  // guild user managment
+  // guild user management
   rpc AddUser(guild_user.AddUser) returns (guild_user.GuildUser);
   rpc UpdateUser(guild_user.UpdateUserReq) returns (guild_user.GuildUser); // future
   rpc GetUser(guild_user.GuildUserReq) returns (guild_user.GuildUser);
@@ -44,18 +44,18 @@ message Guild {
 }
 
 message CreateGuildRequest {
-  string caller_id = 1;
+  string token = 1;
   string name = 2;
   string icon = 3; // not used, future
 }
 
 message GuildInfoReq {
   string guild_id = 1;
-  string caller_id = 2;
+  string token = 2;
 }
 
 message UpdateGuildRequest {
-  string caller_id = 1;
+  string token = 1;
   Guild guild = 2;
 }
 
