@@ -1,0 +1,293 @@
+==== ./spring_grpc/src/main/proto\channel.proto ====
+syntax = "proto3";
+package channel;
+option java_package = "com.drocsid.grpc.proto";
+option java_multiple_files = true;
+import "common.proto";
+import "role.proto";
+import "message.proto";
+
+
+service ChannelService {
+
+  rpc GetChannel(ChannelInfoReq) returns (Channel);
+  rpc UpdateChannel(UpdateChannelRequest) returns (Channel);
+  rpc DeleteChannel(ChannelInfoReq) returns (common.ResponseMessage);
+
+  // messages
+  rpc GetMessages(MessageBucketReq) returns (dmessage.MessageList);
+  rpc CreateMessage(CreateMessageReq) returns (dmessage.Message);
+  rpc DeleteMessage(MessageReq) returns (common.ResponseMessage);
+}
+
+message Channel {
+  string channel_id = 1;
+  string name = 2;
+  string guild_id = 3;
+  role.RoleList overrides = 4;
+}
+
+message CreateChannelRequest {
+  string caller_id = 1;
+  string name = 2;
+  string guild_id = 3;
+}
+
+message ChannelInfoReq {
+  string caller_id = 1;
+  string channel_id = 2;
+}
+
+message UpdateChannelRequest {
+  string caller_id = 1;
+  Channel channel = 2;
+}
+
+message ChannelList {
+  repeated Channel channels = 1;
+}
+
+message MessageBucketReq {
+  ChannelInfoReq req = 1;
+  int32 offset = 2;
+  int32 count = 3;
+}
+
+message CreateMessageReq {
+  ChannelInfoReq req = 1;
+  dmessage.GeneralCreateMessageRequest message = 2;
+}
+
+message MessageReq {
+  ChannelInfoReq req = 1;
+  dmessage.GeneralMessageReq message_req = 2;
+}
+
+==== ./spring_grpc/src/main/proto\common.proto ====
+syntax = "proto3";
+package common;
+option java_package = "com.drocsid.grpc.proto";
+option java_multiple_files = true;
+
+message ResponseMessage {
+  string text = 1;
+}
+
+message Empty {}
+
+==== ./spring_grpc/src/main/proto\guild.proto ====
+syntax = "proto3";
+package guild;
+option java_package = "com.drocsid.grpc.proto";
+option java_multiple_files = true;
+import "common.proto";
+import "role.proto";
+import "guild_user.proto";
+import "user.proto";
+import "channel.proto";
+
+
+service GuildService {
+  // basic managment
+  rpc CreateGuild(CreateGuildRequest) returns (Guild);
+  rpc GetGuild(GuildInfoReq) returns (Guild);
+  rpc UpdateGuild(UpdateGuildRequest) returns (Guild);
+  rpc DeleteGuild(GuildInfoReq) returns (common.ResponseMessage);
+  rpc GetAllGuilds(user.UserId) returns (GuildList);
+  rpc GetAllChannels(GuildInfoReq) returns (channel.ChannelList);
+
+  // role managment
+  rpc GetRole(role.RoleReq) returns (role.Role);
+  rpc CreateRole(role.CreateRoleReq) returns (role.Role);
+  rpc GetRoles(GuildInfoReq) returns (role.RoleList);
+  rpc UpdateRole(role.UpdateRoleReq) returns (role.Role);
+
+  // channel creation
+  rpc CreateChannel(channel.CreateChannelRequest) returns (channel.Channel);
+
+  // guild user managment
+  rpc AddUser(guild_user.AddUser) returns (guild_user.GuildUser);
+  rpc UpdateUser(guild_user.UpdateUserReq) returns (guild_user.GuildUser); // future
+  rpc GetUser(guild_user.GuildUserReq) returns (guild_user.GuildUser);
+  rpc GetUsers(GuildInfoReq) returns (guild_user.GuildUserList);
+  rpc DeleteUser(guild_user.GuildUserReq) returns (common.ResponseMessage);
+}
+
+message Guild {
+  string guild_id = 1;
+  string name = 2;
+  string icon = 3; // not used, future
+  string owner_id = 4;
+  repeated role.Role roles = 5;
+}
+
+message CreateGuildRequest {
+  string caller_id = 1;
+  string name = 2;
+  string icon = 3; // not used, future
+}
+
+message GuildInfoReq {
+  string guild_id = 1;
+  string caller_id = 2;
+}
+
+message UpdateGuildRequest {
+  string caller_id = 1;
+  Guild guild = 2;
+}
+
+message GuildList {
+  repeated Guild guilds = 1;
+}
+
+
+==== ./spring_grpc/src/main/proto\guild_user.proto ====
+syntax = "proto3";
+package guild_user;
+
+import "role.proto";
+
+message GuildUser {
+  string guild_user_id = 1;
+  string nick = 2;
+  repeated role.RoleList roles = 3;
+}
+
+message GuildUserList {
+  repeated GuildUser guild_users = 1;
+}
+
+message UpdateUserReq {
+  string caller_id = 1;
+  string guild_id = 2;
+  GuildUser user = 3;
+}
+
+message GuildUserReq {
+  string caller_id = 1;
+  string guild_id = 2;
+  string guild_user_id = 3;
+}
+
+message AddUser {
+  string caller_id = 1;
+  string guild_id = 2;
+}
+
+==== ./spring_grpc/src/main/proto\message.proto ====
+syntax = "proto3";
+package dmessage;
+option java_package = "com.drocsid.grpc.proto";
+option java_multiple_files = true;
+import "guild_user.proto";
+
+
+message Message {
+  string message_id = 1;
+  guild_user.GuildUser author = 2;
+  string content = 3;
+}
+
+message GeneralCreateMessageRequest {
+  string content = 4;
+}
+
+message GeneralMessageReq {
+  string message_id = 1;
+}
+
+message MessageList {
+  repeated Message messages = 1;
+}
+
+==== ./spring_grpc/src/main/proto\role.proto ====
+syntax = "proto3";
+package role;
+
+message Role {
+  string guild_role_id = 1;
+  string role_name = 2;
+  string permissions = 3;
+}
+
+message RoleList {
+  repeated Role roles = 1;
+}
+
+message CreateRoleReq {
+  string guild_id = 1;
+  string role_name = 2;
+  string permissions = 3;
+  string caller_id = 4;
+}
+
+message UpdateRoleReq {
+  string guild_id = 1;
+  Role role = 2;
+  string caller_id = 3;
+}
+
+message RoleReq {
+  string guild_id = 1;
+  string guild_role_id = 2;
+  string caller_id = 3;
+}
+
+==== ./spring_grpc/src/main/proto\say_hello.proto ====
+syntax = "proto3";
+package say_hello;
+
+
+option java_package = "com.drocsid.grpc.proto";
+option java_multiple_files = true;
+
+
+service Greeter {
+  rpc SayHello (HelloRequest) returns (HelloReply) {}
+}
+
+
+message HelloRequest {
+  string name = 1;
+}
+
+
+message HelloReply {
+  string message = 1;
+}
+
+==== ./spring_grpc/src/main/proto\user.proto ====
+syntax = "proto3";
+package user;
+option java_package = "com.drocsid.grpc.proto";
+option java_multiple_files = true;
+import "common.proto";
+
+service UserService {
+  rpc CreateUser(CreateUserRequest) returns (User);
+  rpc GetUser(UserId) returns (User);
+  rpc UpdateUser(UpdateUserRequest) returns (User);
+  rpc DeleteUser(UserId) returns (common.ResponseMessage);
+}
+
+message User {
+  string id = 1;
+  string name = 2;
+  string avatarHash = 3; // future
+}
+
+message CreateUserRequest {
+  string name = 1;
+}
+
+message UserId {
+  string user_id = 1;
+}
+
+message UpdateUserRequest {
+  string caller_id = 1;
+  string name = 2;
+  string avatarHash = 3; // future
+}
+

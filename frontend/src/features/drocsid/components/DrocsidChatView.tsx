@@ -1,6 +1,6 @@
 import React from "react";
 import type { DrocsidMessage } from "../types";
-import { DROCSID_THEME } from "../theme";
+import { useDrocsidTheme } from "../theme-provider";
 
 type DrocsidChatViewProps = {
 	title: string;
@@ -14,41 +14,43 @@ type DrocsidChatViewProps = {
 export function DrocsidChatView(props: DrocsidChatViewProps) {
 	const { title, messages, isDm } = props;
 
+	const { theme } = useDrocsidTheme();
+
 	const displayTitle = title || (isDm ? "Znajomy" : "brak-kanału");
 	const inputTargetLabel = isDm ? displayTitle : `#${displayTitle}`;
 
 	return (
-		<main className="grid grid-rows-[auto_1fr_auto]" style={{ backgroundColor: DROCSID_THEME.mainChat.background }}>
+		<main className="grid grid-rows-[auto_1fr_auto]" style={{ backgroundColor: theme.mainChat.background }}>
 			<div
 				className="h-12 px-4 border-b flex items-center gap-3"
 				style={{
-					backgroundColor: DROCSID_THEME.mainChat.headerBackground,
-					borderColor: DROCSID_THEME.mainChat.border,
+					backgroundColor: theme.mainChat.headerBackground,
+					borderColor: theme.mainChat.border,
 				}}>
 				<div className="text-slate-400">{isDm ? <span className="inline-block w-6 h-6 rounded-full bg-slate-300 grid place-items-center text-xs">🙂</span> : "#"}</div>
-				<div className="font-medium" style={{ color: DROCSID_THEME.mainChat.headline }}>
+				<div className="font-medium" style={{ color: theme.mainChat.headline }}>
 					{displayTitle}
 				</div>
 			</div>
 
 			<div className="overflow-auto p-4 space-y-4">
 				{messages.map((message) => (
-					<div key={message.id} className="flex gap-3">
+					<div key={String(message.id)} className="flex gap-3">
 						<div className="w-10 h-10 rounded-full bg-slate-300 grid place-items-center">👤</div>
 						<div className="flex-1">
 							<div className="flex items-baseline gap-2">
-								<span className="font-semibold" style={{ color: DROCSID_THEME.mainChat.headline }}>
+								<span className="font-semibold" style={{ color: theme.mainChat.headline }}>
 									{message.user}
 								</span>
-								<span className="text-xs text-slate-500">{message.time}</span>
+								<span className="text-xs text-slate-500">{message.timestamp}</span>
 							</div>
-							<div style={{ color: DROCSID_THEME.mainChat.text }}>{message.text}</div>
+							<div style={{ color: theme.mainChat.text }}>{message.text}</div>
 						</div>
 					</div>
 				))}
 
 				{messages.length === 0 && (
-					<div className="text-sm" style={{ color: DROCSID_THEME.mainChat.text }}>
+					<div className="text-sm" style={{ color: theme.mainChat.text }}>
 						Brak wiadomości. Napisz coś jako pierwszy.
 					</div>
 				)}
@@ -57,8 +59,8 @@ export function DrocsidChatView(props: DrocsidChatViewProps) {
 			<form
 				className="p-4 border-t"
 				style={{
-					backgroundColor: DROCSID_THEME.mainChat.headerBackground,
-					borderColor: DROCSID_THEME.mainChat.border,
+					backgroundColor: theme.mainChat.headerBackground,
+					borderColor: theme.mainChat.border,
 				}}
 				onSubmit={(event) => {
 					event.preventDefault();
@@ -68,13 +70,13 @@ export function DrocsidChatView(props: DrocsidChatViewProps) {
 					<input
 						className="flex-1 px-4 py-3 rounded-2xl border outline-none focus:ring-2"
 						style={{
-							backgroundColor: DROCSID_THEME.mainChat.inputBackground,
-							borderColor: DROCSID_THEME.mainChat.border,
-							color: DROCSID_THEME.mainChat.text,
+							backgroundColor: theme.mainChat.inputBackground,
+							borderColor: theme.mainChat.border,
+							color: theme.mainChat.text,
 						}}
 						placeholder={`Napisz wiadomość do ${inputTargetLabel}…`}
 					/>
-					<button type="submit" className="px-4 py-3 rounded-2xl text-white hover:brightness-110 transition" style={{ backgroundColor: DROCSID_THEME.accent }}>
+					<button type="submit" className="px-4 py-3 rounded-2xl text-white hover:brightness-110 transition" style={{ backgroundColor: theme.accent }}>
 						Wyślij
 					</button>
 				</div>
