@@ -3,7 +3,7 @@ import json
 import requests
 from pathlib import Path
 
-API_URL = "http://localhost:8080/uploadImage"
+API_URL = "http://127.0.0.1:8080/uploadImage"
 CDN_URL = "http://127.0.0.1:10000/devstoreaccount1/drocsid"
 FILE_PATH = "image.png"   # file to upload
 SAS_FILE = "sas.txt"
