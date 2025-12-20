@@ -1,5 +1,10 @@
 #!/bin/sh
 
+# Get variables from .env
+set -a
+. /.env
+set +a
+
 # Start Azurite Blob Storage service
 azurite-blob --blobHost 0.0.0.0 --blobPort 10000 --loose &
 AZURITE_PID=$!
@@ -14,7 +19,7 @@ echo "Azurite is up."
 # Create drocsid container
 az storage container create \
   --name drocsid \
-  --connection-string "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://0.0.0.0:10000/devstoreaccount1" \
+  --connection-string "DefaultEndpointsProtocol=http;AccountName=${AZURE_STORAGE_ACCOUNT};AccountKey=${AZURE_STORAGE_ACCOUNT_KEY};BlobEndpoint=http://0.0.0.0:10000/${AZURE_STORAGE_ACCOUNT}" \
   --public-access blob
 
 echo "Container 'drocsid' created."
