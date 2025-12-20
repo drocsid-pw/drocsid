@@ -35,16 +35,16 @@ export function DrocsidChatView(props: DrocsidChatViewProps) {
 
 			<div className="overflow-auto p-4 space-y-4">
 				{messages.map((message) => (
-					<div key={String(message.id)} className="flex gap-3">
+					<div key={message.messageId} className="flex gap-3">
 						<div className="w-10 h-10 rounded-full bg-slate-300 grid place-items-center">👤</div>
 						<div className="flex-1">
 							<div className="flex items-baseline gap-2">
 								<span className="font-semibold" style={{ color: theme.mainChat.headline }}>
-									{message.user}
+									{message.author.nick}
 								</span>
 								<span className="text-xs text-slate-500">{message.timestamp}</span>
 							</div>
-							<div style={{ color: theme.mainChat.text }}>{message.text}</div>
+							<div style={{ color: theme.mainChat.text }}>{message.content}</div>
 						</div>
 					</div>
 				))}

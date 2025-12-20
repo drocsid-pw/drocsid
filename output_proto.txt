@@ -151,7 +151,7 @@ import "role.proto";
 message GuildUser {
   string guild_user_id = 1;
   string nick = 2;
-  repeated role.RoleList roles = 3;
+  role.RoleList roles = 3;
 }
 
 message GuildUserList {

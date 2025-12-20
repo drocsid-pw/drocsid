@@ -1,5 +1,5 @@
 import React from "react";
-import type { DrocsidChannel, DrocsidServer, DrocsidFriend, DrocsidUser } from "../types";
+import type { DrocsidChannel, DrocsidFriend, DrocsidGuild, DrocsidUser } from "../types";
 import { useDrocsidTheme } from "../theme-provider";
 
 type DrocsidSideMode = "servers" | "friends";
@@ -54,15 +54,15 @@ export function DrocsidChannelsBar(props: DrocsidChannelsBarProps) {
 						</div>
 
 						{channels.map((channel) => {
-							const isActive = activeChannelId !== null && channel.id === activeChannelId;
+							const isActive = activeChannelId !== null && channel.channelId === activeChannelId;
 
 							return (
 								<button
-									key={String(channel.id)}
+									key={channel.channelId}
 									type="button"
 									className={`w-full text-left px-3 py-2 rounded-lg transition ${isActive ? "bg-white/10 text-white" : "hover:bg-white/5"}`}
 									title={`#${channel.name}`}
-									onClick={() => onSelectChannel(channel.id)}>
+									onClick={() => onSelectChannel(channel.channelId)}>
 									<span className="mr-1 text-slate-400">#</span>
 									<span style={{ color: isActive ? undefined : theme.channelsBar.text }}>{channel.name}</span>
 								</button>
@@ -80,7 +80,7 @@ export function DrocsidChannelsBar(props: DrocsidChannelsBarProps) {
 
 							return (
 								<button
-									key={String(friend.id)}
+									key={friend.id}
 									type="button"
 									className={`w-full text-left px-2 py-2 rounded-lg transition ${isActive ? "bg-white/10 text-white" : "hover:bg-white/5"}`}
 									onClick={() => onSelectFriend(friend.id)}

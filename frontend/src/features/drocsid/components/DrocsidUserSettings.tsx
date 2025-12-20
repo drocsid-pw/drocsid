@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { getInitialDrocsidThemeKey, useDrocsidTheme, DROCSID_THEME_STORAGE_KEY } from "../theme-provider";
 
-type ProtoUpdateUserRequest = {
+type PutUserBody = {
 	caller_id: string;
 	name: string;
 	avatarHash: string;
@@ -34,13 +34,13 @@ export function DrocsidUserSettings() {
 	const handleSave = (event: React.FormEvent) => {
 		event.preventDefault();
 
-		const payload: ProtoUpdateUserRequest = {
+		const payload: PutUserBody = {
 			caller_id: currentUserId,
 			name: displayName.trim(),
 			avatarHash: avatarHash.trim(),
 		};
 
-		alert(`UserService.UpdateUser(UpdateUserRequest)\n\n${JSON.stringify(payload, null, 2)}`);
+		alert(`PUT /api/users/${currentUserId}\n\n${JSON.stringify(payload, null, 2)}`);
 	};
 
 	const renderAccountSection = () => {
@@ -48,20 +48,20 @@ export function DrocsidUserSettings() {
 			<div className="space-y-6">
 				<div>
 					<h3 className="text-sm font-semibold">Konto</h3>
-					<p className={`text-xs mt-1 ${ui.muted}`}>user.User</p>
+					<p className={`text-xs mt-1 ${ui.muted}`}>PUT /api/users/{`{userId}`}</p>
 				</div>
 
 				<div className="grid gap-4 md:grid-cols-2">
 					<label className="flex flex-col gap-1 text-sm">
 						<span className={`font-medium ${ui.label}`}>Nazwa</span>
 						<input value={displayName} onChange={(event) => setDisplayName(event.target.value)} className={`px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 ${ui.input}`} />
-						<span className={`text-xs ${ui.muted}`}>user.name</span>
+						<span className={`text-xs ${ui.muted}`}>name</span>
 					</label>
 
 					<div className="flex flex-col gap-1 text-sm">
 						<span className={`font-medium ${ui.label}`}>User ID</span>
 						<div className={`px-3 py-2 rounded-lg border text-xs ${ui.box}`}>{currentUserId}</div>
-						<span className={`text-xs ${ui.muted}`}>user.id</span>
+						<span className={`text-xs ${ui.muted}`}>id</span>
 					</div>
 
 					<label className="flex flex-col gap-1 text-sm md:col-span-2">
@@ -72,7 +72,7 @@ export function DrocsidUserSettings() {
 							placeholder="(opcjonalnie)"
 							className={`px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 ${ui.input}`}
 						/>
-						<span className={`text-xs ${ui.muted}`}>user.avatarHash</span>
+						<span className={`text-xs ${ui.muted}`}>avatarHash</span>
 					</label>
 				</div>
 			</div>
@@ -111,7 +111,7 @@ export function DrocsidUserSettings() {
 		<section className={`h-full rounded-2xl border p-4 shadow-sm flex flex-col ${ui.panel}`}>
 			<header className="mb-4">
 				<h2 className="text-lg font-semibold">Ustawienia użytkownika</h2>
-				<p className={`text-xs mt-1 ${ui.muted}`}>UpdateUser: caller_id, name, avatarHash</p>
+				<p className={`text-xs mt-1 ${ui.muted}`}>REST: PUT user</p>
 			</header>
 
 			<div className="flex-1 flex gap-6 overflow-hidden">

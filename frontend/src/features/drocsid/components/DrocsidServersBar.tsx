@@ -1,15 +1,15 @@
 import React from "react";
-import type { DrocsidServer } from "../types";
+import type { DrocsidGuild } from "../types";
 import { useDrocsidTheme } from "../theme-provider";
 
 type DrocsidSideMode = "servers" | "friends";
 
 type DrocsidServersBarProps = {
 	servers: DrocsidGuild[];
-	activeServerId: bigint | null;
+	activeServerId: string | null;
 	sideMode: DrocsidSideMode;
 	onSelectSideMode: (mode: DrocsidSideMode) => void;
-	onSelectServer: (serverId: string) => void;
+	onSelectServer: (guildId: string) => void;
 	onOpenCreateServer: () => void;
 };
 
@@ -36,17 +36,17 @@ export function DrocsidServersBar(props: DrocsidServersBarProps) {
 			<div className="w-8 h-px my-2" style={{ backgroundColor: theme.serversBar.divider }} />
 
 			{servers.map((server) => {
-				const isActive = sideMode === "servers" && activeServerId !== null && server.id === activeServerId;
+				const isActive = sideMode === "servers" && activeServerId !== null && server.guildId === activeServerId;
 
 				return (
 					<button
-						key={String(server.id)}
+						key={server.guildId}
 						type="button"
 						className={`w-12 h-12 rounded-2xl grid place-items-center transition ${isActive ? "bg-white text-[#1f2937]" : "bg-white/10 hover:bg-white/20"}`}
 						title={server.name}
 						onClick={() => {
 							onSelectSideMode("servers");
-							onSelectServer(server.id);
+							onSelectServer(server.guildId);
 						}}>
 						<span className="text-xl">{server.icon}</span>
 					</button>

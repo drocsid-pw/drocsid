@@ -1,51 +1,60 @@
 export type DrocsidStatus = "online" | "idle" | "dnd" | "offline";
 
-export type DrocsidMessage = {
-	id: bigint;
-	authorId: bigint;
-	authorName: string;
-	timestamp: string;
-	content: string;
-	channelId: bigint;
-};
-
 export type DrocsidPermission = "MANAGE_GUILD_USERS" | "MANAGE_CHANNEL" | "ADMIN_DELETE_MESSAGES" | "MANAGE_GUILD" | "READ" | "WRITE";
 
 export type DrocsidRole = {
-	id: string;
-	name: string;
-	permissions: DrocsidPermission[];
+	guildRoleId: string;
+	roleName: string;
+	permissions: string;
 	system?: boolean;
 };
 
-export type DrocsidChannel = {
-	id: bigint;
-	name: string;
-	messages: DrocsidMessage[];
-	overrides?: DrocsidRole[];
+export type DrocsidRoleList = {
+	roles: DrocsidRole[];
 };
 
 export type DrocsidGuildUser = {
-	id: string;
+	guildUserId: string;
 	nick: string;
-	roleIds: string[];
-};
-
-export type DrocsidGuild = {
-	id: bigint;
-	name: string;
-	icon: string;
-	ownerId: bigint;
-	channels: DrocsidChannel[];
-	roles?: DrocsidRole[];
-	users?: DrocsidGuildUser[];
+	roles: DrocsidRoleList;
 };
 
 export type DrocsidUser = {
-	id: bigint;
+	id: string;
 	name: string;
-	avatarLetter: string;
 	avatarHash: string;
+	avatarLetter: string;
 };
 
-export type DrocsidFriend = DrocsidUser;
+export type DrocsidMessage = {
+	messageId: string;
+	author: DrocsidGuildUser;
+	content: string;
+	timestamp: string;
+};
+
+export type DrocsidChannel = {
+	channelId: string;
+	name: string;
+	guildId: string;
+	overrides: DrocsidRoleList;
+	messages: DrocsidMessage[];
+};
+
+export type DrocsidGuild = {
+	guildId: string;
+	name: string;
+	icon: string;
+	ownerId: string;
+
+	roles: DrocsidRole[];
+	channels: DrocsidChannel[];
+	users: DrocsidGuildUser[];
+};
+
+export type DrocsidFriend = {
+	id: string;
+	name: string;
+	avatarLetter: string;
+	status: DrocsidStatus;
+};

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import type { DrocsidChannel, DrocsidGuild, DrocsidFriend } from "../types";
+import type { DrocsidChannel, DrocsidFriend, DrocsidGuild } from "../types";
 import { currentUser, mockServers, mockFriends, mockFriendMessages } from "../data/mockData";
 import { DrocsidServersBar } from "./DrocsidServersBar";
 import { DrocsidChannelsBar } from "./DrocsidChannelsBar";
@@ -18,8 +18,8 @@ const DROCSID_LAYOUT = {
 	mainWidth: "74vw",
 };
 
-function replaceServer(servers: DrocsidServer[], next: DrocsidServer) {
-	return servers.map((s) => (s.id === next.id ? next : s));
+function replaceServer(servers: DrocsidGuild[], next: DrocsidGuild) {
+	return servers.map((s) => (s.guildId === next.guildId ? next : s));
 }
 
 export function DrocsidMainView() {
@@ -27,31 +27,31 @@ export function DrocsidMainView() {
 
 	const callerId = currentUser.id;
 
-	const [servers, setServers] = useState<DrocsidServer[]>(() => mockServers);
+	const [servers, setServers] = useState<DrocsidGuild[]>(() => mockServers);
 
 	const [viewMode, setViewMode] = useState<DrocsidViewMode>("chat");
 	const [sideMode, setSideMode] = useState<DrocsidSideMode>("servers");
 
-	const [activeServerId, setActiveServerId] = useState<string | null>(() => servers[0]?.id ?? null);
+	const [activeServerId, setActiveServerId] = useState<string | null>(() => servers[0]?.guildId ?? null);
 
 	const [activeChannelId, setActiveChannelId] = useState<string | null>(() => {
 		const firstServer = servers[0];
 		if (!firstServer || firstServer.channels.length === 0) {
 			return null;
 		}
-		return firstServer.channels[0].id;
+		return firstServer.channels[0].channelId;
 	});
 
 	const [activeFriendId, setActiveFriendId] = useState<string | null>(() => mockFriends[0]?.id ?? null);
 
-	const activeServer = useMemo<DrocsidServer | null>(() => {
+	const activeServer = useMemo<DrocsidGuild | null>(() => {
 		if (servers.length === 0) {
 			return null;
 		}
 		if (!activeServerId) {
 			return servers[0] ?? null;
 		}
-		const found = servers.find((server) => server.id === activeServerId);
+		const found = servers.find((server) => server.guildId === activeServerId);
 		return found ?? servers[0] ?? null;
 	}, [servers, activeServerId]);
 
@@ -67,9 +67,9 @@ export function DrocsidMainView() {
 			return;
 		}
 
-		const existsInServer = channels.some((channel) => channel.id === activeChannelId);
+		const existsInServer = channels.some((channel) => channel.channelId === activeChannelId);
 		if (!existsInServer) {
-			setActiveChannelId(channels[0]?.id ?? null);
+			setActiveChannelId(channels[0]?.channelId ?? null);
 		}
 	}, [activeServerId, activeServer, channels, activeChannelId]);
 
@@ -80,7 +80,7 @@ export function DrocsidMainView() {
 		if (!activeChannelId) {
 			return channels[0] ?? null;
 		}
-		const found = channels.find((channel) => channel.id === activeChannelId);
+		const found = channels.find((channel) => channel.channelId === activeChannelId);
 		return found ?? channels[0] ?? null;
 	}, [activeServer, channels, activeChannelId]);
 
@@ -115,8 +115,8 @@ export function DrocsidMainView() {
 					onCreated={(server) => {
 						setServers((current) => [...current, server]);
 						setSideMode("servers");
-						setActiveServerId(server.id);
-						setActiveChannelId(server.channels[0]?.id ?? null);
+						setActiveServerId(server.guildId);
+						setActiveChannelId(server.channels[0]?.channelId ?? null);
 						setViewMode("chat");
 					}}
 				/>
@@ -134,7 +134,7 @@ export function DrocsidMainView() {
 				<DrocsidServerSettings
 					server={activeServer}
 					callerId={callerId}
-					initialChannelId={activeChannel?.id ?? null}
+					initialChannelId={activeChannel?.channelId ?? null}
 					onSaved={(nextServer) => {
 						setServers((current) => replaceServer(current, nextServer));
 					}}
@@ -157,16 +157,16 @@ export function DrocsidMainView() {
 				}}>
 				<DrocsidServersBar
 					servers={servers}
-					activeServerId={sideMode === "servers" ? activeServer?.id ?? null : null}
+					activeServerId={sideMode === "servers" ? activeServer?.guildId ?? null : null}
 					sideMode={sideMode}
 					onSelectSideMode={(mode) => {
 						setSideMode(mode);
 						setViewMode("chat");
 					}}
-					onSelectServer={(serverId) => {
+					onSelectServer={(guildId) => {
 						setSideMode("servers");
 						setViewMode("chat");
-						setActiveServerId(serverId);
+						setActiveServerId(guildId);
 					}}
 					onOpenCreateServer={() => setViewMode("createServer")}
 				/>
@@ -175,7 +175,7 @@ export function DrocsidMainView() {
 					mode={sideMode}
 					server={sideMode === "servers" ? activeServer : null}
 					channels={sideMode === "servers" ? channels : []}
-					activeChannelId={sideMode === "servers" ? activeChannel?.id ?? null : null}
+					activeChannelId={sideMode === "servers" ? activeChannel?.channelId ?? null : null}
 					onSelectChannel={(channelId) => {
 						setSideMode("servers");
 						setViewMode("chat");
