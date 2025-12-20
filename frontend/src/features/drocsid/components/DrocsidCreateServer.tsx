@@ -1,47 +1,29 @@
 import React, { useMemo, useState } from "react";
-import type { DrocsidGuild, DrocsidRole } from "../types";
 import { useDrocsidTheme } from "../theme-provider";
 import { PERMISSION_FLAGS, type PermissionFlag, permissionsStringToRecord, recordToPermissionsString } from "../permissions";
-import { rolesToRoleForms, roleFormToDrocsidRole, type RoleForm } from "../roles";
-
-type CreateGuildBody = {
-	caller_id: string;
-	name: string;
-	icon: string;
-};
-
-type CreateRoleBody = {
-	caller_id: string;
-	roleName: string;
-	permissions: string;
-};
+import { rolesToRoleForms, type RoleForm } from "../roles";
+import { useDrocsidApi } from "../../../api/useDrocsidApi";
+import { isDrocsidApiError } from "../../../api/http";
 
 type DrocsidCreateServerProps = {
-	callerId: string;
 	onCancel: () => void;
-	onCreated: (server: DrocsidGuild) => void;
+	onCreated: (guildId: string) => void;
 };
 
-function buildSystemRoles(guildId: string): DrocsidRole[] {
-	return [
-		{
-			guildRoleId: `${guildId}-role-owner`,
-			roleName: "@owner",
-			permissions: "MANAGE_GUILD_USERS|MANAGE_CHANNEL|ADMIN_DELETE_MESSAGES|MANAGE_GUILD|READ|WRITE",
-			system: true,
-		},
-		{
-			guildRoleId: `${guildId}-role-everyone`,
-			roleName: "@everyone",
-			permissions: "READ|WRITE",
-			system: true,
-		},
-	];
+function getErrorText(err: unknown): string {
+	if (isDrocsidApiError(err)) {
+		return `${err.code}: ${err.message}`;
+	}
+	if (err instanceof Error) {
+		return err.message;
+	}
+	return "Nieznany błąd";
 }
 
 export function DrocsidCreateServer(props: DrocsidCreateServerProps) {
-	const { callerId, onCancel, onCreated } = props;
+	const { onCancel, onCreated } = props;
 
+	const api = useDrocsidApi();
 	const { isDark } = useDrocsidTheme();
 
 	const ui = useMemo(() => {
@@ -69,17 +51,20 @@ export function DrocsidCreateServer(props: DrocsidCreateServerProps) {
 	const [roles, setRoles] = useState<RoleForm[]>(() =>
 		rolesToRoleForms([
 			{
-				guildRoleId: `tmp-${Date.now()}-admin`,
+				guildRoleId: `local-${Date.now()}-admin`,
 				roleName: "Admin",
 				permissions: "MANAGE_GUILD_USERS|MANAGE_CHANNEL|ADMIN_DELETE_MESSAGES|MANAGE_GUILD|READ|WRITE",
 			},
 			{
-				guildRoleId: `tmp-${Date.now()}-mod`,
+				guildRoleId: `local-${Date.now()}-mod`,
 				roleName: "Moderator",
 				permissions: "MANAGE_GUILD_USERS|MANAGE_CHANNEL|ADMIN_DELETE_MESSAGES|READ|WRITE",
 			},
 		]).map((r) => ({ ...r, isNew: true }))
 	);
+
+	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [error, setError] = useState<string | null>(null);
 
 	const handleAddRole = () => {
 		const baseName = "Nowa rola";
@@ -87,6 +72,7 @@ export function DrocsidCreateServer(props: DrocsidCreateServerProps) {
 
 		const existing = new Set(roles.map((r) => r.roleName.toLowerCase()));
 		let candidate = baseName;
+
 		while (existing.has(candidate.toLowerCase())) {
 			index += 1;
 			candidate = `${baseName} ${index}`;
@@ -95,7 +81,7 @@ export function DrocsidCreateServer(props: DrocsidCreateServerProps) {
 		setRoles((current) => [
 			...current,
 			{
-				guildRoleId: `tmp-${Date.now()}`,
+				guildRoleId: `local-${Date.now()}`,
 				roleName: candidate,
 				permissions: permissionsStringToRecord("READ|WRITE"),
 				isNew: true,
@@ -118,59 +104,50 @@ export function DrocsidCreateServer(props: DrocsidCreateServerProps) {
 		);
 	};
 
-	const handleCreate = (event: React.FormEvent) => {
+	const handleCreate = async (event: React.FormEvent) => {
 		event.preventDefault();
+		setError(null);
 
-		const newGuildId = `server-${Date.now()}`;
+		if (!api) {
+			setError("Brak API (auth). Zaloguj się ponownie.");
+			return;
+		}
 
-		const createGuildBody: CreateGuildBody = {
-			caller_id: callerId,
-			name: guildName.trim(),
-			icon: guildIcon.trim(),
-		};
+		const name = guildName.trim();
+		if (!name) {
+			setError("Nazwa serwera jest wymagana.");
+			return;
+		}
 
-		const createRoleBodies: CreateRoleBody[] = roles.map((r) => ({
-			caller_id: callerId,
-			roleName: r.roleName.trim(),
-			permissions: recordToPermissionsString(r.permissions),
-		}));
+		setIsSubmitting(true);
 
-		const systemRoles = buildSystemRoles(newGuildId);
-		const userRoles: DrocsidRole[] = roles.map((r, idx) => ({
-			...roleFormToDrocsidRole(r),
-			guildRoleId: `${newGuildId}-role-${idx + 1}`,
-		}));
+		try {
+			const createdGuild = await api.createGuild({ name, icon: guildIcon.trim() || "✨" });
+			const guildId = createdGuild.guildId ?? "";
 
-		const everyone = systemRoles.find((r) => r.roleName === "@everyone");
-		const owner = systemRoles.find((r) => r.roleName === "@owner");
+			if (!guildId) {
+				throw new Error("Backend nie zwrócił guildId");
+			}
 
-		const createdServer: DrocsidGuild = {
-			guildId: newGuildId,
-			name: guildName.trim(),
-			icon: guildIcon.trim() || "✨",
-			ownerId: callerId,
-			roles: [...systemRoles, ...userRoles],
-			channels: [
-				{
-					channelId: "general",
-					name: "general",
-					guildId: newGuildId,
-					overrides: { roles: [] },
-					messages: [],
-				},
-			],
-			users: [
-				{
-					guildUserId: `${newGuildId}-user-${callerId}`,
-					nick: "Ty",
-					roles: { roles: [owner ?? systemRoles[0], everyone ?? systemRoles[1]] },
-				},
-			],
-		};
+			await api.addUserToGuild(guildId);
 
-		alert(["POST /api/guilds", JSON.stringify(createGuildBody, null, 2), "", `POST /api/guilds/${newGuildId}/roles (x${createRoleBodies.length})`, JSON.stringify(createRoleBodies, null, 2), "", "Symulacja: nowy guildId", newGuildId].join("\n"));
+			const roleCreates = roles
+				.map((r) => ({
+					roleName: r.roleName.trim(),
+					permissions: recordToPermissionsString(r.permissions),
+				}))
+				.filter((r) => r.roleName);
 
-		onCreated(createdServer);
+			await Promise.all(roleCreates.map((r) => api.createRole(guildId, r)));
+
+			await api.createChannel(guildId, "general");
+
+			onCreated(guildId);
+		} catch (e) {
+			setError(getErrorText(e));
+		} finally {
+			setIsSubmitting(false);
+		}
 	};
 
 	const renderGeneralSection = () => {
@@ -262,7 +239,7 @@ export function DrocsidCreateServer(props: DrocsidCreateServerProps) {
 					</table>
 				</div>
 
-				<div className={`text-[11px] ${ui.muted}`}>@owner i @everyone zwykle tworzy backend. Tutaj dodajemy role userowe.</div>
+				<div className={`text-[11px] ${ui.muted}`}>Systemowe role (@owner/@everyone) zwykle tworzy backend. Tu dodajesz role userowe.</div>
 			</div>
 		);
 	};
@@ -273,7 +250,9 @@ export function DrocsidCreateServer(props: DrocsidCreateServerProps) {
 		<section className={`h-full rounded-2xl border p-4 shadow-sm flex flex-col ${ui.panel}`}>
 			<header className="mb-4">
 				<h2 className="text-lg font-semibold">Utwórz serwer</h2>
-				<p className={`text-xs mt-1 ${ui.muted}`}>REST: CreateGuild + CreateRole</p>
+				<p className={`text-xs mt-1 ${ui.muted}`}>REST: CreateGuild + CreateRole + CreateChannel + AddUser</p>
+
+				{error && <div className="mt-3 text-xs text-red-400">{error}</div>}
 			</header>
 
 			<div className="flex-1 flex gap-6 overflow-hidden">
@@ -296,11 +275,11 @@ export function DrocsidCreateServer(props: DrocsidCreateServerProps) {
 					{sectionContent}
 
 					<div className={`border-t pt-4 mt-auto flex justify-end gap-3 ${ui.border}`}>
-						<button type="button" className={`px-4 py-2 text-sm rounded-lg border transition ${ui.buttonGhost}`} onClick={onCancel}>
+						<button type="button" className={`px-4 py-2 text-sm rounded-lg border transition ${ui.buttonGhost}`} onClick={onCancel} disabled={isSubmitting}>
 							Anuluj
 						</button>
-						<button type="submit" className={`px-4 py-2 text-sm rounded-lg transition ${ui.buttonPrimary}`}>
-							Utwórz
+						<button type="submit" className={`px-4 py-2 text-sm rounded-lg transition ${ui.buttonPrimary}`} disabled={isSubmitting}>
+							{isSubmitting ? "Tworzę..." : "Utwórz"}
 						</button>
 					</div>
 				</form>

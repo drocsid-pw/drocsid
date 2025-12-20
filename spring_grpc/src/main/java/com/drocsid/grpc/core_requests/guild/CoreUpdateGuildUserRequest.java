@@ -22,6 +22,6 @@ public class CoreUpdateGuildUserRequest {
         this.userId = new BigInteger(userIdString);
         this.guildId = new BigInteger(request.getGuildId());
         this.nick = request.getUser().getNick();
-        this.roles = request.getUser().getRolesList();
+        this.roles = request.getUser().getRoles().getRolesList();
     }
 }

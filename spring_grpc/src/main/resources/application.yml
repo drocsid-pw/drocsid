@@ -1,14 +1,14 @@
 server:
-  port: 0
+    port: 8080
 
 grpc:
-  server:
-    port: 9090
+    server:
+        port: 9090
 
 logging:
-  level:
-    root: INFO
+    level:
+        root: INFO
 
 spring:
-  main:
-    banner-mode: "off"
+    main:
+        banner-mode: "off"

@@ -1,4 +1,4 @@
-==== ./spring_grpc\src\main\java\com\drocsid\grpc\DrocsidApplication.java ====
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\DrocsidApplication.java ====
 package com.drocsid.grpc;
 
 import org.springframework.boot.SpringApplication;
@@ -13,7 +13,7 @@ public class DrocsidApplication {
 }
 
 
-==== ./spring_grpc\src\main\java\com\drocsid\grpc\auth\JwtAuthDemo.java ====
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\auth\JwtAuthDemo.java ====
 package com.drocsid.grpc.auth;
 
 import org.slf4j.Logger;
@@ -59,7 +59,7 @@ public class JwtAuthDemo {
     }
 }
 
-==== ./spring_grpc\src\main\java\com\drocsid\grpc\auth\JwtAuthService.java ====
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\auth\JwtAuthService.java ====
 package com.drocsid.grpc.auth;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
@@ -129,7 +129,7 @@ public class JwtAuthService {
     }
 }
 
-==== ./spring_grpc\src\main\java\com\drocsid\grpc\core_requests\channel\CoreCreateMessageRequest.java ====
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\channel\CoreCreateMessageRequest.java ====
 package com.drocsid.grpc.core_requests.channel;
 
 import com.drocsid.grpc.proto.CreateMessageReq;
@@ -153,7 +153,7 @@ public class CoreCreateMessageRequest {
 }
 
 
-==== ./spring_grpc\src\main\java\com\drocsid\grpc\core_requests\channel\CoreDeleteChannelRequest.java ====
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\channel\CoreDeleteChannelRequest.java ====
 package com.drocsid.grpc.core_requests.channel;
 
 import com.drocsid.grpc.proto.ChannelInfoReq;
@@ -177,7 +177,7 @@ public class CoreDeleteChannelRequest {
 }
 
 
-==== ./spring_grpc\src\main\java\com\drocsid\grpc\core_requests\channel\CoreDeleteMessageRequest.java ====
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\channel\CoreDeleteMessageRequest.java ====
 package com.drocsid.grpc.core_requests.channel;
 
 import com.drocsid.grpc.proto.MessageReq;
@@ -203,7 +203,7 @@ public class CoreDeleteMessageRequest {
 }
 
 
-==== ./spring_grpc\src\main\java\com\drocsid\grpc\core_requests\channel\CoreGetChannelRequest.java ====
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\channel\CoreGetChannelRequest.java ====
 package com.drocsid.grpc.core_requests.channel;
 
 import com.drocsid.grpc.proto.ChannelInfoReq;
@@ -227,7 +227,7 @@ public class CoreGetChannelRequest {
 }
 
 
-==== ./spring_grpc\src\main\java\com\drocsid\grpc\core_requests\channel\CoreGetMessagesRequest.java ====
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\channel\CoreGetMessagesRequest.java ====
 package com.drocsid.grpc.core_requests.channel;
 
 import com.drocsid.grpc.proto.MessageBucketReq;
@@ -255,7 +255,7 @@ public class CoreGetMessagesRequest {
 }
 
 
-==== ./spring_grpc\src\main\java\com\drocsid\grpc\core_requests\channel\CoreUpdateChannelRequest.java ====
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\channel\CoreUpdateChannelRequest.java ====
 package com.drocsid.grpc.core_requests.channel;
 
 import com.drocsid.grpc.proto.Channel;
@@ -278,7 +278,7 @@ public class CoreUpdateChannelRequest {
 }
 
 
-==== ./spring_grpc\src\main\java\com\drocsid\grpc\core_requests\guild\CoreAddUserRequest.java ====
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\guild\CoreAddUserRequest.java ====
 package com.drocsid.grpc.core_requests.guild;
 
 import com.drocsid.grpc.proto.AddUser;
@@ -302,7 +302,7 @@ public class CoreAddUserRequest {
 }
 
 
-==== ./spring_grpc\src\main\java\com\drocsid\grpc\core_requests\guild\CoreCreateChannelRequest.java ====
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\guild\CoreCreateChannelRequest.java ====
 package com.drocsid.grpc.core_requests.guild;
 
 import com.drocsid.grpc.proto.CreateChannelRequest;
@@ -326,7 +326,7 @@ public class CoreCreateChannelRequest {
 }
 
 
-==== ./spring_grpc\src\main\java\com\drocsid\grpc\core_requests\guild\CoreCreateGuildRequest.java ====
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\guild\CoreCreateGuildRequest.java ====
 package com.drocsid.grpc.core_requests.guild;
 
 import com.drocsid.grpc.proto.CreateGuildRequest;
@@ -350,7 +350,7 @@ public class CoreCreateGuildRequest {
 }
 
 
-==== ./spring_grpc\src\main\java\com\drocsid\grpc\core_requests\guild\CoreCreateRoleRequest.java ====
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\guild\CoreCreateRoleRequest.java ====
 package com.drocsid.grpc.core_requests.guild;
 
 import com.drocsid.grpc.proto.CreateRoleReq;
@@ -378,7 +378,7 @@ public class CoreCreateRoleRequest {
 }
 
 
-==== ./spring_grpc\src\main\java\com\drocsid\grpc\core_requests\guild\CoreDeleteGuildRequest.java ====
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\guild\CoreDeleteGuildRequest.java ====
 package com.drocsid.grpc.core_requests.guild;
 
 import com.drocsid.grpc.proto.GuildInfoReq;
@@ -402,7 +402,7 @@ public class CoreDeleteGuildRequest {
 }
 
 
-==== ./spring_grpc\src\main\java\com\drocsid\grpc\core_requests\guild\CoreDeleteGuildUserRequest.java ====
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\guild\CoreDeleteGuildUserRequest.java ====
 package com.drocsid.grpc.core_requests.guild;
 
 import com.drocsid.grpc.proto.GuildUserReq;
@@ -428,7 +428,7 @@ public class CoreDeleteGuildUserRequest {
 }
 
 
-==== ./spring_grpc\src\main\java\com\drocsid\grpc\core_requests\guild\CoreGetAllChannelsRequest.java ====
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\guild\CoreGetAllChannelsRequest.java ====
 package com.drocsid.grpc.core_requests.guild;
 
 import com.drocsid.grpc.proto.GuildInfoReq;
@@ -452,7 +452,7 @@ public class CoreGetAllChannelsRequest {
 }
 
 
-==== ./spring_grpc\src\main\java\com\drocsid\grpc\core_requests\guild\CoreGetGuildRequest.java ====
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\guild\CoreGetGuildRequest.java ====
 package com.drocsid.grpc.core_requests.guild;
 
 import com.drocsid.grpc.proto.GuildInfoReq;
@@ -476,7 +476,7 @@ public class CoreGetGuildRequest {
 }
 
 
-==== ./spring_grpc\src\main\java\com\drocsid\grpc\core_requests\guild\CoreGetGuildUserRequest.java ====
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\guild\CoreGetGuildUserRequest.java ====
 package com.drocsid.grpc.core_requests.guild;
 
 import com.drocsid.grpc.proto.GuildUserReq;
@@ -502,7 +502,7 @@ public class CoreGetGuildUserRequest {
 }
 
 
-==== ./spring_grpc\src\main\java\com\drocsid\grpc\core_requests\guild\CoreGetGuildUsersRequest.java ====
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\guild\CoreGetGuildUsersRequest.java ====
 package com.drocsid.grpc.core_requests.guild;
 
 import com.drocsid.grpc.proto.GuildInfoReq;
@@ -526,7 +526,7 @@ public class CoreGetGuildUsersRequest {
 }
 
 
-==== ./spring_grpc\src\main\java\com\drocsid\grpc\core_requests\guild\CoreGetRoleRequest.java ====
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\guild\CoreGetRoleRequest.java ====
 package com.drocsid.grpc.core_requests.guild;
 
 import com.drocsid.grpc.proto.RoleReq;
@@ -552,7 +552,7 @@ public class CoreGetRoleRequest {
 }
 
 
-==== ./spring_grpc\src\main\java\com\drocsid\grpc\core_requests\guild\CoreGetRolesRequest.java ====
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\guild\CoreGetRolesRequest.java ====
 package com.drocsid.grpc.core_requests.guild;
 
 import com.drocsid.grpc.proto.GuildInfoReq;
@@ -575,7 +575,7 @@ public class CoreGetRolesRequest {
 }
 
 
-==== ./spring_grpc\src\main\java\com\drocsid\grpc\core_requests\guild\CoreUpdateGuildRequest.java ====
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\guild\CoreUpdateGuildRequest.java ====
 package com.drocsid.grpc.core_requests.guild;
 
 import com.drocsid.grpc.proto.UpdateGuildRequest;
@@ -607,7 +607,7 @@ public class CoreUpdateGuildRequest {
 }
 
 
-==== ./spring_grpc\src\main\java\com\drocsid\grpc\core_requests\guild\CoreUpdateGuildUserRequest.java ====
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\guild\CoreUpdateGuildUserRequest.java ====
 package com.drocsid.grpc.core_requests.guild;
 
 import com.drocsid.grpc.proto.Role;
@@ -632,12 +632,12 @@ public class CoreUpdateGuildUserRequest {
         this.userId = new BigInteger(userIdString);
         this.guildId = new BigInteger(request.getGuildId());
         this.nick = request.getUser().getNick();
-        this.roles = request.getUser().getRolesList();
+        this.roles = request.getUser().getRoles().getRolesList();
     }
 }
 
 
-==== ./spring_grpc\src\main\java\com\drocsid\grpc\core_requests\guild\CoreUpdateRoleRequest.java ====
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\guild\CoreUpdateRoleRequest.java ====
 package com.drocsid.grpc.core_requests.guild;
 
 import com.drocsid.grpc.proto.UpdateRoleReq;
@@ -667,7 +667,7 @@ public class CoreUpdateRoleRequest {
 }
 
 
-==== ./spring_grpc\src\main\java\com\drocsid\grpc\core_requests\user\CoreUpdateUserRequest.java ====
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\user\CoreUpdateUserRequest.java ====
 package com.drocsid.grpc.core_requests.user;
 
 import com.drocsid.grpc.proto.UpdateUserRequest;
@@ -691,7 +691,1558 @@ public class CoreUpdateUserRequest {
 }
 
 
-==== ./spring_grpc\src\main\java\com\drocsid\grpc\mock_classes\CoreClient.java ====
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\auth\RestAuthService.java ====
+package com.drocsid.grpc.http.auth;
+
+import com.drocsid.grpc.auth.JwtAuthService;
+import io.grpc.StatusRuntimeException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
+
+@Service
+public class RestAuthService {
+
+    private static final Logger logger = LoggerFactory.getLogger(RestAuthService.class);
+
+    private final JwtAuthService jwtAuthService;
+
+    public RestAuthService(JwtAuthService jwtAuthService) {
+        this.jwtAuthService = jwtAuthService;
+    }
+
+    /**
+     * Authenticates by Google ID token from Authorization header.
+     * If caller_id is provided and does not match token subject, we keep existing behavior:
+     * token wins and caller_id is ignored (we only log a warning).
+     */
+    public String authenticateAndGetUserId(String authorizationHeader, Optional<String> callerId) throws StatusRuntimeException {
+        String userIdFromToken = jwtAuthService.checkAuth(authorizationHeader);
+
+        if (callerId.isPresent() && !callerId.get().equals(userIdFromToken)) {
+            logger.warn(
+                "caller_id {} does not match token subject {}. Ignoring caller_id and using token subject.",
+                callerId.get(),
+                userIdFromToken
+            );
+        }
+
+        return userIdFromToken;
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\controller\ChannelController.java ====
+package com.drocsid.grpc.http.controller;
+
+import com.drocsid.grpc.core_requests.channel.*;
+import com.drocsid.grpc.http.auth.RestAuthService;
+import com.drocsid.grpc.http.dto.*;
+import com.drocsid.grpc.http.mapper.ProtoMapper;
+import com.drocsid.grpc.http.util.IdParser;
+import com.drocsid.grpc.mock_classes.CoreClient;
+import com.drocsid.grpc.proto.Channel;
+import com.drocsid.grpc.proto.Message;
+import com.drocsid.grpc.proto.Role;
+import com.drocsid.grpc.proto.RoleList;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.grpc.Status;
+import lombok.Data;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/api/channels")
+public class ChannelController {
+
+    private final CoreClient coreClient;
+    private final RestAuthService restAuthService;
+
+    public ChannelController(CoreClient coreClient, RestAuthService restAuthService) {
+        this.coreClient = coreClient;
+        this.restAuthService = restAuthService;
+    }
+
+    @GetMapping("/{channelId}")
+    public ChannelDto getChannel(
+        @RequestHeader(value = "Authorization", required = false) String authorization,
+        @PathVariable String channelId,
+        @RequestParam(value = "caller_id", required = false) String callerId
+    ) {
+        String authedUserId = restAuthService.authenticateAndGetUserId(authorization, Optional.ofNullable(callerId));
+
+        CoreGetChannelRequest req = new CoreGetChannelRequest(
+            IdParser.toBigInteger(authedUserId, "callerId"),
+            IdParser.toBigInteger(channelId, "channelId")
+        );
+
+        Channel channel = coreClient.getChannel(req);
+        return ProtoMapper.toDto(channel);
+    }
+
+    @PutMapping("/{channelId}")
+    public ChannelDto putChannel(
+        @RequestHeader(value = "Authorization", required = false) String authorization,
+        @PathVariable String channelId,
+        @RequestBody PutChannelBody body
+    ) {
+        String authedUserId = restAuthService.authenticateAndGetUserId(
+            authorization,
+            Optional.ofNullable(body == null ? null : body.getCallerId())
+        );
+
+        if (body == null || body.getChannel() == null) {
+            throw Status.INVALID_ARGUMENT.withDescription("channel is required").asRuntimeException();
+        }
+
+        ChannelBody ch = body.getChannel();
+
+        if (ch.getName() == null || ch.getName().trim().isEmpty()) {
+            throw Status.INVALID_ARGUMENT.withDescription("channel.name is required").asRuntimeException();
+        }
+
+        Channel.Builder builder = Channel.newBuilder()
+            .setChannelId(channelId)
+            .setName(ch.getName());
+
+        if (ch.getGuildId() != null) {
+            builder.setGuildId(ch.getGuildId());
+        }
+
+        if (ch.getOverrides() != null) {
+            builder.setOverrides(mapRoleList(ch.getOverrides()));
+        } else {
+            builder.setOverrides(RoleList.newBuilder().build());
+        }
+
+        CoreUpdateChannelRequest req = new CoreUpdateChannelRequest(
+            IdParser.toBigInteger(authedUserId, "callerId"),
+            builder.build()
+        );
+
+        Channel updated = coreClient.updateChannel(req);
+        return ProtoMapper.toDto(updated);
+    }
+
+    @DeleteMapping("/{channelId}")
+    public ResponseMessageDto deleteChannel(
+        @RequestHeader(value = "Authorization", required = false) String authorization,
+        @PathVariable String channelId,
+        @RequestParam(value = "caller_id", required = false) String callerId
+    ) {
+        String authedUserId = restAuthService.authenticateAndGetUserId(authorization, Optional.ofNullable(callerId));
+
+        CoreDeleteChannelRequest req = new CoreDeleteChannelRequest(
+            IdParser.toBigInteger(authedUserId, "callerId"),
+            IdParser.toBigInteger(channelId, "channelId")
+        );
+
+        coreClient.deleteChannel(req);
+        return new ResponseMessageDto("Channel deleted successfully.");
+    }
+
+    @GetMapping("/{channelId}/messages")
+    public MessageListDto getMessages(
+        @RequestHeader(value = "Authorization", required = false) String authorization,
+        @PathVariable String channelId,
+        @RequestParam(value = "caller_id", required = false) String callerId,
+        @RequestParam(value = "offset", defaultValue = "0") int offset,
+        @RequestParam(value = "count", defaultValue = "50") int count
+    ) {
+        String authedUserId = restAuthService.authenticateAndGetUserId(authorization, Optional.ofNullable(callerId));
+
+        if (offset < 0) {
+            throw Status.INVALID_ARGUMENT.withDescription("offset must be >= 0").asRuntimeException();
+        }
+        if (count <= 0) {
+            throw Status.INVALID_ARGUMENT.withDescription("count must be > 0").asRuntimeException();
+        }
+
+        CoreGetMessagesRequest req = new CoreGetMessagesRequest(
+            IdParser.toBigInteger(authedUserId, "callerId"),
+            IdParser.toBigInteger(channelId, "channelId"),
+            offset,
+            count
+        );
+
+        List<Message> messages = coreClient.getMessages(req);
+        return ProtoMapper.toMessageListDto(messages);
+    }
+
+    @PostMapping("/{channelId}/messages")
+    public MessageDto createMessage(
+        @RequestHeader(value = "Authorization", required = false) String authorization,
+        @PathVariable String channelId,
+        @RequestBody CreateMessageBody body
+    ) {
+        String authedUserId = restAuthService.authenticateAndGetUserId(
+            authorization,
+            Optional.ofNullable(body == null ? null : body.getCallerId())
+        );
+
+        if (body == null || body.getMessage() == null || body.getMessage().getContent() == null || body.getMessage().getContent().trim().isEmpty()) {
+            throw Status.INVALID_ARGUMENT.withDescription("message.content is required").asRuntimeException();
+        }
+
+        CoreCreateMessageRequest req = new CoreCreateMessageRequest(
+            IdParser.toBigInteger(authedUserId, "callerId"),
+            IdParser.toBigInteger(channelId, "channelId"),
+            body.getMessage().getContent()
+        );
+
+        Message msg = coreClient.createMessage(req);
+        return ProtoMapper.toDto(msg);
+    }
+
+    @DeleteMapping("/{channelId}/messages/{messageId}")
+    public ResponseMessageDto deleteMessage(
+        @RequestHeader(value = "Authorization", required = false) String authorization,
+        @PathVariable String channelId,
+        @PathVariable String messageId,
+        @RequestParam(value = "caller_id", required = false) String callerId
+    ) {
+        String authedUserId = restAuthService.authenticateAndGetUserId(authorization, Optional.ofNullable(callerId));
+
+        CoreDeleteMessageRequest req = new CoreDeleteMessageRequest(
+            IdParser.toBigInteger(authedUserId, "callerId"),
+            IdParser.toBigInteger(channelId, "channelId"),
+            IdParser.toBigInteger(messageId, "messageId")
+        );
+
+        coreClient.deleteMessage(req);
+        return new ResponseMessageDto("Message deleted successfully.");
+    }
+
+    private static RoleList mapRoleList(RoleListBody body) {
+        if (body.getRoles() == null) {
+            return RoleList.newBuilder().build();
+        }
+
+        List<Role> roles = new ArrayList<>();
+        for (RoleBody r : body.getRoles()) {
+            if (r == null) {
+                continue;
+            }
+
+            Role.Builder b = Role.newBuilder();
+
+            if (r.getGuildRoleId() != null) {
+                b.setGuildRoleId(r.getGuildRoleId());
+            }
+            if (r.getRoleName() != null) {
+                b.setRoleName(r.getRoleName());
+            }
+            if (r.getPermissions() != null) {
+                b.setPermissions(r.getPermissions());
+            }
+
+            roles.add(b.build());
+        }
+
+        return RoleList.newBuilder().addAllRoles(roles).build();
+    }
+
+    @Data
+    private static class PutChannelBody {
+        @JsonProperty("caller_id")
+        private String callerId;
+
+        private ChannelBody channel;
+    }
+
+    @Data
+    private static class ChannelBody {
+        private String name;
+        private String guildId;
+        private RoleListBody overrides;
+    }
+
+    @Data
+    private static class RoleListBody {
+        private List<RoleBody> roles;
+    }
+
+    @Data
+    private static class RoleBody {
+        private String guildRoleId;
+        private String roleName;
+        private String permissions;
+    }
+
+    @Data
+    private static class CreateMessageBody {
+        @JsonProperty("caller_id")
+        private String callerId;
+
+        private MessageBody message;
+    }
+
+    @Data
+    private static class MessageBody {
+        private String content;
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\controller\GuildController.java ====
+package com.drocsid.grpc.http.controller;
+
+import com.drocsid.grpc.core_requests.guild.*;
+import com.drocsid.grpc.http.auth.RestAuthService;
+import com.drocsid.grpc.http.dto.*;
+import com.drocsid.grpc.http.mapper.ProtoMapper;
+import com.drocsid.grpc.http.util.IdParser;
+import com.drocsid.grpc.mock_classes.CoreClient;
+import com.drocsid.grpc.proto.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
+import io.grpc.Status;
+import lombok.Data;
+import org.springframework.web.bind.annotation.*;
+
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/api/guilds")
+public class GuildController {
+
+    private final CoreClient coreClient;
+    private final RestAuthService restAuthService;
+
+    public GuildController(CoreClient coreClient, RestAuthService restAuthService) {
+        this.coreClient = coreClient;
+        this.restAuthService = restAuthService;
+    }
+
+    @PostMapping
+    public GuildDto createGuild(
+        @RequestHeader(value = "Authorization", required = false) String authorization,
+        @RequestBody CreateGuildBody body
+    ) {
+        String authedUserId = restAuthService.authenticateAndGetUserId(
+            authorization,
+            Optional.ofNullable(body == null ? null : body.getCallerId())
+        );
+
+        if (body == null || body.getName() == null || body.getName().trim().isEmpty()) {
+            throw Status.INVALID_ARGUMENT.withDescription("name is required").asRuntimeException();
+        }
+
+        CoreCreateGuildRequest req = new CoreCreateGuildRequest(
+            IdParser.toBigInteger(authedUserId, "callerId"),
+            body.getName(),
+            body.getIcon() == null ? "" : body.getIcon()
+        );
+
+        Guild guild = coreClient.createGuild(req);
+        return ProtoMapper.toDto(guild);
+    }
+
+    @GetMapping("/{guildId}")
+    public GuildDto getGuild(
+        @RequestHeader(value = "Authorization", required = false) String authorization,
+        @PathVariable String guildId,
+        @RequestParam(value = "caller_id", required = false) String callerId
+    ) {
+        String authedUserId = restAuthService.authenticateAndGetUserId(authorization, Optional.ofNullable(callerId));
+
+        CoreGetGuildRequest req = new CoreGetGuildRequest(
+            IdParser.toBigInteger(authedUserId, "callerId"),
+            IdParser.toBigInteger(guildId, "guildId")
+        );
+
+        Guild guild = coreClient.getGuild(req);
+        return ProtoMapper.toDto(guild);
+    }
+
+    @PutMapping("/{guildId}")
+    public GuildDto putGuild(
+        @RequestHeader(value = "Authorization", required = false) String authorization,
+        @PathVariable String guildId,
+        @RequestBody PutGuildBody body
+    ) {
+        String authedUserId = restAuthService.authenticateAndGetUserId(
+            authorization,
+            Optional.ofNullable(body == null ? null : body.getCallerId())
+        );
+
+        if (body == null || body.getGuild() == null) {
+            throw Status.INVALID_ARGUMENT.withDescription("guild is required").asRuntimeException();
+        }
+
+        GuildBody guild = body.getGuild();
+
+        String name = guild.getName();
+        if (name == null || name.trim().isEmpty()) {
+            throw Status.INVALID_ARGUMENT.withDescription("guild.name is required").asRuntimeException();
+        }
+
+        String icon = guild.getIcon() == null ? "" : guild.getIcon();
+        BigInteger ownerId = guild.getOwnerId() == null
+            ? IdParser.toBigInteger(authedUserId, "callerId")
+            : IdParser.toBigInteger(guild.getOwnerId(), "ownerId");
+
+        List<Role> roles = mapRoles(guild.getRoles());
+
+        CoreUpdateGuildRequest req = new CoreUpdateGuildRequest(
+            IdParser.toBigInteger(authedUserId, "callerId"),
+            IdParser.toBigInteger(guildId, "guildId"),
+            name,
+            icon,
+            ownerId,
+            roles
+        );
+
+        Guild updated = coreClient.updateGuild(req);
+        return ProtoMapper.toDto(updated);
+    }
+
+    @DeleteMapping("/{guildId}")
+    public ResponseMessageDto deleteGuild(
+        @RequestHeader(value = "Authorization", required = false) String authorization,
+        @PathVariable String guildId,
+        @RequestParam(value = "caller_id", required = false) String callerId
+    ) {
+        String authedUserId = restAuthService.authenticateAndGetUserId(authorization, Optional.ofNullable(callerId));
+
+        CoreDeleteGuildRequest req = new CoreDeleteGuildRequest(
+            IdParser.toBigInteger(authedUserId, "callerId"),
+            IdParser.toBigInteger(guildId, "guildId")
+        );
+
+        coreClient.deleteGuild(req);
+        return new ResponseMessageDto("Guild deleted successfully.");
+    }
+
+    @GetMapping("/{guildId}/channels")
+    public ChannelListDto getAllChannels(
+        @RequestHeader(value = "Authorization", required = false) String authorization,
+        @PathVariable String guildId,
+        @RequestParam(value = "caller_id", required = false) String callerId
+    ) {
+        String authedUserId = restAuthService.authenticateAndGetUserId(authorization, Optional.ofNullable(callerId));
+
+        CoreGetAllChannelsRequest req = new CoreGetAllChannelsRequest(
+            IdParser.toBigInteger(authedUserId, "callerId"),
+            IdParser.toBigInteger(guildId, "guildId")
+        );
+
+        List<Channel> channels = coreClient.getAllChannels(req);
+        return ProtoMapper.toChannelListDto(channels);
+    }
+
+    @PostMapping("/{guildId}/channels")
+    public ChannelDto createChannel(
+        @RequestHeader(value = "Authorization", required = false) String authorization,
+        @PathVariable String guildId,
+        @RequestBody CreateChannelBody body
+    ) {
+        String authedUserId = restAuthService.authenticateAndGetUserId(
+            authorization,
+            Optional.ofNullable(body == null ? null : body.getCallerId())
+        );
+
+        if (body == null || body.getName() == null || body.getName().trim().isEmpty()) {
+            throw Status.INVALID_ARGUMENT.withDescription("name is required").asRuntimeException();
+        }
+
+        CoreCreateChannelRequest req = new CoreCreateChannelRequest(
+            IdParser.toBigInteger(authedUserId, "callerId"),
+            body.getName(),
+            IdParser.toBigInteger(guildId, "guildId")
+        );
+
+        Channel channel = coreClient.createChannel(req);
+        return ProtoMapper.toDto(channel);
+    }
+
+    @GetMapping("/{guildId}/roles")
+    public RoleListDto getRoles(
+        @RequestHeader(value = "Authorization", required = false) String authorization,
+        @PathVariable String guildId,
+        @RequestParam(value = "caller_id", required = false) String callerId
+    ) {
+        String authedUserId = restAuthService.authenticateAndGetUserId(authorization, Optional.ofNullable(callerId));
+
+        CoreGetRolesRequest req = new CoreGetRolesRequest(
+            IdParser.toBigInteger(authedUserId, "callerId"),
+            IdParser.toBigInteger(guildId, "guildId")
+        );
+
+        List<Role> roles = coreClient.getRoles(req);
+        return ProtoMapper.toDtoFromRoles(roles);
+    }
+
+    @GetMapping("/{guildId}/roles/{guildRoleId}")
+    public RoleDto getRole(
+        @RequestHeader(value = "Authorization", required = false) String authorization,
+        @PathVariable String guildId,
+        @PathVariable String guildRoleId,
+        @RequestParam(value = "caller_id", required = false) String callerId
+    ) {
+        String authedUserId = restAuthService.authenticateAndGetUserId(authorization, Optional.ofNullable(callerId));
+
+        CoreGetRoleRequest req = new CoreGetRoleRequest(
+            IdParser.toBigInteger(authedUserId, "callerId"),
+            IdParser.toBigInteger(guildId, "guildId"),
+            IdParser.toBigInteger(guildRoleId, "guildRoleId")
+        );
+
+        Role role = coreClient.getRole(req);
+        return ProtoMapper.toDto(role);
+    }
+
+    @PostMapping("/{guildId}/roles")
+    public RoleDto createRole(
+        @RequestHeader(value = "Authorization", required = false) String authorization,
+        @PathVariable String guildId,
+        @RequestBody CreateRoleBody body
+    ) {
+        String authedUserId = restAuthService.authenticateAndGetUserId(
+            authorization,
+            Optional.ofNullable(body == null ? null : body.getCallerId())
+        );
+
+        if (body == null || body.getRoleName() == null || body.getRoleName().trim().isEmpty()) {
+            throw Status.INVALID_ARGUMENT.withDescription("roleName is required").asRuntimeException();
+        }
+
+        if (body.getPermissions() == null || body.getPermissions().trim().isEmpty()) {
+            throw Status.INVALID_ARGUMENT.withDescription("permissions is required").asRuntimeException();
+        }
+
+        CoreCreateRoleRequest req = new CoreCreateRoleRequest(
+            IdParser.toBigInteger(authedUserId, "callerId"),
+            IdParser.toBigInteger(guildId, "guildId"),
+            body.getRoleName(),
+            body.getPermissions()
+        );
+
+        Role role = coreClient.createRole(req);
+        return ProtoMapper.toDto(role);
+    }
+
+    @PutMapping("/{guildId}/roles/{guildRoleId}")
+    public RoleDto putRole(
+        @RequestHeader(value = "Authorization", required = false) String authorization,
+        @PathVariable String guildId,
+        @PathVariable String guildRoleId,
+        @RequestBody PutRoleBody body
+    ) {
+        String authedUserId = restAuthService.authenticateAndGetUserId(
+            authorization,
+            Optional.ofNullable(body == null ? null : body.getCallerId())
+        );
+
+        if (body == null || body.getRole() == null) {
+            throw Status.INVALID_ARGUMENT.withDescription("role is required").asRuntimeException();
+        }
+
+        RoleBody roleBody = body.getRole();
+
+        if (roleBody.getRoleName() == null || roleBody.getRoleName().trim().isEmpty()) {
+            throw Status.INVALID_ARGUMENT.withDescription("role.roleName is required").asRuntimeException();
+        }
+
+        if (roleBody.getPermissions() == null || roleBody.getPermissions().trim().isEmpty()) {
+            throw Status.INVALID_ARGUMENT.withDescription("role.permissions is required").asRuntimeException();
+        }
+
+        CoreUpdateRoleRequest req = new CoreUpdateRoleRequest(
+            IdParser.toBigInteger(authedUserId, "callerId"),
+            IdParser.toBigInteger(guildId, "guildId"),
+            IdParser.toBigInteger(guildRoleId, "guildRoleId"),
+            roleBody.getRoleName(),
+            roleBody.getPermissions()
+        );
+
+        Role role = coreClient.updateRole(req);
+        return ProtoMapper.toDto(role);
+    }
+
+    @DeleteMapping("/{guildId}/roles/{guildRoleId}")
+    public ResponseMessageDto deleteRoleNotImplemented() {
+        throw Status.UNIMPLEMENTED.withDescription("DeleteRole is not implemented in gRPC schema yet").asRuntimeException();
+    }
+
+    @PostMapping("/{guildId}/users")
+    public GuildUserDto addUserToGuild(
+        @RequestHeader(value = "Authorization", required = false) String authorization,
+        @PathVariable String guildId,
+        @RequestBody AddUserBody body
+    ) {
+        String authedUserId = restAuthService.authenticateAndGetUserId(
+            authorization,
+            Optional.ofNullable(body == null ? null : body.getCallerId())
+        );
+
+        CoreAddUserRequest req = new CoreAddUserRequest(
+            IdParser.toBigInteger(authedUserId, "callerId"),
+            IdParser.toBigInteger(guildId, "guildId")
+        );
+
+        GuildUser guildUser = coreClient.addUser(req);
+        return ProtoMapper.toDto(guildUser);
+    }
+
+    @GetMapping("/{guildId}/users")
+    public GuildUserListDto getGuildUsers(
+        @RequestHeader(value = "Authorization", required = false) String authorization,
+        @PathVariable String guildId,
+        @RequestParam(value = "caller_id", required = false) String callerId
+    ) {
+        String authedUserId = restAuthService.authenticateAndGetUserId(authorization, Optional.ofNullable(callerId));
+
+        CoreGetGuildUsersRequest req = new CoreGetGuildUsersRequest(
+            IdParser.toBigInteger(authedUserId, "callerId"),
+            IdParser.toBigInteger(guildId, "guildId")
+        );
+
+        List<GuildUser> users = coreClient.getGuildUsers(req);
+        return ProtoMapper.toGuildUserListDto(users);
+    }
+
+    @GetMapping("/{guildId}/users/{guildUserId}")
+    public GuildUserDto getGuildUser(
+        @RequestHeader(value = "Authorization", required = false) String authorization,
+        @PathVariable String guildId,
+        @PathVariable String guildUserId,
+        @RequestParam(value = "caller_id", required = false) String callerId
+    ) {
+        String authedUserId = restAuthService.authenticateAndGetUserId(authorization, Optional.ofNullable(callerId));
+
+        CoreGetGuildUserRequest req = new CoreGetGuildUserRequest(
+            IdParser.toBigInteger(authedUserId, "callerId"),
+            IdParser.toBigInteger(guildId, "guildId"),
+            IdParser.toBigInteger(guildUserId, "guildUserId")
+        );
+
+        GuildUser user = coreClient.getGuildUser(req);
+        return ProtoMapper.toDto(user);
+    }
+
+    @PutMapping("/{guildId}/users/{guildUserId}")
+    public GuildUserDto putGuildUser(
+        @RequestHeader(value = "Authorization", required = false) String authorization,
+        @PathVariable String guildId,
+        @PathVariable String guildUserId,
+        @RequestBody PutGuildUserBody body
+    ) {
+        String authedUserId = restAuthService.authenticateAndGetUserId(
+            authorization,
+            Optional.ofNullable(body == null ? null : body.getCallerId())
+        );
+
+        if (body == null || body.getUser() == null) {
+            throw Status.INVALID_ARGUMENT.withDescription("user is required").asRuntimeException();
+        }
+
+        GuildUserBody userBody = body.getUser();
+
+        if (userBody.getGuildUserId() != null && !guildUserId.equals(userBody.getGuildUserId())) {
+            throw Status.INVALID_ARGUMENT.withDescription("guildUserId path/body mismatch").asRuntimeException();
+        }
+
+        if (userBody.getNick() == null || userBody.getNick().trim().isEmpty()) {
+            throw Status.INVALID_ARGUMENT.withDescription("user.nick is required").asRuntimeException();
+        }
+
+        List<Role> roles = parseRolesFromJson(userBody.getRoles());
+
+        CoreUpdateGuildUserRequest req = new CoreUpdateGuildUserRequest(
+            IdParser.toBigInteger(authedUserId, "callerId"),
+            IdParser.toBigInteger(guildId, "guildId"),
+            userBody.getNick(),
+            roles
+        );
+
+        GuildUser updated = coreClient.updateGuildUser(req);
+        return ProtoMapper.toDto(updated);
+    }
+
+    @DeleteMapping("/{guildId}/users/{guildUserId}")
+    public ResponseMessageDto deleteGuildUser(
+        @RequestHeader(value = "Authorization", required = false) String authorization,
+        @PathVariable String guildId,
+        @PathVariable String guildUserId,
+        @RequestParam(value = "caller_id", required = false) String callerId
+    ) {
+        String authedUserId = restAuthService.authenticateAndGetUserId(authorization, Optional.ofNullable(callerId));
+
+        CoreDeleteGuildUserRequest req = new CoreDeleteGuildUserRequest(
+            IdParser.toBigInteger(authedUserId, "callerId"),
+            IdParser.toBigInteger(guildId, "guildId"),
+            IdParser.toBigInteger(guildUserId, "guildUserId")
+        );
+
+        coreClient.deleteGuildUser(req);
+        return new ResponseMessageDto("User deleted successfully.");
+    }
+
+    private static List<Role> mapRoles(List<RoleBody> roles) {
+        if (roles == null) {
+            return List.of();
+        }
+
+        List<Role> protoRoles = new ArrayList<>();
+        for (RoleBody r : roles) {
+            if (r == null) {
+                continue;
+            }
+
+            Role.Builder b = Role.newBuilder();
+
+            if (r.getGuildRoleId() != null) {
+                b.setGuildRoleId(r.getGuildRoleId());
+            }
+            if (r.getRoleName() != null) {
+                b.setRoleName(r.getRoleName());
+            }
+            if (r.getPermissions() != null) {
+                b.setPermissions(r.getPermissions());
+            }
+
+            protoRoles.add(b.build());
+        }
+
+        return protoRoles;
+    }
+
+    private static List<Role> parseRolesFromJson(JsonNode rolesNode) {
+        if (rolesNode == null || rolesNode.isNull()) {
+            return List.of();
+        }
+
+        List<JsonNode> roleNodes = new ArrayList<>();
+
+        if (rolesNode.isArray()) {
+            rolesNode.forEach(roleNodes::add);
+        } else if (rolesNode.isObject() && rolesNode.has("roles") && rolesNode.get("roles").isArray()) {
+            rolesNode.get("roles").forEach(roleNodes::add);
+        } else {
+            throw Status.INVALID_ARGUMENT.withDescription("user.roles must be an array or { roles: [...] }").asRuntimeException();
+        }
+
+        List<Role> roles = new ArrayList<>();
+        for (JsonNode node : roleNodes) {
+            if (!node.isObject()) {
+                continue;
+            }
+
+            Role.Builder b = Role.newBuilder();
+
+            if (node.hasNonNull("guildRoleId")) {
+                b.setGuildRoleId(node.get("guildRoleId").asText());
+            }
+            if (node.hasNonNull("roleName")) {
+                b.setRoleName(node.get("roleName").asText());
+            }
+            if (node.hasNonNull("permissions")) {
+                b.setPermissions(node.get("permissions").asText());
+            }
+
+            roles.add(b.build());
+        }
+
+        return roles;
+    }
+
+    @Data
+    private static class CreateGuildBody {
+        @JsonProperty("caller_id")
+        private String callerId;
+
+        private String name;
+        private String icon;
+    }
+
+    @Data
+    private static class PutGuildBody {
+        @JsonProperty("caller_id")
+        private String callerId;
+
+        private GuildBody guild;
+    }
+
+    @Data
+    private static class GuildBody {
+        private String guildId;
+        private String name;
+        private String icon;
+        private String ownerId;
+        private List<RoleBody> roles;
+    }
+
+    @Data
+    private static class RoleBody {
+        private String guildRoleId;
+        private String roleName;
+        private String permissions;
+    }
+
+    @Data
+    private static class CreateRoleBody {
+        @JsonProperty("caller_id")
+        private String callerId;
+
+        private String roleName;
+        private String permissions;
+    }
+
+    @Data
+    private static class PutRoleBody {
+        @JsonProperty("caller_id")
+        private String callerId;
+
+        private RoleBody role;
+    }
+
+    @Data
+    private static class CreateChannelBody {
+        @JsonProperty("caller_id")
+        private String callerId;
+
+        private String name;
+    }
+
+    @Data
+    private static class AddUserBody {
+        @JsonProperty("caller_id")
+        private String callerId;
+    }
+
+    @Data
+    private static class PutGuildUserBody {
+        @JsonProperty("caller_id")
+        private String callerId;
+
+        private GuildUserBody user;
+    }
+
+    @Data
+    private static class GuildUserBody {
+        private String guildUserId;
+        private String nick;
+        private JsonNode roles;
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\controller\HelloController.java ====
+package com.drocsid.grpc.http.controller;
+
+import com.drocsid.grpc.http.dto.HelloReplyDto;
+import io.grpc.Status;
+import lombok.Data;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api")
+public class HelloController {
+
+    @PostMapping("/hello")
+    public HelloReplyDto hello(@RequestBody HelloBody body) {
+        if (body == null || body.getName() == null || body.getName().trim().isEmpty()) {
+            throw Status.INVALID_ARGUMENT.withDescription("name is required").asRuntimeException();
+        }
+
+        return new HelloReplyDto("Hello " + body.getName());
+    }
+
+    @Data
+    private static class HelloBody {
+        private String name;
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\controller\UserController.java ====
+package com.drocsid.grpc.http.controller;
+
+import com.drocsid.grpc.core_requests.user.CoreUpdateUserRequest;
+import com.drocsid.grpc.http.auth.RestAuthService;
+import com.drocsid.grpc.http.dto.GuildListDto;
+import com.drocsid.grpc.http.dto.ResponseMessageDto;
+import com.drocsid.grpc.http.dto.UserDto;
+import com.drocsid.grpc.http.mapper.ProtoMapper;
+import com.drocsid.grpc.http.util.IdParser;
+import com.drocsid.grpc.mock_classes.CoreClient;
+import com.drocsid.grpc.proto.CreateUserRequest;
+import com.drocsid.grpc.proto.Guild;
+import com.drocsid.grpc.proto.User;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.grpc.Status;
+import lombok.Data;
+import org.springframework.web.bind.annotation.*;
+
+import java.math.BigInteger;
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/api/users")
+public class UserController {
+
+    private final CoreClient coreClient;
+    private final RestAuthService restAuthService;
+
+    public UserController(CoreClient coreClient, RestAuthService restAuthService) {
+        this.coreClient = coreClient;
+        this.restAuthService = restAuthService;
+    }
+
+    @PostMapping
+    public UserDto createUser(
+        @RequestHeader(value = "Authorization", required = false) String authorization,
+        @RequestBody CreateUserBody body
+    ) {
+        restAuthService.authenticateAndGetUserId(authorization, Optional.empty());
+
+        if (body == null || body.getName() == null || body.getName().trim().isEmpty()) {
+            throw Status.INVALID_ARGUMENT.withDescription("name is required").asRuntimeException();
+        }
+
+        CreateUserRequest req = CreateUserRequest.newBuilder()
+            .setName(body.getName())
+            .build();
+
+        User user = coreClient.createUser(req);
+        return ProtoMapper.toDto(user);
+    }
+
+    @GetMapping("/{userId}")
+    public UserDto getUser(
+        @RequestHeader(value = "Authorization", required = false) String authorization,
+        @PathVariable String userId,
+        @RequestParam(value = "caller_id", required = false) String callerId
+    ) {
+        restAuthService.authenticateAndGetUserId(authorization, Optional.ofNullable(callerId));
+
+        BigInteger targetUserId = IdParser.toBigInteger(userId, "userId");
+        User user = coreClient.getUser(targetUserId);
+
+        return ProtoMapper.toDto(user);
+    }
+
+    @PutMapping("/{userId}")
+    public UserDto putUser(
+        @RequestHeader(value = "Authorization", required = false) String authorization,
+        @PathVariable String userId,
+        @RequestBody PutUserBody body
+    ) {
+        String authedUserId = restAuthService.authenticateAndGetUserId(
+            authorization,
+            Optional.ofNullable(body == null ? null : body.getCallerId())
+        );
+
+        if (body == null) {
+            throw Status.INVALID_ARGUMENT.withDescription("body is required").asRuntimeException();
+        }
+
+        if (!userId.equals(authedUserId)) {
+            throw Status.PERMISSION_DENIED.withDescription("User ID mismatch").asRuntimeException();
+        }
+
+        CoreUpdateUserRequest request = new CoreUpdateUserRequest(
+            IdParser.toBigInteger(authedUserId, "userId"),
+            body.getName(),
+            body.getAvatarHash()
+        );
+
+        User user = coreClient.updateUser(request);
+        return ProtoMapper.toDto(user);
+    }
+
+    @DeleteMapping("/{userId}")
+    public ResponseMessageDto deleteUser(
+        @RequestHeader(value = "Authorization", required = false) String authorization,
+        @PathVariable String userId,
+        @RequestParam(value = "caller_id", required = false) String callerId
+    ) {
+        String authedUserId = restAuthService.authenticateAndGetUserId(authorization, Optional.ofNullable(callerId));
+
+        if (!userId.equals(authedUserId)) {
+            throw Status.PERMISSION_DENIED.withDescription("User ID mismatch").asRuntimeException();
+        }
+
+        coreClient.deleteUser(IdParser.toBigInteger(authedUserId, "userId"));
+        return new ResponseMessageDto("User deleted successfully.");
+    }
+
+    @GetMapping("/{userId}/guilds")
+    public GuildListDto getAllGuilds(
+        @RequestHeader(value = "Authorization", required = false) String authorization,
+        @PathVariable String userId,
+        @RequestParam(value = "caller_id", required = false) String callerId
+    ) {
+        String authedUserId = restAuthService.authenticateAndGetUserId(authorization, Optional.ofNullable(callerId));
+
+        if (!userId.equals(authedUserId)) {
+            throw Status.PERMISSION_DENIED.withDescription("User ID mismatch").asRuntimeException();
+        }
+
+        List<Guild> guilds = coreClient.getAllGuilds(IdParser.toBigInteger(authedUserId, "userId"));
+        return ProtoMapper.toGuildListDto(guilds);
+    }
+
+    @Data
+    private static class CreateUserBody {
+        private String name;
+    }
+
+    @Data
+    private static class PutUserBody {
+        @JsonProperty("caller_id")
+        private String callerId;
+
+        private String name;
+        private String avatarHash;
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\dto\ChannelDto.java ====
+package com.drocsid.grpc.http.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class ChannelDto {
+    private String channelId;
+    private String name;
+    private String guildId;
+    private RoleListDto overrides;
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\dto\ChannelListDto.java ====
+package com.drocsid.grpc.http.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class ChannelListDto {
+    private List<ChannelDto> channels;
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\dto\GuildDto.java ====
+package com.drocsid.grpc.http.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class GuildDto {
+    private String guildId;
+    private String name;
+    private String icon;
+    private String ownerId;
+    private List<RoleDto> roles;
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\dto\GuildListDto.java ====
+package com.drocsid.grpc.http.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class GuildListDto {
+    private List<GuildDto> guilds;
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\dto\GuildUserDto.java ====
+package com.drocsid.grpc.http.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class GuildUserDto {
+    private String guildUserId;
+    private String nick;
+    private RoleListDto roles;
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\dto\GuildUserListDto.java ====
+package com.drocsid.grpc.http.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class GuildUserListDto {
+    private List<GuildUserDto> guildUsers;
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\dto\HelloReplyDto.java ====
+package com.drocsid.grpc.http.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class HelloReplyDto {
+    private String message;
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\dto\MessageDto.java ====
+package com.drocsid.grpc.http.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class MessageDto {
+    private String messageId;
+    private GuildUserDto author;
+    private String content;
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\dto\MessageListDto.java ====
+package com.drocsid.grpc.http.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class MessageListDto {
+    private List<MessageDto> messages;
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\dto\ResponseMessageDto.java ====
+package com.drocsid.grpc.http.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class ResponseMessageDto {
+    private String text;
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\dto\RoleDto.java ====
+package com.drocsid.grpc.http.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class RoleDto {
+    private String guildRoleId;
+    private String roleName;
+    private String permissions;
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\dto\RoleListDto.java ====
+package com.drocsid.grpc.http.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class RoleListDto {
+    private List<RoleDto> roles;
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\dto\UserDto.java ====
+package com.drocsid.grpc.http.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class UserDto {
+    private String id;
+    private String name;
+    private String avatarHash;
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\error\ApiErrorResponse.java ====
+package com.drocsid.grpc.http.error;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+import java.util.Map;
+
+@Data
+@AllArgsConstructor
+public class ApiErrorResponse {
+
+    private ErrorBody error;
+
+    @Data
+    @AllArgsConstructor
+    public static class ErrorBody {
+        private String code;
+        private String message;
+        private Map<String, Object> details;
+    }
+
+    public static ApiErrorResponse of(String code, String message) {
+        return new ApiErrorResponse(new ErrorBody(code, message, Map.of()));
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\error\GlobalExceptionHandler.java ====
+package com.drocsid.grpc.http.error;
+
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    @ExceptionHandler(StatusRuntimeException.class)
+    public ResponseEntity<ApiErrorResponse> handleStatusRuntimeException(StatusRuntimeException e) {
+        Status status = e.getStatus();
+
+        HttpStatus httpStatus = mapGrpcStatusToHttp(status);
+        String code = mapGrpcStatusToCode(status);
+        String message = status.getDescription() != null ? status.getDescription() : status.getCode().name();
+
+        return ResponseEntity
+            .status(httpStatus)
+            .body(ApiErrorResponse.of(code, message));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiErrorResponse> handleBadJson(HttpMessageNotReadableException e) {
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ApiErrorResponse.of("BAD_REQUEST", "Invalid JSON body"));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiErrorResponse> handleUnexpected(Exception e) {
+        logger.error("Unhandled server error", e);
+
+        return ResponseEntity
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(ApiErrorResponse.of("INTERNAL", "Unexpected server error"));
+    }
+
+    private static HttpStatus mapGrpcStatusToHttp(Status status) {
+        switch (status.getCode()) {
+            case UNAUTHENTICATED:
+                return HttpStatus.UNAUTHORIZED;
+            case PERMISSION_DENIED:
+                return HttpStatus.FORBIDDEN;
+            case NOT_FOUND:
+                return HttpStatus.NOT_FOUND;
+            case INVALID_ARGUMENT:
+                return HttpStatus.BAD_REQUEST;
+            case ALREADY_EXISTS:
+                return HttpStatus.CONFLICT;
+            case FAILED_PRECONDITION:
+                return HttpStatus.PRECONDITION_FAILED;
+            case UNAVAILABLE:
+                return HttpStatus.SERVICE_UNAVAILABLE;
+            default:
+                return HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+    }
+
+    private static String mapGrpcStatusToCode(Status status) {
+        switch (status.getCode()) {
+            case PERMISSION_DENIED:
+                return "FORBIDDEN";
+            case UNAUTHENTICATED:
+                return "UNAUTHENTICATED";
+            case INVALID_ARGUMENT:
+                return "BAD_REQUEST";
+            case NOT_FOUND:
+                return "NOT_FOUND";
+            case ALREADY_EXISTS:
+                return "CONFLICT";
+            case FAILED_PRECONDITION:
+                return "PRECONDITION_FAILED";
+            case UNAVAILABLE:
+                return "UNAVAILABLE";
+            default:
+                return "INTERNAL";
+        }
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\mapper\ProtoMapper.java ====
+package com.drocsid.grpc.http.mapper;
+
+import com.drocsid.grpc.http.dto.*;
+import com.drocsid.grpc.proto.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public final class ProtoMapper {
+
+    private ProtoMapper() {}
+
+    public static UserDto toDto(User user) {
+        if (user == null) {
+            return new UserDto(null, null, null);
+        }
+
+        return new UserDto(
+            user.getId(),
+            user.getName(),
+            user.getAvatarHash()
+        );
+    }
+
+    public static RoleDto toDto(Role role) {
+        if (role == null) {
+            return new RoleDto(null, null, null);
+        }
+
+        return new RoleDto(
+            role.getGuildRoleId(),
+            role.getRoleName(),
+            role.getPermissions()
+        );
+    }
+
+    public static RoleListDto toDto(RoleList roleList) {
+        if (roleList == null) {
+            return new RoleListDto(List.of());
+        }
+
+        return new RoleListDto(
+            roleList.getRolesList().stream().map(ProtoMapper::toDto).collect(Collectors.toList())
+        );
+    }
+
+    public static RoleListDto toDtoFromRoles(List<Role> roles) {
+        if (roles == null) {
+            return new RoleListDto(List.of());
+        }
+
+        return new RoleListDto(
+            roles.stream().map(ProtoMapper::toDto).collect(Collectors.toList())
+        );
+    }
+
+    public static GuildDto toDto(Guild guild) {
+        if (guild == null) {
+            return new GuildDto(null, null, null, null, List.of());
+        }
+
+        return new GuildDto(
+            guild.getGuildId(),
+            guild.getName(),
+            guild.getIcon(),
+            guild.getOwnerId(),
+            guild.getRolesList().stream().map(ProtoMapper::toDto).collect(Collectors.toList())
+        );
+    }
+
+    public static GuildListDto toGuildListDto(List<Guild> guilds) {
+        if (guilds == null) {
+            return new GuildListDto(List.of());
+        }
+
+        return new GuildListDto(
+            guilds.stream().map(ProtoMapper::toDto).collect(Collectors.toList())
+        );
+    }
+
+    public static ChannelDto toDto(Channel channel) {
+        if (channel == null) {
+            return new ChannelDto(null, null, null, new RoleListDto(List.of()));
+        }
+
+        RoleListDto overridesDto = toDto(channel.getOverrides());
+
+        return new ChannelDto(
+            channel.getChannelId(),
+            channel.getName(),
+            channel.getGuildId(),
+            overridesDto
+        );
+    }
+
+    public static ChannelListDto toChannelListDto(List<Channel> channels) {
+        if (channels == null) {
+            return new ChannelListDto(List.of());
+        }
+
+        return new ChannelListDto(
+            channels.stream().map(ProtoMapper::toDto).collect(Collectors.toList())
+        );
+    }
+
+    public static GuildUserDto toDto(GuildUser guildUser) {
+        if (guildUser == null) {
+            return new GuildUserDto(null, null, new RoleListDto(List.of()));
+        }
+
+        return new GuildUserDto(
+            guildUser.getGuildUserId(),
+            guildUser.getNick(),
+            mapGuildUserRoles(guildUser)
+        );
+    }
+
+    public static GuildUserListDto toGuildUserListDto(List<GuildUser> users) {
+        if (users == null) {
+            return new GuildUserListDto(List.of());
+        }
+
+        return new GuildUserListDto(
+            users.stream().map(ProtoMapper::toDto).collect(Collectors.toList())
+        );
+    }
+
+    public static MessageDto toDto(Message message) {
+        if (message == null) {
+            return new MessageDto(null, null, null);
+        }
+
+        return new MessageDto(
+            message.getMessageId(),
+            toDto(message.getAuthor()),
+            message.getContent()
+        );
+    }
+
+    public static MessageListDto toMessageListDto(List<Message> messages) {
+        if (messages == null) {
+            return new MessageListDto(List.of());
+        }
+
+        return new MessageListDto(
+            messages.stream().map(ProtoMapper::toDto).collect(Collectors.toList())
+        );
+    }
+
+    private static RoleListDto mapGuildUserRoles(GuildUser guildUser) {
+        return toDto(guildUser.getRoles());
+    }
+
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\util\IdParser.java ====
+package com.drocsid.grpc.http.util;
+
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
+
+import java.math.BigInteger;
+
+public final class IdParser {
+
+    private IdParser() {}
+
+    /**
+     * Parses ids used in API paths/queries as numeric strings.
+     * Throws INVALID_ARGUMENT (400 in REST mapping) when parsing fails.
+     */
+    public static BigInteger toBigInteger(String raw, String fieldName) throws StatusRuntimeException {
+        if (raw == null || raw.trim().isEmpty()) {
+            throw Status.INVALID_ARGUMENT
+                .withDescription(fieldName + " is required")
+                .asRuntimeException();
+        }
+
+        try {
+            return new BigInteger(raw);
+        } catch (NumberFormatException e) {
+            throw Status.INVALID_ARGUMENT
+                .withDescription(fieldName + " must be a numeric string")
+                .asRuntimeException();
+        }
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\mock_classes\CoreClient.java ====
 package com.drocsid.grpc.mock_classes;
 
 import com.drocsid.grpc.core_requests.channel.*;
@@ -769,7 +2320,7 @@ public class CoreClient {
 }
 
 
-==== ./spring_grpc\src\main\java\com\drocsid\grpc\service\ChannelService.java ====
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\service\ChannelService.java ====
 package com.drocsid.grpc.service;
 import com.drocsid.grpc.auth.JwtAuthService;
 import com.drocsid.grpc.core_requests.channel.*;
@@ -946,7 +2497,7 @@ public class ChannelService extends ChannelServiceGrpc.ChannelServiceImplBase {
 }
 
 
-==== ./spring_grpc\src\main\java\com\drocsid\grpc\service\GreeterService.java ====
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\service\GreeterService.java ====
 package com.drocsid.grpc.service;
 
 import com.drocsid.grpc.proto.HelloReply;
@@ -971,7 +2522,7 @@ public class GreeterService extends GreeterGrpc.GreeterImplBase {
     }
 }
 
-==== ./spring_grpc\src\main\java\com\drocsid\grpc\service\GuildService.java ====
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\service\GuildService.java ====
 package com.drocsid.grpc.service;
 
 import com.drocsid.grpc.auth.JwtAuthService;
@@ -1371,7 +2922,7 @@ public class GuildService extends GuildServiceGrpc.GuildServiceImplBase {
 }
 
 
-==== ./spring_grpc\src\main\java\com\drocsid\grpc\service\UserService.java ====
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\service\UserService.java ====
 package com.drocsid.grpc.service;
 import com.drocsid.grpc.auth.JwtAuthService;
 import com.drocsid.grpc.core_requests.user.CoreUpdateUserRequest;
@@ -1489,7 +3040,7 @@ public class UserService extends UserServiceGrpc.UserServiceImplBase {
 }
 
 
-==== ./spring_grpc\src\main\proto\channel.proto ====
+==== ./spring_grpc/src/main\proto\channel.proto ====
 syntax = "proto3";
 package channel;
 option java_package = "com.drocsid.grpc.proto";
@@ -1554,7 +3105,7 @@ message MessageReq {
   dmessage.GeneralMessageReq message_req = 2;
 }
 
-==== ./spring_grpc\src\main\proto\common.proto ====
+==== ./spring_grpc/src/main\proto\common.proto ====
 syntax = "proto3";
 package common;
 option java_package = "com.drocsid.grpc.proto";
@@ -1566,7 +3117,7 @@ message ResponseMessage {
 
 message Empty {}
 
-==== ./spring_grpc\src\main\proto\guild.proto ====
+==== ./spring_grpc/src/main\proto\guild.proto ====
 syntax = "proto3";
 package guild;
 option java_package = "com.drocsid.grpc.proto";
@@ -1633,7 +3184,7 @@ message GuildList {
 }
 
 
-==== ./spring_grpc\src\main\proto\guild_user.proto ====
+==== ./spring_grpc/src/main\proto\guild_user.proto ====
 syntax = "proto3";
 package guild_user;
 option java_package = "com.drocsid.grpc.proto";
@@ -1644,7 +3195,7 @@ import "role.proto";
 message GuildUser {
   string guild_user_id = 1;
   string nick = 2;
-  repeated role.RoleList roles = 3;
+  role.RoleList roles = 3;
 }
 
 message GuildUserList {
@@ -1668,7 +3219,7 @@ message AddUser {
   string guild_id = 2;
 }
 
-==== ./spring_grpc\src\main\proto\message.proto ====
+==== ./spring_grpc/src/main\proto\message.proto ====
 syntax = "proto3";
 package dmessage;
 option java_package = "com.drocsid.grpc.proto";
@@ -1694,7 +3245,7 @@ message MessageList {
   repeated Message messages = 1;
 }
 
-==== ./spring_grpc\src\main\proto\role.proto ====
+==== ./spring_grpc/src/main\proto\role.proto ====
 syntax = "proto3";
 option java_package = "com.drocsid.grpc.proto";
 option java_multiple_files = true;
@@ -1729,7 +3280,7 @@ message RoleReq {
   string token = 3;
 }
 
-==== ./spring_grpc\src\main\proto\say_hello.proto ====
+==== ./spring_grpc/src/main\proto\say_hello.proto ====
 syntax = "proto3";
 package say_hello;
 
@@ -1752,7 +3303,7 @@ message HelloReply {
   string message = 1;
 }
 
-==== ./spring_grpc\src\main\proto\user.proto ====
+==== ./spring_grpc/src/main\proto\user.proto ====
 syntax = "proto3";
 package user;
 option java_package = "com.drocsid.grpc.proto";
@@ -1786,1041 +3337,20 @@ message UpdateUserRequest {
   string avatarHash = 3; // future
 }
 
-==== ./spring_grpc\src\main\resources\application.yml ====
+==== ./spring_grpc/src/main\resources\application.yml ====
 server:
-  port: 0
+    port: 8080
 
 grpc:
-  server:
-    port: 9090
+    server:
+        port: 9090
 
 logging:
-  level:
-    root: INFO
+    level:
+        root: INFO
 
 spring:
-  main:
-    banner-mode: "off"
-
-
-==== ./spring_grpc\src\test\java\com\drocsid\grpc\service\ChannelServiceTest.java ====
-package com.drocsid.grpc.service;
-
-import com.drocsid.grpc.auth.JwtAuthService;
-import com.drocsid.grpc.core_requests.channel.*;
-import com.drocsid.grpc.mock_classes.CoreClient;
-import com.drocsid.grpc.proto.*;
-import io.grpc.stub.StreamObserver;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-class ChannelServiceTest {
-
-    private CoreClient coreClient;
-    private ChannelService channelService;
-    private JwtAuthService jwtAuthService;
-
-    @BeforeEach
-    void setUp() {
-        coreClient = mock(CoreClient.class);
-        jwtAuthService = mock(JwtAuthService.class);
-
-        when(jwtAuthService.checkAuth(any())).thenReturn("1");
-        channelService = new ChannelService(coreClient, jwtAuthService);
-    }
-
-    @Test
-    void testGetChannel() {
-        Channel returnedChannel = Channel.newBuilder().build();
-        when(coreClient.getChannel(any(CoreGetChannelRequest.class)))
-                .thenReturn(returnedChannel);
-        TestObserver<Channel> observer = new TestObserver<>();
-
-        ChannelInfoReq request = ChannelInfoReq.newBuilder()
-                .setToken("token")
-                .setChannelId("1")
-                .build();
-
-        channelService.getChannel(request, observer);
-
-        verify(coreClient).getChannel(new CoreGetChannelRequest("1", request));
-        assertTrue(observer.completed);
-        assertNotNull(observer.value);
-        assertInstanceOf(Channel.class, observer.value);
-    }
-
-    @Test
-    void testGetChannelInfoException() {
-        when(coreClient.getChannel(any())).thenThrow(new RuntimeException("error"));
-
-        TestObserver<Channel> observer = new TestObserver<>();
-
-        ChannelInfoReq request = ChannelInfoReq.newBuilder()
-                .setToken("token")
-                .setChannelId("1")
-                .build();
-
-        channelService.getChannel(request, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-    @Test
-    void testUpdateChannel() {
-        Channel returnedChannel = Channel.newBuilder().build();
-        when(coreClient.updateChannel(any(CoreUpdateChannelRequest.class)))
-                .thenReturn(returnedChannel);
-        UpdateChannelRequest request = UpdateChannelRequest.newBuilder()
-                .setToken("token")
-                .build();
-
-        TestObserver<Channel> observer = new TestObserver<>();
-
-        channelService.updateChannel(request, observer);
-
-        verify(coreClient).updateChannel(any(CoreUpdateChannelRequest.class));
-        assertTrue(observer.completed);
-        assertNotNull(observer.value);
-        assertInstanceOf(Channel.class, observer.value);
-    }
-
-    @Test
-    void testUpdateChannelException() {
-        UpdateChannelRequest request = UpdateChannelRequest.newBuilder().setToken("token").build();
-
-        doThrow(new RuntimeException("error")).when(coreClient).updateChannel(any());
-
-        TestObserver<Channel> observer = new TestObserver<>();
-
-        channelService.updateChannel(request, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-    @Test
-    void testDeleteChannel() {
-        ChannelInfoReq request = ChannelInfoReq.newBuilder().setChannelId("1").build();
-
-        TestObserver<ResponseMessage> observer = new TestObserver<>();
-
-        channelService.deleteChannel(request, observer);
-
-        verify(coreClient).deleteChannel(new CoreDeleteChannelRequest("1", request));
-        assertTrue(observer.completed);
-        assertEquals("Channel deleted successfully.", observer.value.getText());
-    }
-
-    @Test
-    void testDeleteChannelException() {
-        doThrow(new RuntimeException("error")).when(coreClient).deleteChannel(any());
-
-        TestObserver<ResponseMessage> observer = new TestObserver<>();
-
-        ChannelInfoReq request = ChannelInfoReq.newBuilder().setChannelId("1").build();
-
-        channelService.deleteChannel(request, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-    @Test
-    void testGetMessages() {
-        TestObserver<MessageList> observer = new TestObserver<>();
-
-        MessageBucketReq request = MessageBucketReq
-                .newBuilder()
-                .setReq(ChannelInfoReq.newBuilder().setToken("token").setChannelId("1").build())
-                .setOffset(1)
-                .setCount(1)
-                .build();
-        channelService.getMessages(request, observer);
-
-        verify(coreClient).getMessages(new CoreGetMessagesRequest("1", request));
-        assertTrue(observer.completed);
-        assertInstanceOf(MessageList.class, observer.value);
-    }
-
-    @Test
-    void testGetAllMessagesException() {
-        doThrow(new RuntimeException("error")).when(coreClient).getMessages(any());
-
-        TestObserver<MessageList> observer = new TestObserver<>();
-
-        MessageBucketReq request = MessageBucketReq
-                .newBuilder()
-                .setReq(ChannelInfoReq.newBuilder().setToken("token").setChannelId("1").build())
-                .setOffset(1)
-                .setCount(1)
-                .build();
-        channelService.getMessages(request, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-    @Test
-    void testCreateMessage() {
-        CreateMessageReq request = CreateMessageReq
-                .newBuilder()
-                .setReq(ChannelInfoReq.newBuilder().setToken("token").setChannelId("1").build())
-                .setMessage(GeneralCreateMessageRequest.newBuilder().setContent("content").build())
-                .build();
-
-        Message returnedMessage = Message.newBuilder().build();
-        when(coreClient.createMessage(any(CoreCreateMessageRequest.class)))
-                .thenReturn(returnedMessage);
-
-        TestObserver<Message> observer = new TestObserver<>();
-
-        channelService.createMessage(request, observer);
-
-        verify(coreClient).createMessage(any(CoreCreateMessageRequest.class));
-        assertTrue(observer.completed);
-        assertInstanceOf(Message.class, observer.value);
-    }
-
-    @Test
-    void testCreateMessageException() {
-        CreateMessageReq request = CreateMessageReq
-                .newBuilder()
-                .setReq(ChannelInfoReq.newBuilder().setToken("token").setChannelId("1").build())
-                .setMessage(GeneralCreateMessageRequest.newBuilder().setContent("content").build())
-                .build();
-
-        doThrow(new RuntimeException("error"))
-                .when(coreClient).createMessage(any());
-
-        TestObserver<Message> observer = new TestObserver<>();
-
-        channelService.createMessage(request, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-    @Test
-    void testDeleteMessage() {
-        MessageReq request = MessageReq.newBuilder()
-                .setReq(ChannelInfoReq
-                        .newBuilder()
-                        .setToken("token")
-                        .setChannelId("1")
-                        .build())
-                .setMessageReq(GeneralMessageReq
-                        .newBuilder()
-                        .setMessageId("1")
-                        .build())
-                .build();
-
-        ChannelServiceTest.TestObserver<ResponseMessage> observer = new ChannelServiceTest.TestObserver<>();
-
-        channelService.deleteMessage(request, observer);
-
-        verify(coreClient).deleteMessage(new CoreDeleteMessageRequest("1", request));
-
-        assertTrue(observer.completed);
-        assertEquals("Message deleted successfully.", observer.value.getText());
-    }
-
-    @Test
-    void testDeleteMessageException() {
-        doThrow(new RuntimeException("error"))
-                .when(coreClient).deleteMessage(any());
-
-        MessageReq request = MessageReq.newBuilder()
-                .setReq(ChannelInfoReq
-                        .newBuilder()
-                        .setToken("token")
-                        .setChannelId("1")
-                        .build())
-                .setMessageReq(GeneralMessageReq
-                        .newBuilder()
-                        .setMessageId("1")
-                        .build())
-                .build();
-
-        TestObserver<ResponseMessage> observer = new TestObserver<>();
-
-        channelService.deleteMessage(request, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-
-    private static class TestObserver<T> implements StreamObserver<T> {
-        T value;
-        boolean completed = false;
-        boolean error = false;
-
-        @Override
-        public void onNext(T value) { this.value = value; }
-
-        @Override
-        public void onError(Throwable t) { this.error = true; }
-
-        @Override
-        public void onCompleted() { this.completed = true; }
-    }
-}
-
-
-==== ./spring_grpc\src\test\java\com\drocsid\grpc\service\GuildServiceTest.java ====
-package com.drocsid.grpc.service;
-
-import com.drocsid.grpc.auth.JwtAuthService;
-import com.drocsid.grpc.core_requests.guild.*;
-import com.drocsid.grpc.mock_classes.CoreClient;
-import com.drocsid.grpc.proto.*;
-import io.grpc.stub.StreamObserver;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.math.BigInteger;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-class GuildServiceTest {
-
-    private CoreClient coreClient;
-    private GuildService guildService;
-    private JwtAuthService jwtAuthService;
-
-    @BeforeEach
-    void setUp() {
-        coreClient = mock(CoreClient.class);
-        jwtAuthService = mock(JwtAuthService.class);
-
-        when(jwtAuthService.checkAuth(any())).thenReturn("1");
-        guildService = new GuildService(coreClient, jwtAuthService);
-    }
-
-    @Test
-    void testCreateGuild() {
-        CreateGuildRequest request = CreateGuildRequest.newBuilder().build();
-
-        TestObserver<Guild> observer = new TestObserver<>();
-        Guild returnedGuild = Guild.newBuilder().build();
-        when(coreClient.createGuild(any(CoreCreateGuildRequest.class)))
-                .thenReturn(returnedGuild);
-
-        guildService.createGuild(request, observer);
-
-        verify(coreClient).createGuild(new CoreCreateGuildRequest("1", request));
-        assertTrue(observer.completed);
-        assertInstanceOf(Guild.class, observer.value);
-    }
-
-    @Test
-    void testCreateGuildException() {
-        CreateGuildRequest request = CreateGuildRequest.newBuilder().build();
-
-        doThrow(new RuntimeException("error")).when(coreClient).createGuild(any());
-
-        TestObserver<Guild> observer = new TestObserver<>();
-        guildService.createGuild(request, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-    @Test
-    void testGetGuild() {
-        GuildInfoReq request = GuildInfoReq.newBuilder().setToken("token").setGuildId("1").build();
-
-        TestObserver<Guild> observer = new TestObserver<>();
-        Guild returnedGuild = Guild.newBuilder().build();
-        when(coreClient.getGuild(any(CoreGetGuildRequest.class)))
-                .thenReturn(returnedGuild);
-
-        guildService.getGuild(request, observer);
-
-        verify(coreClient).getGuild(new CoreGetGuildRequest("1", request));
-        assertTrue(observer.completed);
-        assertInstanceOf(Guild.class, observer.value);
-    }
-
-    @Test
-    void testGetGuildException() {
-        when(coreClient.getGuild(any())).thenThrow(new RuntimeException("error"));
-
-        TestObserver<Guild> observer = new TestObserver<>();
-        GuildInfoReq request = GuildInfoReq.newBuilder().setToken("token").setGuildId("1").build();
-
-        guildService.getGuild(request, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-    @Test
-    void testUpdateGuild() {
-        UpdateGuildRequest request = UpdateGuildRequest
-                .newBuilder()
-                .setToken("token")
-                .setGuild(Guild
-                        .newBuilder()
-                        .setGuildId("1")
-                        .setName("name")
-                        .setIcon("icon")
-                        .setOwnerId("1")
-                        .build())
-                .build();
-
-        Guild returnedGuild = Guild.newBuilder().build();
-        when(coreClient.updateGuild(any(CoreUpdateGuildRequest.class)))
-                .thenReturn(returnedGuild);
-        TestObserver<Guild> observer = new TestObserver<>();
-        guildService.updateGuild(request, observer);
-
-        verify(coreClient).updateGuild(new CoreUpdateGuildRequest("1", request));
-        assertTrue(observer.completed);
-        assertInstanceOf(Guild.class, observer.value);
-    }
-
-    @Test
-    void testUpdateGuildException() {
-        UpdateGuildRequest request = UpdateGuildRequest.newBuilder().build();
-
-        doThrow(new RuntimeException("error")).when(coreClient).updateGuild(any());
-
-        TestObserver<Guild> observer = new TestObserver<>();
-        guildService.updateGuild(request, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-    @Test
-    void testDeleteGuild() {
-        GuildInfoReq request = GuildInfoReq.newBuilder().setToken("token").setGuildId("1").build();
-        TestObserver<ResponseMessage> observer = new TestObserver<>();
-        guildService.deleteGuild(request, observer);
-
-        verify(coreClient).deleteGuild(new CoreDeleteGuildRequest("1", request));
-        assertTrue(observer.completed);
-        assertEquals("Guild deleted successfully.", observer.value.getText());
-    }
-
-    @Test
-    void testDeleteGuildException() {
-        doThrow(new RuntimeException("error")).when(coreClient)
-                .deleteGuild(any());
-
-        GuildInfoReq request = GuildInfoReq.newBuilder().setToken("token").setGuildId("1").build();
-        TestObserver<ResponseMessage> observer = new TestObserver<>();
-        guildService.deleteGuild(request, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-    @Test
-    void testGetAllGuilds() {
-        when(coreClient.getAllGuilds(new BigInteger("1"))).thenReturn(List.of());
-
-        TestObserver<GuildList> observer = new TestObserver<>();
-        UserId userId = UserId.newBuilder().build();
-
-        guildService.getAllGuilds(userId, observer);
-
-        verify(coreClient).getAllGuilds(new BigInteger("1"));
-        assertTrue(observer.completed);
-        assertInstanceOf(GuildList.class, observer.value);
-    }
-
-    @Test
-    void testGetAllGuildsException() {
-        doThrow(new RuntimeException("error")).when(coreClient).getAllGuilds(new BigInteger("1"));
-
-        TestObserver<GuildList> observer = new TestObserver<>();
-        UserId userId = UserId.newBuilder().build();
-
-        guildService.getAllGuilds(userId, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-    @Test
-    void testGetAllChannels() {
-        TestObserver<ChannelList> observer = new TestObserver<>();
-        GuildInfoReq request = GuildInfoReq
-                .newBuilder()
-                .setToken("token")
-                .setGuildId("1")
-                .build();
-
-        guildService.getAllChannels(request, observer);
-
-        verify(coreClient).getAllChannels(new CoreGetAllChannelsRequest("1", request));
-        assertTrue(observer.completed);
-        assertInstanceOf(ChannelList.class, observer.value);
-    }
-
-    @Test
-    void testGetAllChannelsException() {
-        doThrow(new RuntimeException("error")).when(coreClient).getAllChannels(any());
-
-        TestObserver<ChannelList> observer = new TestObserver<>();
-        GuildInfoReq request = GuildInfoReq.newBuilder().build();
-
-        guildService.getAllChannels(request, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-    @Test
-    void testGetRole() {
-        RoleReq request = RoleReq.newBuilder().setToken("token").setGuildId("1").setGuildRoleId("1").build();
-
-        Role returnedRole = Role.newBuilder().build();
-        when(coreClient.getRole(any(CoreGetRoleRequest.class)))
-                .thenReturn(returnedRole);
-        TestObserver<Role> observer = new TestObserver<>();
-
-        guildService.getRole(request, observer);
-
-        verify(coreClient).getRole(new CoreGetRoleRequest("1", request));
-        assertTrue(observer.completed);
-        assertInstanceOf(Role.class, observer.value);
-    }
-
-    @Test
-    void testGetRoleException() {
-        doThrow(new RuntimeException("error")).when(coreClient).getRole(any());
-
-        TestObserver<Role> observer = new TestObserver<>();
-        RoleReq request = RoleReq.newBuilder().setToken("token").setGuildId("1").setGuildRoleId("1").build();
-
-        guildService.getRole(request, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-    @Test
-    void testCreateRole() {
-        CreateRoleReq request = CreateRoleReq
-                .newBuilder()
-                .setToken("token")
-                .setGuildId("1")
-                .build();
-
-        Role returnedRole = Role.newBuilder().build();
-        when(coreClient.createRole(any(CoreCreateRoleRequest.class)))
-                .thenReturn(returnedRole);
-        TestObserver<Role> observer = new TestObserver<>();
-
-        guildService.createRole(request, observer);
-
-        verify(coreClient).createRole(new CoreCreateRoleRequest("1", request));
-        assertTrue(observer.completed);
-        assertInstanceOf(Role.class, observer.value);
-    }
-
-    @Test
-    void testCreateRoleException() {
-        doThrow(new RuntimeException("error")).when(coreClient).createRole(any());
-
-        TestObserver<Role> observer = new TestObserver<>();
-        CreateRoleReq request = CreateRoleReq.newBuilder().build();
-
-        guildService.createRole(request, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-    @Test
-    void testGetRoles() {
-        GuildInfoReq request = GuildInfoReq.newBuilder().setToken("token").setGuildId("1").build();
-
-        TestObserver<RoleList> observer = new TestObserver<>();
-
-        guildService.getRoles(request, observer);
-
-        verify(coreClient).getRoles(new CoreGetRolesRequest("1", request));
-        assertTrue(observer.completed);
-        assertInstanceOf(RoleList.class, observer.value);
-    }
-
-    @Test
-    void testGetRolesException() {
-        doThrow(new RuntimeException("error")).when(coreClient).getRole(any());
-
-        TestObserver<RoleList> observer = new TestObserver<>();
-        GuildInfoReq request = GuildInfoReq.newBuilder().build();
-
-        guildService.getRoles(request, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-    @Test
-    void testUpdateRole() {
-        UpdateRoleReq request = UpdateRoleReq.newBuilder()
-                .setGuildId("1")
-                .setRole(Role
-                        .newBuilder()
-                        .setGuildRoleId("1")
-                        .build())
-                .build();
-
-        Role returnedRole = Role.newBuilder().build();
-        when(coreClient.updateRole(any(CoreUpdateRoleRequest.class)))
-                .thenReturn(returnedRole);
-        TestObserver<Role> observer = new TestObserver<>();
-
-        guildService.updateRole(request, observer);
-
-        verify(coreClient).updateRole(new CoreUpdateRoleRequest("1", request));
-        assertTrue(observer.completed);
-        assertInstanceOf(Role.class, observer.value);
-    }
-
-    @Test
-    void testUpdateRoleException() {
-        doThrow(new RuntimeException("error")).when(coreClient).getRole(any());
-
-        TestObserver<Role> observer = new TestObserver<>();
-        UpdateRoleReq request = UpdateRoleReq.newBuilder()
-                .setRole(Role
-                        .newBuilder()
-                        .setGuildRoleId("1")
-                        .build())
-                .build();
-
-        guildService.updateRole(request, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-    @Test
-    void testCreateChannel() {
-        CreateChannelRequest request = CreateChannelRequest
-                .newBuilder()
-                .setToken("token")
-                .setGuildId("1")
-                .build();
-
-        Channel returnedChannel = Channel.newBuilder().build();
-        when(coreClient.createChannel(any(CoreCreateChannelRequest.class)))
-                .thenReturn(returnedChannel);
-        TestObserver<Channel> observer = new TestObserver<>();
-
-        guildService.createChannel(request, observer);
-
-        verify(coreClient).createChannel(new CoreCreateChannelRequest("1", request));
-        assertTrue(observer.completed);
-        assertInstanceOf(Channel.class, observer.value);
-    }
-
-    @Test
-    void testCreateChannelException() {
-        CreateChannelRequest request = CreateChannelRequest.newBuilder().build();
-
-        doThrow(new RuntimeException("error")).when(coreClient).createChannel(any());
-
-        TestObserver<Channel> observer = new TestObserver<>();
-
-        guildService.createChannel(request, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-    @Test
-    void testAddUser() {
-        AddUser addUserObj = AddUser.newBuilder().setToken("token").setGuildId("1").build();
-
-        TestObserver<GuildUser> observer = new TestObserver<>();
-        GuildUser returnedGuildUser = GuildUser.newBuilder().build();
-        when(coreClient.addUser(any(CoreAddUserRequest.class)))
-                .thenReturn(returnedGuildUser);
-
-        guildService.addUser(addUserObj, observer);
-
-        verify(coreClient).addUser(new CoreAddUserRequest("1", addUserObj));
-        assertTrue(observer.completed);
-        assertInstanceOf(GuildUser.class, observer.value);
-    }
-
-    @Test
-    void testAddUserException() {
-        AddUser addUserObj = AddUser.newBuilder().setToken("token").setGuildId("1").build();
-
-        doThrow(new RuntimeException("error")).when(coreClient).addUser(any());
-
-        TestObserver<GuildUser> observer = new TestObserver<>();
-
-        guildService.addUser(addUserObj, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-    @Test
-    void testUpdateUser() {
-        UpdateUserReq request = UpdateUserReq
-                .newBuilder()
-                .setToken("token")
-                .setGuildId("1")
-                .setUser(GuildUser
-                        .newBuilder()
-                        .setGuildUserId("1")
-                        .build())
-                .build();
-
-        GuildUser returnedGuildUser = GuildUser.newBuilder().build();
-        when(coreClient.updateGuildUser(any(CoreUpdateGuildUserRequest.class)))
-                .thenReturn(returnedGuildUser);
-        TestObserver<GuildUser> observer = new TestObserver<>();
-
-        guildService.updateUser(request, observer);
-
-        verify(coreClient).updateGuildUser(new CoreUpdateGuildUserRequest("1", request));
-        assertTrue(observer.completed);
-        assertInstanceOf(GuildUser.class, observer.value);
-    }
-
-    @Test
-    void testUpdateUserException() {
-        UpdateUserReq request = UpdateUserReq.newBuilder().build();
-
-        doThrow(new RuntimeException("error")).when(coreClient).addUser(any());
-
-        TestObserver<GuildUser> observer = new TestObserver<>();
-
-        guildService.updateUser(request, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-    @Test
-    void testGetUser() {
-        GuildUserReq request = GuildUserReq
-                .newBuilder()
-                .setToken("token")
-                .setGuildId("1")
-                .setGuildUserId("1")
-                .build();
-
-        GuildUser returnedGuildUser = GuildUser.newBuilder().build();
-        when(coreClient.getGuildUser(any(CoreGetGuildUserRequest.class)))
-                .thenReturn(returnedGuildUser);
-        TestObserver<GuildUser> observer = new TestObserver<>();
-
-        guildService.getUser(request, observer);
-
-        verify(coreClient).getGuildUser(new CoreGetGuildUserRequest("1", request));
-        assertTrue(observer.completed);
-        assertInstanceOf(GuildUser.class, observer.value);
-    }
-
-    @Test
-    void testGetUserException() {
-        GuildUserReq request = GuildUserReq
-                .newBuilder()
-                .setToken("token")
-                .setGuildId("1")
-                .setGuildUserId("1")
-                .build();
-
-
-        doThrow(new RuntimeException("error")).when(coreClient).getGuildUser(any());
-
-        TestObserver<GuildUser> observer = new TestObserver<>();
-
-        guildService.getUser(request, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-    @Test
-    void testGetUsers() {
-        GuildInfoReq request = GuildInfoReq.newBuilder().setToken("token").setGuildId("1").build();
-
-        TestObserver<GuildUserList> observer = new TestObserver<>();
-
-        guildService.getUsers(request, observer);
-
-        verify(coreClient).getGuildUsers(new CoreGetGuildUsersRequest("1", request));
-        assertTrue(observer.completed);
-        assertInstanceOf(GuildUserList.class, observer.value);
-    }
-
-    @Test
-    void testGetUsersException() {
-        GuildInfoReq request = GuildInfoReq.newBuilder().setToken("token").setGuildId("1").build();
-
-        doThrow(new RuntimeException("error")).when(coreClient).getGuildUsers(any());
-
-        TestObserver<GuildUserList> observer = new TestObserver<>();
-
-        guildService.getUsers(request, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-    @Test
-    void testDeleteUser() {
-        GuildUserReq request = GuildUserReq
-                .newBuilder()
-                .setToken("token")
-                .setGuildId("1")
-                .setGuildUserId("1")
-                .build();
-
-        TestObserver<ResponseMessage> observer = new TestObserver<>();
-        guildService.deleteUser(request, observer);
-
-        verify(coreClient).deleteGuildUser(new CoreDeleteGuildUserRequest("1", request));
-        assertTrue(observer.completed);
-        assertEquals("User deleted successfully.", observer.value.getText());
-    }
-
-    @Test
-    void testDeleteUserException() {
-        GuildUserReq request = GuildUserReq.newBuilder().build();
-
-        doThrow(new RuntimeException("error")).when(coreClient).addUser(any());
-
-        TestObserver<ResponseMessage> observer = new TestObserver<>();
-
-        guildService.deleteUser(request, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-    private static class TestObserver<T> implements StreamObserver<T> {
-        T value;
-        boolean completed = false;
-        boolean error = false;
-
-        @Override
-        public void onNext(T value) { this.value = value; }
-
-        @Override
-        public void onError(Throwable t) { this.error = true; }
-
-        @Override
-        public void onCompleted() { this.completed = true; }
-    }
-}
-
-
-==== ./spring_grpc\src\test\java\com\drocsid\grpc\service\UserServiceTest.java ====
-package com.drocsid.grpc.service;
-
-import com.drocsid.grpc.auth.JwtAuthService;
-import com.drocsid.grpc.core_requests.user.CoreUpdateUserRequest;
-import com.drocsid.grpc.mock_classes.CoreClient;
-import com.drocsid.grpc.proto.*;
-import io.grpc.stub.StreamObserver;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.math.BigInteger;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-class UserServiceTest {
-
-    private CoreClient coreClient;
-    private UserService userService;
-    private JwtAuthService jwtAuthService;
-
-    @BeforeEach
-    void setUp() {
-        coreClient = mock(CoreClient.class);
-        jwtAuthService = mock(JwtAuthService.class);
-
-        when(jwtAuthService.checkAuth(any())).thenReturn("1");
-        userService = new UserService(coreClient, jwtAuthService);
-    }
-
-    @Test
-    void testCreateUser() {
-        CreateUserRequest request = CreateUserRequest.newBuilder()
-                .setName("John")
-                .build();
-
-        User returnedUser = User.newBuilder().build();
-        when(coreClient.createUser(request))
-                .thenReturn(returnedUser);
-
-        TestObserver<User> observer = new TestObserver<>();
-
-        userService.createUser(request, observer);
-
-        verify(coreClient).createUser(request);
-        assertTrue(observer.completed);
-        assertNotNull(observer.value);
-        assertInstanceOf(User.class, observer.value);
-    }
-
-    @Test
-    void testCreateUserException() {
-        CreateUserRequest request = CreateUserRequest.newBuilder()
-                .setName("John")
-                .build();
-
-        User returnedUser = User.newBuilder().build();
-        when(coreClient.createUser(request))
-                .thenReturn(returnedUser);
-
-
-
-        doThrow(new RuntimeException("error"))
-                .when(coreClient).createUser(request);
-
-        TestObserver<User> observer = new TestObserver<>();
-
-        userService.createUser(request, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-    @Test
-    void testGetUser() {
-        User returnedUser = User.newBuilder().build();
-        when(coreClient.getUser(new BigInteger("1")))
-                .thenReturn(returnedUser);
-
-        UserId userIdRequest = UserId.newBuilder().setToken("token").build();
-
-        TestObserver<User> observer = new TestObserver<>();
-
-        userService.getUser(userIdRequest, observer);
-
-        verify(coreClient).getUser(new BigInteger("1"));
-        assertTrue(observer.completed);
-        assertNotNull(observer.value);
-        assertInstanceOf(User.class, observer.value);
-    }
-
-    @Test
-    void testGetUserException() {
-        UserId userIdRequest = UserId.newBuilder().setToken("token").build();
-
-        doThrow(new RuntimeException("error"))
-                .when(coreClient).getUser(any());
-
-        TestObserver<User> observer = new TestObserver<>();
-
-        userService.getUser(userIdRequest, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-    @Test
-    void testUpdateUser() {
-        User returnedUser = User.newBuilder().build();
-        when(coreClient.updateUser(any(CoreUpdateUserRequest.class)))
-                .thenReturn(returnedUser);
-
-        UpdateUserRequest request = UpdateUserRequest.newBuilder()
-                .setToken("token")
-                .setName("name")
-                .setAvatarHash("hash")
-                .build();
-
-        TestObserver<User> observer = new TestObserver<>();
-
-        userService.updateUser(request, observer);
-
-        verify(coreClient).updateUser(new CoreUpdateUserRequest("1", request));
-        assertTrue(observer.completed);
-        assertNotNull(observer.value);
-        assertInstanceOf(User.class, observer.value);
-    }
-
-    @Test
-    void testUpdateUserException() {
-        UpdateUserRequest request = UpdateUserRequest.newBuilder()
-                .setToken("token")
-                .setName("name")
-                .setAvatarHash("hash")
-                .build();
-
-        doThrow(new RuntimeException("error"))
-                .when(coreClient).updateUser(any());
-
-        TestObserver<User> observer = new TestObserver<>();
-
-        userService.updateUser(request, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-    @Test
-    void testDeleteUser() {
-        UserId userIdRequest = UserId.newBuilder().setToken("token").build();
-
-        TestObserver<ResponseMessage> observer = new TestObserver<>();
-
-        userService.deleteUser(userIdRequest, observer);
-
-        verify(coreClient).deleteUser(new BigInteger("1"));
-        assertTrue(observer.completed);
-        assertEquals("User deleted successfully.", observer.value.getText());
-    }
-
-    @Test
-    void testDeleteUserException() {
-        UserId userIdRequest = UserId.newBuilder().setToken("token").build();
-
-        doThrow(new RuntimeException("error"))
-                .when(coreClient).deleteUser(any());
-
-        TestObserver<ResponseMessage> observer = new TestObserver<>();
-
-        userService.deleteUser(userIdRequest, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-    private static class TestObserver<T> implements StreamObserver<T> {
-
-        T value;
-        boolean completed = false;
-        boolean error = false;
-
-        @Override
-        public void onNext(T value) {
-            this.value = value;
-        }
-
-        @Override
-        public void onError(Throwable t) {
-            this.error = true;
-        }
-
-        @Override
-        public void onCompleted() {
-            this.completed = true;
-        }
-    }
-}
+    main:
+        banner-mode: "off"
 
 
