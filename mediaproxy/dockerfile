@@ -1,53 +1,40 @@
 # syntax=docker/dockerfile:1
 FROM golang:1.25.5
 
-# Install ALL dependencies that lilliput might need
-# lilliput is a complex library with many optional features
 RUN apt-get update && apt-get install -y \
-    # Basic image formats
     libpng-dev \
     libjpeg-dev \
     libwebp-dev \
     libgif-dev \
     libtiff-dev \
-    # Video/audio codecs (FFmpeg libraries)
     libavcodec-dev \
     libavformat-dev \
     libavutil-dev \
     libswscale-dev \
     libswresample-dev \
     libavfilter-dev \
-    # Audio codecs
     libmp3lame-dev \
     libopus-dev \
     libvorbis-dev \
-    # Video codecs
     libvpx-dev \
     libx264-dev \
     libx265-dev \
-    # OpenCV (lilliput might use some OpenCV features)
     libopencv-dev \
-    # Build tools
     pkg-config \
     cmake \
     make \
     g++ \
     git \
-    # Clean up
     && rm -rf /var/lib/apt/lists/*
 
-# Set up working directory
 WORKDIR /app
 
-# Copy go.mod and go.sum first for better caching
 COPY src/go.mod src/go.sum ./
 RUN go mod download
 
-# Copy source code
 COPY src/* ./
 
-# Build with CGO enabled (required for lilliput)
-# Also enable all image/video decoders
+# CGO enabled required for lilliput
 RUN CGO_ENABLED=1 GOOS=linux go build \
     -tags=av_bindings \
     -o server \
