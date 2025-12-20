@@ -1,10 +1,14 @@
 from azure.storage.blob import BlobSasPermissions, ContentSettings, generate_container_sas
 from datetime import datetime, timedelta, UTC
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 # Azurite settings
-account_name = "devstoreaccount1"
-account_key = "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="  # default Azurite key
-container_name = "drocsid"
+account_name = os.getenv("AZURE_STORAGE_ACCOUNT")
+account_key = os.getenv("AZURE_STORAGE_KEY")
+container_name = os.getenv("AZURE_STORAGE_CONTAINER")
 
 sas_token = generate_container_sas(
     account_name=account_name,
