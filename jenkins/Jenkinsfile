@@ -20,22 +20,9 @@ pipeline {
                 echo 'Building Spring gRPC Backend...'
                 dir('spring_grpc') {
                     sh '''
-                        echo "=========================================="
-                        echo "CHECKING JAVA VERSION:"
-                        echo "=========================================="
                         java -version
-                        
-                        echo ""
-                        echo "=========================================="
-                        echo "CHECKING MAVEN VERSION:"
-                        echo "=========================================="
                         mvn -version
-                        
-                        echo ""
-                        echo "=========================================="
-                        echo "STARTING MAVEN BUILD:"
-                        echo "=========================================="
-                        mvn clean install -DskipTests -Dmaven.compiler.source=21 -Dmaven.compiler.target=21
+                        mvn clean install
                     '''
                 }
             }
@@ -52,7 +39,11 @@ pipeline {
             }
             post {
                 always {
-                    junit '**/target/surefire-reports/*.xml'
+                    junit(
+                        testResults: '**/target/surefire-reports/*.xml',
+                        allowEmptyResults: true,
+                        skipPublishingChecks: true
+                    )
                 }
             }
         }
@@ -86,7 +77,7 @@ pipeline {
                 echo 'Deploying Application...'
                 sh '''
                     docker-compose down
-                    docker-compose up -d frontend backend gateway
+                    docker-compose up -d
                 '''
             }
         }
