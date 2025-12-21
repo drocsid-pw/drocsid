@@ -20,9 +20,21 @@ pipeline {
                 echo 'Building Spring gRPC Backend...'
                 dir('spring_grpc') {
                     sh '''
+                        echo "=========================================="
+                        echo "CHECKING JAVA VERSION:"
+                        echo "=========================================="
                         java -version
+                        
+                        echo ""
+                        echo "=========================================="
+                        echo "CHECKING MAVEN VERSION:"
+                        echo "=========================================="
                         mvn -version
                         
+                        echo ""
+                        echo "=========================================="
+                        echo "STARTING MAVEN BUILD:"
+                        echo "=========================================="
                         mvn clean install -DskipTests -Dmaven.compiler.source=21 -Dmaven.compiler.target=21
                     '''
                 }
