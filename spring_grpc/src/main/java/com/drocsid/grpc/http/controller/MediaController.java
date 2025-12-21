@@ -23,11 +23,10 @@ public class MediaController {
     
     @PostMapping("/uploadImage")
     public ImageDto uploadImage(
-            @RequestHeader("Authorization") String authorization,
-            @PathVariable String channelId,
+            // @RequestHeader("Authorization") String authorization,
             @Valid @RequestBody UploadImageBody body) {
 
-        String authedUserId = jwtAuthService.checkAuth(authorization);
+        // String authedUserId = jwtAuthService.checkAuth(authorization);
         String file = body.getFile();
         String filename = body.getFilename();
 
