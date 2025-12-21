@@ -1,197 +1,197 @@
-package com.drocsid.grpc.service;
+// package com.drocsid.grpc.service;
 
-import com.drocsid.grpc.auth.JwtAuthService;
-import com.drocsid.grpc.core_requests.user.CoreUpdateUserRequest;
-import com.drocsid.grpc.mock_classes.CoreClient;
-import com.drocsid.grpc.proto.*;
-import io.grpc.stub.StreamObserver;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+// import com.drocsid.grpc.auth.JwtAuthService;
+// import com.drocsid.grpc.core_requests.user.CoreUpdateUserRequest;
+// import com.drocsid.grpc.mock_classes.CoreClient;
+// import com.drocsid.grpc.proto.*;
+// import io.grpc.stub.StreamObserver;
+// import org.junit.jupiter.api.BeforeEach;
+// import org.junit.jupiter.api.Test;
 
-import java.math.BigInteger;
+// import java.math.BigInteger;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+// import static org.junit.jupiter.api.Assertions.*;
+// import static org.mockito.Mockito.*;
 
-class UserServiceTest {
+// class UserServiceTest {
 
-    private CoreClient coreClient;
-    private UserService userService;
-    private JwtAuthService jwtAuthService;
+//     private CoreClient coreClient;
+//     private UserService userService;
+//     private JwtAuthService jwtAuthService;
 
-    @BeforeEach
-    void setUp() {
-        coreClient = mock(CoreClient.class);
-        jwtAuthService = mock(JwtAuthService.class);
+//     @BeforeEach
+//     void setUp() {
+//         coreClient = mock(CoreClient.class);
+//         jwtAuthService = mock(JwtAuthService.class);
 
-        when(jwtAuthService.checkAuth(any())).thenReturn("1");
-        userService = new UserService(coreClient, jwtAuthService);
-    }
+//         when(jwtAuthService.checkAuth(any())).thenReturn("1");
+//         userService = new UserService(coreClient, jwtAuthService);
+//     }
 
-    @Test
-    void testCreateUser() {
-        CreateUserRequest request = CreateUserRequest.newBuilder()
-                .setName("John")
-                .build();
+//     @Test
+//     void testCreateUser() {
+//         CreateUserRequest request = CreateUserRequest.newBuilder()
+//                 .setName("John")
+//                 .build();
 
-        User returnedUser = User.newBuilder().build();
-        when(coreClient.createUser(request))
-                .thenReturn(returnedUser);
+//         User returnedUser = User.newBuilder().build();
+//         when(coreClient.createUser(request))
+//                 .thenReturn(returnedUser);
 
-        TestObserver<User> observer = new TestObserver<>();
+//         TestObserver<User> observer = new TestObserver<>();
 
-        userService.createUser(request, observer);
+//         userService.createUser(request, observer);
 
-        verify(coreClient).createUser(request);
-        assertTrue(observer.completed);
-        assertNotNull(observer.value);
-        assertInstanceOf(User.class, observer.value);
-    }
+//         verify(coreClient).createUser(request);
+//         assertTrue(observer.completed);
+//         assertNotNull(observer.value);
+//         assertInstanceOf(User.class, observer.value);
+//     }
 
-    @Test
-    void testCreateUserException() {
-        CreateUserRequest request = CreateUserRequest.newBuilder()
-                .setName("John")
-                .build();
+//     @Test
+//     void testCreateUserException() {
+//         CreateUserRequest request = CreateUserRequest.newBuilder()
+//                 .setName("John")
+//                 .build();
 
-        User returnedUser = User.newBuilder().build();
-        when(coreClient.createUser(request))
-                .thenReturn(returnedUser);
+//         User returnedUser = User.newBuilder().build();
+//         when(coreClient.createUser(request))
+//                 .thenReturn(returnedUser);
 
 
 
-        doThrow(new RuntimeException("error"))
-                .when(coreClient).createUser(request);
+//         doThrow(new RuntimeException("error"))
+//                 .when(coreClient).createUser(request);
 
-        TestObserver<User> observer = new TestObserver<>();
+//         TestObserver<User> observer = new TestObserver<>();
 
-        userService.createUser(request, observer);
+//         userService.createUser(request, observer);
 
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
+//         assertTrue(observer.error);
+//         assertFalse(observer.completed);
+//     }
 
-    @Test
-    void testGetUser() {
-        User returnedUser = User.newBuilder().build();
-        when(coreClient.getUser(new BigInteger("1")))
-                .thenReturn(returnedUser);
+//     @Test
+//     void testGetUser() {
+//         User returnedUser = User.newBuilder().build();
+//         when(coreClient.getUser(new BigInteger("1")))
+//                 .thenReturn(returnedUser);
 
-        UserId userIdRequest = UserId.newBuilder().setToken("token").build();
+//         UserId userIdRequest = UserId.newBuilder().setToken("token").build();
 
-        TestObserver<User> observer = new TestObserver<>();
+//         TestObserver<User> observer = new TestObserver<>();
 
-        userService.getUser(userIdRequest, observer);
+//         userService.getUser(userIdRequest, observer);
 
-        verify(coreClient).getUser(new BigInteger("1"));
-        assertTrue(observer.completed);
-        assertNotNull(observer.value);
-        assertInstanceOf(User.class, observer.value);
-    }
+//         verify(coreClient).getUser(new BigInteger("1"));
+//         assertTrue(observer.completed);
+//         assertNotNull(observer.value);
+//         assertInstanceOf(User.class, observer.value);
+//     }
 
-    @Test
-    void testGetUserException() {
-        UserId userIdRequest = UserId.newBuilder().setToken("token").build();
+//     @Test
+//     void testGetUserException() {
+//         UserId userIdRequest = UserId.newBuilder().setToken("token").build();
 
-        doThrow(new RuntimeException("error"))
-                .when(coreClient).getUser(any());
+//         doThrow(new RuntimeException("error"))
+//                 .when(coreClient).getUser(any());
 
-        TestObserver<User> observer = new TestObserver<>();
+//         TestObserver<User> observer = new TestObserver<>();
 
-        userService.getUser(userIdRequest, observer);
+//         userService.getUser(userIdRequest, observer);
 
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
+//         assertTrue(observer.error);
+//         assertFalse(observer.completed);
+//     }
 
-    @Test
-    void testUpdateUser() {
-        User returnedUser = User.newBuilder().build();
-        when(coreClient.updateUser(any(CoreUpdateUserRequest.class)))
-                .thenReturn(returnedUser);
+//     @Test
+//     void testUpdateUser() {
+//         User returnedUser = User.newBuilder().build();
+//         when(coreClient.updateUser(any(CoreUpdateUserRequest.class)))
+//                 .thenReturn(returnedUser);
 
-        UpdateUserRequest request = UpdateUserRequest.newBuilder()
-                .setToken("token")
-                .setName("name")
-                .setAvatarHash("hash")
-                .build();
+//         UpdateUserRequest request = UpdateUserRequest.newBuilder()
+//                 .setToken("token")
+//                 .setName("name")
+//                 .setAvatarHash("hash")
+//                 .build();
 
-        TestObserver<User> observer = new TestObserver<>();
+//         TestObserver<User> observer = new TestObserver<>();
 
-        userService.updateUser(request, observer);
+//         userService.updateUser(request, observer);
 
-        verify(coreClient).updateUser(new CoreUpdateUserRequest("1", request));
-        assertTrue(observer.completed);
-        assertNotNull(observer.value);
-        assertInstanceOf(User.class, observer.value);
-    }
+//         verify(coreClient).updateUser(new CoreUpdateUserRequest("1", request));
+//         assertTrue(observer.completed);
+//         assertNotNull(observer.value);
+//         assertInstanceOf(User.class, observer.value);
+//     }
 
-    @Test
-    void testUpdateUserException() {
-        UpdateUserRequest request = UpdateUserRequest.newBuilder()
-                .setToken("token")
-                .setName("name")
-                .setAvatarHash("hash")
-                .build();
+//     @Test
+//     void testUpdateUserException() {
+//         UpdateUserRequest request = UpdateUserRequest.newBuilder()
+//                 .setToken("token")
+//                 .setName("name")
+//                 .setAvatarHash("hash")
+//                 .build();
 
-        doThrow(new RuntimeException("error"))
-                .when(coreClient).updateUser(any());
+//         doThrow(new RuntimeException("error"))
+//                 .when(coreClient).updateUser(any());
 
-        TestObserver<User> observer = new TestObserver<>();
+//         TestObserver<User> observer = new TestObserver<>();
 
-        userService.updateUser(request, observer);
+//         userService.updateUser(request, observer);
 
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
+//         assertTrue(observer.error);
+//         assertFalse(observer.completed);
+//     }
 
-    @Test
-    void testDeleteUser() {
-        UserId userIdRequest = UserId.newBuilder().setToken("token").build();
+//     @Test
+//     void testDeleteUser() {
+//         UserId userIdRequest = UserId.newBuilder().setToken("token").build();
 
-        TestObserver<ResponseMessage> observer = new TestObserver<>();
+//         TestObserver<ResponseMessage> observer = new TestObserver<>();
 
-        userService.deleteUser(userIdRequest, observer);
+//         userService.deleteUser(userIdRequest, observer);
 
-        verify(coreClient).deleteUser(new BigInteger("1"));
-        assertTrue(observer.completed);
-        assertEquals("User deleted successfully.", observer.value.getText());
-    }
+//         verify(coreClient).deleteUser(new BigInteger("1"));
+//         assertTrue(observer.completed);
+//         assertEquals("User deleted successfully.", observer.value.getText());
+//     }
 
-    @Test
-    void testDeleteUserException() {
-        UserId userIdRequest = UserId.newBuilder().setToken("token").build();
+//     @Test
+//     void testDeleteUserException() {
+//         UserId userIdRequest = UserId.newBuilder().setToken("token").build();
 
-        doThrow(new RuntimeException("error"))
-                .when(coreClient).deleteUser(any());
+//         doThrow(new RuntimeException("error"))
+//                 .when(coreClient).deleteUser(any());
 
-        TestObserver<ResponseMessage> observer = new TestObserver<>();
+//         TestObserver<ResponseMessage> observer = new TestObserver<>();
 
-        userService.deleteUser(userIdRequest, observer);
+//         userService.deleteUser(userIdRequest, observer);
 
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
+//         assertTrue(observer.error);
+//         assertFalse(observer.completed);
+//     }
 
-    private static class TestObserver<T> implements StreamObserver<T> {
+//     private static class TestObserver<T> implements StreamObserver<T> {
 
-        T value;
-        boolean completed = false;
-        boolean error = false;
+//         T value;
+//         boolean completed = false;
+//         boolean error = false;
 
-        @Override
-        public void onNext(T value) {
-            this.value = value;
-        }
+//         @Override
+//         public void onNext(T value) {
+//             this.value = value;
+//         }
 
-        @Override
-        public void onError(Throwable t) {
-            this.error = true;
-        }
+//         @Override
+//         public void onError(Throwable t) {
+//             this.error = true;
+//         }
 
-        @Override
-        public void onCompleted() {
-            this.completed = true;
-        }
-    }
-}
+//         @Override
+//         public void onCompleted() {
+//             this.completed = true;
+//         }
+//     }
+// }

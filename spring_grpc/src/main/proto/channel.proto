@@ -27,18 +27,18 @@ message Channel {
 }
 
 message CreateChannelRequest {
-  string token = 1;
+  string caller_id = 1;
   string name = 2;
   string guild_id = 3;
 }
 
 message ChannelInfoReq {
-  string token = 1;
+  string caller_id = 1;
   string channel_id = 2;
 }
 
 message UpdateChannelRequest {
-  string token = 1;
+  string caller_id = 1;
   Channel channel = 2;
 }
 

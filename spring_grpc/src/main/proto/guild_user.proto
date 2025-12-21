@@ -16,18 +16,18 @@ message GuildUserList {
 }
 
 message UpdateUserReq {
-  string token = 1;
+  string caller_id = 1;
   string guild_id = 2;
   GuildUser user = 3;
 }
 
 message GuildUserReq {
-  string token = 1;
+  string caller_id = 1;
   string guild_id = 2;
   string guild_user_id = 3;
 }
 
 message AddUser {
-  string token = 1;
+  string caller_id = 1;
   string guild_id = 2;
 }

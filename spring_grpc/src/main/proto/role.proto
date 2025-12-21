@@ -17,17 +17,17 @@ message CreateRoleReq {
   string guild_id = 1;
   string role_name = 2;
   string permissions = 3;
-  string token = 4;
+  string caller_id = 4;
 }
 
 message UpdateRoleReq {
   string guild_id = 1;
   Role role = 2;
-  string token = 3;
+  string caller_id = 3;
 }
 
 message RoleReq {
   string guild_id = 1;
   string guild_role_id = 2;
-  string token = 3;
+  string caller_id = 3;
 }
