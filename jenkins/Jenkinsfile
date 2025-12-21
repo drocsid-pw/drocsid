@@ -4,6 +4,7 @@ pipeline {
     environment {
         DOCKER_COMPOSE = 'docker-compose'
         MAVEN_OPTS = '-Dmaven.repo.local=.m2/repository'
+        JAVA_HOME = '/opt/java/openjdk'
     }
     
     stages {
@@ -19,7 +20,10 @@ pipeline {
                 echo 'Building Spring gRPC Backend...'
                 dir('spring_grpc') {
                     sh '''
-                        mvn clean install -DskipTests
+                        java -version
+                        mvn -version
+                        
+                        mvn clean install -DskipTests -Dmaven.compiler.source=21 -Dmaven.compiler.target=21
                     '''
                 }
             }
