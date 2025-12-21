@@ -244,6 +244,17 @@ public class GuildService {
         return ProtoMapper.toDto(updated);
     }
 
+    public ResponseMessageDto deleteGuildUser(String authedUserId, String guildId, String guildUserId) {
+        CoreDeleteGuildUserRequest req = new CoreDeleteGuildUserRequest(
+                IdParser.toBigInteger(authedUserId, "callerId"),
+                IdParser.toBigInteger(guildId, "guildId"),
+                IdParser.toBigInteger(guildUserId, "guildUserId")
+        );
+
+        coreClient.deleteGuildUser(req);
+        return new ResponseMessageDto("User deleted successfully.");
+    }
+
     public static List<Role> parseRolesFromJson(JsonNode rolesNode) {
         if (rolesNode == null || rolesNode.isNull()) {
             return List.of();
@@ -281,16 +292,5 @@ public class GuildService {
         }
 
         return roles;
-    }
-
-    public ResponseMessageDto deleteGuildUser(String authedUserId, String guildId, String guildUserId) {
-        CoreDeleteGuildUserRequest req = new CoreDeleteGuildUserRequest(
-                IdParser.toBigInteger(authedUserId, "callerId"),
-                IdParser.toBigInteger(guildId, "guildId"),
-                IdParser.toBigInteger(guildUserId, "guildUserId")
-        );
-
-        coreClient.deleteGuildUser(req);
-        return new ResponseMessageDto("User deleted successfully.");
     }
 }
