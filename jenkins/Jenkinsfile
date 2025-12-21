@@ -59,28 +59,6 @@ pipeline {
                 }
             }
         }
-        
-        stage('Build Docker Images') {
-            steps {
-                echo 'Building Docker Images...'
-                sh '''
-                    docker compose build
-                '''
-            }
-        }
-        
-        stage('Deploy') {
-            when {
-                branch 'jenkins'
-            }
-            steps {
-                echo 'Deploying Application...'
-                sh '''
-                    docker compose down
-                    docker compose up -d
-                '''
-            }
-        }
     }
     
     post {
