@@ -9,7 +9,6 @@ import (
 type Request struct {
 	File     []byte `json:"file"`
 	FileName string `json:"filename"`
-	CdnUrl   string `json:"cdnUrl"`
 	SASToken string `json:"sasToken"`
 }
 
@@ -17,6 +16,8 @@ type Response struct {
 	Message string `json:"message"`
 	FileUrl string `json:"url"`
 }
+
+const cdnUrl string = "http://127.0.0.1:10000/devstoreaccount1/drocsid"
 
 func uploadVideoHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -34,7 +35,7 @@ func uploadVideoHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Received SAS Token: %s", req.SASToken)
 	log.Printf("Received file with %d bytes", len(req.File))
 
-	url, err := AzuriteUploadVideo(req.File, req.CdnUrl, req.FileName+".mp4", req.SASToken)
+	url, err := AzuriteUploadVideo(req.File, cdnUrl, req.FileName+".mp4", req.SASToken)
 	if err != nil {
 		log.Fatal(err)
 		http.Error(w, "Error while uploading file", http.StatusInternalServerError)
@@ -88,21 +89,21 @@ func uploadImageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	url, err := AzuriteUploadImage(standard_jpg, req.CdnUrl, req.FileName+".jpg", req.SASToken)
+	url, err := AzuriteUploadImage(standard_jpg, cdnUrl, req.FileName+".jpg", req.SASToken)
 	if err != nil {
 		log.Fatal(err)
 		http.Error(w, "Error while uploading file", http.StatusInternalServerError)
 		return
 	}
 
-	_, err = AzuriteUploadImage(standard_compressed, req.CdnUrl, req.FileName+"_.jpg", req.SASToken)
+	_, err = AzuriteUploadImage(standard_compressed, cdnUrl, req.FileName+"_.jpg", req.SASToken)
 	if err != nil {
 		log.Fatal(err)
 		http.Error(w, "Error while uploading file", http.StatusInternalServerError)
 		return
 	}
 
-	_, err = AzuriteUploadImage(extreme_compressed, req.CdnUrl, req.FileName+"__.jpg", req.SASToken)
+	_, err = AzuriteUploadImage(extreme_compressed, cdnUrl, req.FileName+"__.jpg", req.SASToken)
 	if err != nil {
 		log.Fatal(err)
 		http.Error(w, "Error while uploading file", http.StatusInternalServerError)
