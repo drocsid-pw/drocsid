@@ -3,7 +3,7 @@ import json
 import requests
 from pathlib import Path
 
-API_URL = "http://localhost:8080/uploadImage"
+API_URL = "http://localhost:9000/uploadImage"
 FILE_PATH = "image.png"
 SAS_FILE = "sas.txt"
 

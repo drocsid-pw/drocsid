@@ -1,10 +1,5 @@
 #!/bin/sh
 
-# Get variables from .env
-set -a
-. /.env
-set +a
-
 # Start Azurite Blob Storage service
 azurite-blob --blobHost 0.0.0.0 --blobPort 10000 --loose &
 AZURITE_PID=$!

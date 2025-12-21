@@ -23,3 +23,24 @@ services:
             - "9090:9090"
         environment:
             GOOGLE_OAUTH_CLIENT_ID: "494375853488-nu5h6bsffjafo3s2srddijrgstqvs7nc.apps.googleusercontent.com"
+
+    cdn:
+        build:
+            context: ./cdn
+            dockerfile: Dockerfile
+        volumes:
+            - cdn:/workspace/data
+        env_file:
+            - ./cdn/.env
+        ports:
+            - 10000:10000
+
+    mediaproxy:
+        build:
+            context: ./mediaproxy
+            dockerfile: Dockerfile
+        ports:
+            - 9000:9000
+
+volumes:
+  cdn:
