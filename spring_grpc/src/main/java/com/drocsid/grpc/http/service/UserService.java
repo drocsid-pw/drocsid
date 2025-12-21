@@ -6,7 +6,7 @@ import com.drocsid.grpc.http.dto.GuildListDto;
 import com.drocsid.grpc.http.dto.ResponseMessageDto;
 import com.drocsid.grpc.http.dto.UserDto;
 import com.drocsid.grpc.http.mapper.ProtoMapper;
-import com.drocsid.grpc.http.util.IdParser;
+import com.drocsid.grpc.mappings.UserCallerMappingRepository;
 import com.drocsid.grpc.mock_classes.CoreClient;
 import com.drocsid.grpc.proto.CreateUserRequest;
 import com.drocsid.grpc.proto.Guild;
@@ -21,9 +21,11 @@ import java.util.List;
 public class UserService {
 
     private final CoreClient coreClient;
+    private final UserCallerMappingRepository repository;
 
-    public UserService(CoreClient coreClient) {
+    public UserService(CoreClient coreClient, UserCallerMappingRepository repository) {
         this.coreClient = coreClient;
+        this.repository = repository;
     }
 
     public UserDto createUser(UserController.CreateUserBody body) {
@@ -39,13 +41,20 @@ public class UserService {
         return ProtoMapper.toDto(user);
     }
 
-    public UserDto getUser(String authedUserId) {
-        BigInteger targetUserId = IdParser.toBigInteger(authedUserId, "userId");
-        User user = coreClient.getUser(targetUserId);
+    public UserDto getUser(String authedUserId) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
+        User user = coreClient.getUser(callerId);
         return ProtoMapper.toDto(user);
     }
 
-    public UserDto updateUser(String authedUserId, String userId, UserController.PutUserBody body) {
+    public UserDto updateUser(String authedUserId, String userId, UserController.PutUserBody body) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
         if (!userId.equals(authedUserId)) {
             throw Status.PERMISSION_DENIED.withDescription("User ID mismatch").asRuntimeException();
         }
@@ -55,7 +64,7 @@ public class UserService {
         }
 
         CoreUpdateUserRequest request = new CoreUpdateUserRequest(
-                IdParser.toBigInteger(authedUserId, "userId"),
+                callerId,
                 body.getName(),
                 body.getAvatarHash()
         );
@@ -64,21 +73,29 @@ public class UserService {
         return ProtoMapper.toDto(user);
     }
 
-    public ResponseMessageDto deleteUser(String authedUserId, String userId) {
+    public ResponseMessageDto deleteUser(String authedUserId, String userId) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
         if (!userId.equals(authedUserId)) {
             throw Status.PERMISSION_DENIED.withDescription("User ID mismatch").asRuntimeException();
         }
 
-        coreClient.deleteUser(IdParser.toBigInteger(authedUserId, "userId"));
+        coreClient.deleteUser(callerId);
         return new ResponseMessageDto("User deleted successfully.");
     }
 
-    public GuildListDto getAllGuilds(String authedUserId, String userId) {
+    public GuildListDto getAllGuilds(String authedUserId, String userId) throws Exception{
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
         if (!userId.equals(authedUserId)) {
             throw Status.PERMISSION_DENIED.withDescription("User ID mismatch").asRuntimeException();
         }
 
-        List<Guild> guilds = coreClient.getAllGuilds(IdParser.toBigInteger(authedUserId, "userId"));
+        List<Guild> guilds = coreClient.getAllGuilds(callerId);
         return ProtoMapper.toGuildListDto(guilds);
     }
 }

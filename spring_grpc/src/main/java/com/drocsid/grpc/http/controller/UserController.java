@@ -33,7 +33,14 @@ public class UserController {
             @RequestHeader("Authorization") String authorization) {
 
         String authedUserId = jwtAuthService.checkAuth(authorization);
-        return userService.getUser(authedUserId);
+
+        try {
+            return userService.getUser(authedUserId);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
     }
 
     @PutMapping("/{userId}")
@@ -43,7 +50,14 @@ public class UserController {
             @Valid @RequestBody PutUserBody body) {
 
         String authedUserId = jwtAuthService.checkAuth(authorization);
-        return userService.updateUser(authedUserId, userId, body);
+
+        try {
+            return userService.updateUser(authedUserId, userId, body);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
     }
 
     @DeleteMapping("/{userId}")
@@ -52,7 +66,14 @@ public class UserController {
             @PathVariable String userId) {
 
         String authedUserId = jwtAuthService.checkAuth(authorization);
-        return userService.deleteUser(authedUserId, userId);
+
+        try {
+            return userService.deleteUser(authedUserId, userId);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
     }
 
     @GetMapping("/{userId}/guilds")
@@ -61,7 +82,14 @@ public class UserController {
             @PathVariable String userId) {
 
         String authedUserId = jwtAuthService.checkAuth(authorization);
-        return userService.getAllGuilds(authedUserId, userId);
+
+        try {
+            return userService.getAllGuilds(authedUserId, userId);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
     }
 
     @Data
