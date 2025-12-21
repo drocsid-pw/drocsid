@@ -1,0 +1,18 @@
+FROM node:18
+
+RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+
+RUN npm install -g azurite
+
+RUN apt-get update && apt-get install -y netcat-openbsd && apt-get clean
+
+WORKDIR /workspace
+
+COPY docker/entrypoint.sh /entrypoint.sh
+COPY docker/.env /.env
+RUN chmod +x /entrypoint.sh
+
+EXPOSE 10000
+
+ENTRYPOINT ["/entrypoint.sh"]
+

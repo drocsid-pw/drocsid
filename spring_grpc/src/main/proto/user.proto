@@ -22,7 +22,7 @@ message CreateUserRequest {
 }
 
 message UserId {
-  string user_id = 1;
+  string caller_id = 1;
 }
 
 message UpdateUserRequest {

@@ -14,3 +14,8 @@ spring_grpc/target
 
 jenkins/jenkins_home/
 .m2/
+skrypt.py
+output.txt
+output_proto.txt
+output_frontend.txt
+output_backend.txt

@@ -1,0 +1,3746 @@
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\DrocsidApplication.java ====
+package com.drocsid.grpc;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+
+@SpringBootApplication
+public class DrocsidApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(DrocsidApplication.class, args);
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\auth\JwtAuthDemo.java ====
+package com.drocsid.grpc.auth;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
+/**
+ * Demo component for testing JWT authentication on application startup.
+ */
+@Component
+public class JwtAuthDemo {
+
+    private static final Logger logger = LoggerFactory.getLogger(JwtAuthDemo.class);
+    private final JwtAuthService jwtAuthService;
+
+    public JwtAuthDemo(JwtAuthService jwtAuthService) {
+        this.jwtAuthService = jwtAuthService;
+    }
+
+    public void mockupAuthDemo() {
+        logger.info("========================================");
+        logger.info("Starting JWT Authentication Demo");
+        logger.info("========================================");
+
+        String MOCK_JWT_TOKEN = "eyJhbGciOiJSUzI1NiIsImtpZCI6ImQ1NDNlMjFhMDI3M2VmYzY2YTQ3NTAwMDI0NDFjYjIxNTFjYjIzNWYiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI0OTQzNzU4NTM0ODgtbnU1aDZic2ZmamFmbzNzMnNyZGRpanJnc3RxdnM3bmMuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI0OTQzNzU4NTM0ODgtbnU1aDZic2ZmamFmbzNzMnNyZGRpanJnc3RxdnM3bmMuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDA2Mzg1NDU4MDA3MTQ4NDU2NjMiLCJlbWFpbCI6Im1hdGRhczEyQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJuYmYiOjE3NjU0NDU0NDksIm5hbWUiOiJNYXRldXN6IERhc3pld3NraSIsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BQ2c4b2NMLXNwdm93LXZLNi1RaGVIX2VyY3FWUnBCUkFQZVBoZTJrZ0s0NWVDXzdCQlVSRHcwPXM5Ni1jIiwiZ2l2ZW5fbmFtZSI6Ik1hdGV1c3oiLCJmYW1pbHlfbmFtZSI6IkRhc3pld3NraSIsImlhdCI6MTc2NTQ0NTc0OSwiZXhwIjoxNzY1NDQ5MzQ5LCJqdGkiOiI1ZDc5ODVlYWRmYzRkYWQ4NTJmOGViYTAxNWU4ZDMwNmE5MDlhMmEzIn0.lTVH-0Cds4yPALz1RZTIv9bS97H_61RwRT4eKzH2owoghtrbFivkl_CrjPdf3J2WgqyH1QrE9aPDou8v_-hU447Rt2fKW57WCH9wNxE2emx59ELBMszMjpuPlFZANiJbekLL7fL4nz13be6_G3-huY-aCpJd1s73SRcfHAYGxS-81JZWh9u8axogcphG9TNwDm7v9HaVKvBKymNTevi3rycw_3hz6-WFM4oU0Ztr8R5ZA7sWpB7dO7_pRBElETLG78nXDP13GGREWRDuDpZppFUT7oOtQ1UIQUTRoY1zIlNdLZgPJ_zyAJKImQK3xgp2WpP5LNKRPujg8mrebDTWzw";
+
+        try {
+            logger.info("Attempting to validate JWT token...");
+            String userId = jwtAuthService.checkAuth(MOCK_JWT_TOKEN);
+
+            logger.info("JWT validation SUCCESSFUL");
+            logger.info("Extracted User ID: {}", userId);
+
+        } catch (Exception e) {
+            logger.error("JWT validation FAILED");
+            logger.error("Error: {}", e.getMessage());
+            logger.error("Status: {}", e.getClass().getSimpleName());
+        }
+
+        logger.info("========================================");
+        logger.info("JWT Authentication Demo Completed");
+        logger.info("========================================");
+    }
+}
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\auth\JwtAuthService.java ====
+package com.drocsid.grpc.auth;
+
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.util.Collections;
+import java.util.Optional;
+
+
+@Service
+public class JwtAuthService {
+
+    private final GoogleIdTokenVerifier verifier;
+
+    public JwtAuthService(@Value("${google.oauth.client-id}") String clientId) {
+        this.verifier = new GoogleIdTokenVerifier.Builder(
+                new NetHttpTransport(),
+                new GsonFactory())
+                .setAudience(Collections.singletonList(clientId))
+                .build();
+    }
+
+    public String checkAuth(String jwt) throws StatusRuntimeException {
+        return checkAuth(jwt, Optional.empty());
+    }
+
+    public String checkAuth(String jwt, Optional<String> userId) throws StatusRuntimeException {
+        if (jwt == null || jwt.trim().isEmpty()) {
+            throw Status.UNAUTHENTICATED
+                    .withDescription("JWT token is missing")
+                    .asRuntimeException();
+        }
+
+        String token = jwt.startsWith("Bearer ") ? jwt.substring(7) : jwt;
+
+        GoogleIdToken idToken = null;
+        try {
+            idToken = verifier.verify(token);
+        } catch (Exception e) {
+            throw Status.UNAUTHENTICATED
+                    .withDescription("Failed to verify JWT token: " + e.getMessage())
+                    .asRuntimeException();
+        }
+
+        if (idToken == null) {
+            throw Status.UNAUTHENTICATED
+                    .withDescription("Invalid JWT token")
+                    .asRuntimeException();
+        }
+
+        GoogleIdToken.Payload payload = idToken.getPayload();
+        String userIdFromToken = payload.getSubject();
+
+        if (userId.isPresent() && !userId.get().equals(userIdFromToken)) {
+            throw Status.PERMISSION_DENIED
+                    .withDescription("User ID mismatch")
+                    .asRuntimeException();
+        }
+
+        return userIdFromToken;
+    }
+}
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\channel\CoreCreateMessageRequest.java ====
+package com.drocsid.grpc.core_requests.channel;
+
+import com.drocsid.grpc.proto.CreateMessageReq;
+import lombok.*;
+
+import java.math.BigInteger;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+public class CoreCreateMessageRequest {
+    private BigInteger userId;
+    private BigInteger channelId;
+    private String content;
+
+    public CoreCreateMessageRequest(String userIdString, CreateMessageReq request) {
+        userId = new BigInteger(userIdString);
+        channelId = new BigInteger(request.getReq().getChannelId());
+        content = request.getMessage().getContent();
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\channel\CoreDeleteChannelRequest.java ====
+package com.drocsid.grpc.core_requests.channel;
+
+import com.drocsid.grpc.proto.ChannelInfoReq;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigInteger;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+public class CoreDeleteChannelRequest {
+    private BigInteger userId;
+    private BigInteger channelId;
+
+    public CoreDeleteChannelRequest(String userIdString, ChannelInfoReq request) {
+        this.userId = new BigInteger(userIdString);
+        this.channelId = new BigInteger(request.getChannelId());
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\channel\CoreDeleteMessageRequest.java ====
+package com.drocsid.grpc.core_requests.channel;
+
+import com.drocsid.grpc.proto.MessageReq;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigInteger;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+public class CoreDeleteMessageRequest {
+    private BigInteger userId;
+    private BigInteger channelId;
+    private BigInteger messageId;
+
+    public CoreDeleteMessageRequest(String userIdString, MessageReq request) {
+        userId = new BigInteger(userIdString);
+        channelId = new BigInteger(request.getReq().getChannelId());
+        messageId = new BigInteger(request.getMessageReq().getMessageId());
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\channel\CoreGetChannelRequest.java ====
+package com.drocsid.grpc.core_requests.channel;
+
+import com.drocsid.grpc.proto.ChannelInfoReq;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigInteger;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+public class CoreGetChannelRequest {
+    private BigInteger userId;
+    private BigInteger channelId;
+
+    public CoreGetChannelRequest(String userIdString, ChannelInfoReq request) {
+        this.userId = new BigInteger(userIdString);
+        this.channelId = new BigInteger(request.getChannelId());
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\channel\CoreGetMessagesRequest.java ====
+package com.drocsid.grpc.core_requests.channel;
+
+import com.drocsid.grpc.proto.MessageBucketReq;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigInteger;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+public class CoreGetMessagesRequest {
+    private BigInteger userId;
+    private BigInteger channelId;
+    private int offset;
+    private int count;
+
+    public CoreGetMessagesRequest(String userId, MessageBucketReq request) {
+        this.userId = new BigInteger(userId);
+        this.channelId = new BigInteger(request.getReq().getChannelId());
+        this.offset = request.getOffset();
+        this.count = request.getCount();
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\channel\CoreUpdateChannelRequest.java ====
+package com.drocsid.grpc.core_requests.channel;
+
+import com.drocsid.grpc.proto.Channel;
+import com.drocsid.grpc.proto.UpdateChannelRequest;
+import lombok.*;
+
+import java.math.BigInteger;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+public class CoreUpdateChannelRequest {
+    private BigInteger userId;
+    private Channel channel;
+
+    public CoreUpdateChannelRequest(String userIdString, UpdateChannelRequest request) {
+        userId = new BigInteger(userIdString);
+        channel = request.getChannel();
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\guild\CoreAddUserRequest.java ====
+package com.drocsid.grpc.core_requests.guild;
+
+import com.drocsid.grpc.proto.AddUser;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigInteger;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+public class CoreAddUserRequest {
+    private BigInteger userId;
+    private BigInteger guildId;
+
+    public CoreAddUserRequest(String userIdString, AddUser addUserObj) {
+        userId = new BigInteger(userIdString);
+        guildId = new BigInteger(addUserObj.getGuildId());
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\guild\CoreCreateChannelRequest.java ====
+package com.drocsid.grpc.core_requests.guild;
+
+import com.drocsid.grpc.proto.CreateChannelRequest;
+import lombok.*;
+
+import java.math.BigInteger;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+public class CoreCreateChannelRequest {
+    private BigInteger userId;
+    private String name;
+    private BigInteger guildId;
+
+    public CoreCreateChannelRequest(String userIdString, CreateChannelRequest request) {
+        userId = new BigInteger(userIdString);
+        name = request.getName();
+        guildId = new BigInteger(request.getGuildId());
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\guild\CoreCreateGuildRequest.java ====
+package com.drocsid.grpc.core_requests.guild;
+
+import com.drocsid.grpc.proto.CreateGuildRequest;
+import lombok.*;
+
+import java.math.BigInteger;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+public class CoreCreateGuildRequest {
+    private BigInteger userId;
+    private String name;
+    private String icon;
+
+    public CoreCreateGuildRequest(String userIdString, CreateGuildRequest request) {
+        userId = new BigInteger(userIdString);
+        name = request.getName();
+        icon = request.getIcon();
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\guild\CoreCreateRoleRequest.java ====
+package com.drocsid.grpc.core_requests.guild;
+
+import com.drocsid.grpc.proto.CreateRoleReq;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigInteger;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+public class CoreCreateRoleRequest {
+    private BigInteger userId;
+    private BigInteger guildId;
+    private String roleName;
+    private String permissions;
+
+    public CoreCreateRoleRequest(String userIdString, CreateRoleReq request) {
+        this.userId = new BigInteger(userIdString);
+        this.guildId = new BigInteger(request.getGuildId());
+        this.roleName = request.getRoleName();
+        this.permissions = request.getPermissions();
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\guild\CoreDeleteGuildRequest.java ====
+package com.drocsid.grpc.core_requests.guild;
+
+import com.drocsid.grpc.proto.GuildInfoReq;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigInteger;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+public class CoreDeleteGuildRequest {
+    private BigInteger userId;
+    private BigInteger guildId;
+
+    public CoreDeleteGuildRequest(String userIdString, GuildInfoReq request) {
+        this.userId = new BigInteger(userIdString);
+        this.guildId = new BigInteger(request.getGuildId());
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\guild\CoreDeleteGuildUserRequest.java ====
+package com.drocsid.grpc.core_requests.guild;
+
+import com.drocsid.grpc.proto.GuildUserReq;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigInteger;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+public class CoreDeleteGuildUserRequest {
+    private BigInteger userId;
+    private BigInteger guildId;
+    private BigInteger guildUserId;
+
+    public CoreDeleteGuildUserRequest(String userIdString, GuildUserReq request) {
+        userId = new BigInteger(userIdString);
+        guildId = new BigInteger(request.getGuildId());
+        guildUserId = new BigInteger(request.getGuildUserId());
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\guild\CoreGetAllChannelsRequest.java ====
+package com.drocsid.grpc.core_requests.guild;
+
+import com.drocsid.grpc.proto.GuildInfoReq;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigInteger;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+public class CoreGetAllChannelsRequest {
+    private BigInteger userId;
+    private BigInteger guildId;
+
+    public CoreGetAllChannelsRequest(String userIdString, GuildInfoReq request) {
+        this.userId = new BigInteger(userIdString);
+        this.guildId = new BigInteger(request.getGuildId());
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\guild\CoreGetGuildRequest.java ====
+package com.drocsid.grpc.core_requests.guild;
+
+import com.drocsid.grpc.proto.GuildInfoReq;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigInteger;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+public class CoreGetGuildRequest {
+    private BigInteger userId;
+    private BigInteger guildId;
+
+    public CoreGetGuildRequest(String userIdString, GuildInfoReq request) {
+        this.userId = new BigInteger(userIdString);
+        this.guildId = new BigInteger(request.getGuildId());
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\guild\CoreGetGuildUserRequest.java ====
+package com.drocsid.grpc.core_requests.guild;
+
+import com.drocsid.grpc.proto.GuildUserReq;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigInteger;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+public class CoreGetGuildUserRequest {
+    private BigInteger userId;
+    private BigInteger guildId;
+    private BigInteger guild_user_id;
+
+    public CoreGetGuildUserRequest(String userIdString, GuildUserReq request) {
+        this.userId = new BigInteger(userIdString);
+        this.guildId = new BigInteger(request.getGuildId());
+        this.guild_user_id = new BigInteger(request.getGuildUserId());
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\guild\CoreGetGuildUsersRequest.java ====
+package com.drocsid.grpc.core_requests.guild;
+
+import com.drocsid.grpc.proto.GuildInfoReq;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigInteger;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+public class CoreGetGuildUsersRequest {
+    private BigInteger userId;
+    private BigInteger guildId;
+
+    public CoreGetGuildUsersRequest(String userIdString, GuildInfoReq request) {
+        this.userId = new BigInteger(userIdString);
+        this.guildId = new BigInteger(request.getGuildId());
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\guild\CoreGetRoleRequest.java ====
+package com.drocsid.grpc.core_requests.guild;
+
+import com.drocsid.grpc.proto.RoleReq;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigInteger;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+public class CoreGetRoleRequest {
+    private BigInteger userId;
+    private BigInteger guildId;
+    private BigInteger roleId;
+
+    public CoreGetRoleRequest(String userIdString, RoleReq request) {
+        this.userId = new BigInteger(userIdString);
+        this.guildId = new BigInteger(request.getGuildId());
+        this.roleId = new BigInteger(request.getGuildRoleId());
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\guild\CoreGetRolesRequest.java ====
+package com.drocsid.grpc.core_requests.guild;
+
+import com.drocsid.grpc.proto.GuildInfoReq;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import java.math.BigInteger;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+public class CoreGetRolesRequest {
+    private BigInteger userId;
+    private BigInteger guildId;
+
+    public CoreGetRolesRequest(String userIdString, GuildInfoReq request) {
+        this.userId = new BigInteger(userIdString);
+        this.guildId = new BigInteger(request.getGuildId());
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\guild\CoreUpdateGuildRequest.java ====
+package com.drocsid.grpc.core_requests.guild;
+
+import com.drocsid.grpc.proto.UpdateGuildRequest;
+import com.drocsid.grpc.proto.Role;
+import lombok.*;
+
+import java.math.BigInteger;
+import java.util.List;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+public class CoreUpdateGuildRequest {
+    private BigInteger userId;
+    private BigInteger guildId;
+    private String name;
+    private String icon;
+    private BigInteger ownerId;
+    private List<Role> roles;
+
+    public CoreUpdateGuildRequest(String userIdString, UpdateGuildRequest request) {
+        userId = new BigInteger(userIdString);
+        guildId = new BigInteger(request.getGuild().getGuildId());
+        name = request.getGuild().getName();
+        icon = request.getGuild().getIcon();
+        ownerId = new BigInteger(request.getGuild().getOwnerId());
+        roles = request.getGuild().getRolesList();
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\guild\CoreUpdateGuildUserRequest.java ====
+package com.drocsid.grpc.core_requests.guild;
+
+import com.drocsid.grpc.proto.Role;
+import com.drocsid.grpc.proto.UpdateUserReq;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigInteger;
+import java.util.List;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+public class CoreUpdateGuildUserRequest {
+    private BigInteger userId;
+    private BigInteger guildId;
+    private String nick;
+    private List<Role> roles;
+
+    public CoreUpdateGuildUserRequest(String userIdString, UpdateUserReq request) {
+        this.userId = new BigInteger(userIdString);
+        this.guildId = new BigInteger(request.getGuildId());
+        this.nick = request.getUser().getNick();
+        this.roles = request.getUser().getRoles().getRolesList();
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\guild\CoreUpdateRoleRequest.java ====
+package com.drocsid.grpc.core_requests.guild;
+
+import com.drocsid.grpc.proto.UpdateRoleReq;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigInteger;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+public class CoreUpdateRoleRequest {
+    private BigInteger userId;
+    private BigInteger guildId;
+    private BigInteger guildRoleId;
+    private String roleName;
+    private String permissions;
+
+    public CoreUpdateRoleRequest(String userIdString, UpdateRoleReq request) {
+        this.userId = new BigInteger(userIdString);
+        this.guildId = new BigInteger(request.getGuildId());
+        this.guildRoleId = new BigInteger(request.getRole().getGuildRoleId());
+        this.roleName = request.getRole().getRoleName();
+        this.permissions = request.getRole().getPermissions();
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\core_requests\user\CoreUpdateUserRequest.java ====
+package com.drocsid.grpc.core_requests.user;
+
+import com.drocsid.grpc.proto.UpdateUserRequest;
+import lombok.*;
+
+import java.math.BigInteger;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+public class CoreUpdateUserRequest {
+    private BigInteger userId;
+    private String name;
+    private String avatarHash;
+
+    public CoreUpdateUserRequest(String userIdString, UpdateUserRequest request) {
+        userId = new BigInteger(userIdString);
+        name = request.getName();
+        avatarHash = request.getAvatarHash();
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\auth\RestAuthService.java ====
+package com.drocsid.grpc.http.auth;
+
+import com.drocsid.grpc.auth.JwtAuthService;
+import io.grpc.StatusRuntimeException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
+
+@Service
+public class RestAuthService {
+
+    private static final Logger logger = LoggerFactory.getLogger(RestAuthService.class);
+
+    private final JwtAuthService jwtAuthService;
+
+    public RestAuthService(JwtAuthService jwtAuthService) {
+        this.jwtAuthService = jwtAuthService;
+    }
+
+    /**
+     * Authenticates by Google ID token from Authorization header.
+     * If caller_id is provided and does not match token subject, we keep existing behavior:
+     * token wins and caller_id is ignored (we only log a warning).
+     */
+    public String authenticateAndGetUserId(String authorizationHeader, Optional<String> callerId) throws StatusRuntimeException {
+        String userIdFromToken = jwtAuthService.checkAuth(authorizationHeader);
+
+        if (callerId.isPresent() && !callerId.get().equals(userIdFromToken)) {
+            logger.warn(
+                "caller_id {} does not match token subject {}. Ignoring caller_id and using token subject.",
+                callerId.get(),
+                userIdFromToken
+            );
+        }
+
+        return userIdFromToken;
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\controller\ChannelController.java ====
+package com.drocsid.grpc.http.controller;
+
+import com.drocsid.grpc.auth.JwtAuthService;
+import com.drocsid.grpc.core_requests.channel.*;
+import com.drocsid.grpc.http.dto.*;
+import com.drocsid.grpc.http.service.ChannelService;
+import com.drocsid.grpc.proto.Role;
+import com.drocsid.grpc.proto.RoleList;
+import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
+import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/channels")
+public class ChannelController {
+
+    private final ChannelService channelService;
+    private final JwtAuthService jwtAuthService;
+
+    public ChannelController(ChannelService channelService, JwtAuthService jwtAuthService) {
+        this.channelService = channelService;
+        this.jwtAuthService = jwtAuthService;
+    }
+
+    @GetMapping("/{channelId}")
+    public ChannelDto getChannel(
+        @RequestHeader(value = "Authorization") String authorization,
+        @PathVariable String channelId) {
+        String authedUserId = jwtAuthService.checkAuth(authorization);
+
+        try {
+            return channelService.getChannel(channelId, authedUserId);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @PutMapping("/{channelId}")
+    public ChannelDto putChannel(
+            @RequestHeader("Authorization") String authorization,
+            @PathVariable String channelId,
+            @Valid @RequestBody PutChannelBody body) {
+
+        String authedUserId = jwtAuthService.checkAuth(authorization);
+
+        ChannelBody ch = body.getChannel();
+
+        try {
+            return channelService.updateChannel(authedUserId, channelId, ch);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @DeleteMapping("/{channelId}")
+    public ResponseMessageDto deleteChannel(
+        @RequestHeader(value = "Authorization") String authorization,
+        @PathVariable String channelId) {
+        String authedUserId = jwtAuthService.checkAuth(authorization);
+
+        try {
+            return channelService.deleteChannel(authedUserId, channelId);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @GetMapping("/{channelId}/messages")
+    public MessageListDto getMessages(
+        @RequestHeader(value = "Authorization") String authorization,
+        @PathVariable String channelId,
+        @RequestParam(value = "offset", defaultValue = "0") int offset,
+        @RequestParam(value = "count", defaultValue = "50") int count) {
+        String authedUserId = jwtAuthService.checkAuth(authorization);
+
+        try {
+            return channelService.getMessages(authedUserId, channelId, offset, count);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @PostMapping("/{channelId}/messages")
+    public MessageDto createMessage(
+            @RequestHeader("Authorization") String authorization,
+            @PathVariable String channelId,
+            @Valid @RequestBody CreateMessageBody body) {
+
+        String authedUserId = jwtAuthService.checkAuth(authorization);
+        String content = body.getMessage().getContent();
+
+        try {
+            return channelService.createMessage(authedUserId, channelId, content);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @DeleteMapping("/{channelId}/messages/{messageId}")
+    public ResponseMessageDto deleteMessage(
+            @RequestHeader("Authorization") String authorization,
+            @PathVariable String channelId,
+            @PathVariable String messageId) {
+
+        String authedUserId = jwtAuthService.checkAuth(authorization);
+
+        try {
+            return channelService.deleteMessage(authedUserId, channelId, messageId);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public static RoleList mapRoleList(RoleListBody body) {
+        if (body.getRoles() == null) {
+            return RoleList.newBuilder().build();
+        }
+
+        List<Role> roles = new ArrayList<>();
+        for (RoleBody r : body.getRoles()) {
+            if (r == null) {
+                continue;
+            }
+
+            Role.Builder b = Role.newBuilder();
+
+            if (r.getGuildRoleId() != null) {
+                b.setGuildRoleId(r.getGuildRoleId());
+            }
+            if (r.getRoleName() != null) {
+                b.setRoleName(r.getRoleName());
+            }
+            if (r.getPermissions() != null) {
+                b.setPermissions(r.getPermissions());
+            }
+
+            roles.add(b.build());
+        }
+
+        return RoleList.newBuilder().addAllRoles(roles).build();
+    }
+
+    @Data
+    public static class PutChannelBody {
+        private ChannelBody channel;
+    }
+
+    @Data
+    public static class ChannelBody {
+        @NotBlank(message = "channel.name is required")
+        private String name;
+        private String guildId;
+        private RoleListBody overrides;
+    }
+
+    @Data
+    public static class RoleListBody {
+        private List<RoleBody> roles;
+    }
+
+    @Data
+    public static class RoleBody {
+        private String guildRoleId;
+        private String roleName;
+        private String permissions;
+    }
+
+    @Data
+    public static class CreateMessageBody {
+        private MessageBody message;
+    }
+
+    @Data
+    public static class MessageBody {
+        @NotBlank(message = "message.content is required")
+        private String content;
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\controller\GuildController.java ====
+package com.drocsid.grpc.http.controller;
+
+import com.drocsid.grpc.auth.JwtAuthService;
+import com.drocsid.grpc.core_requests.guild.*;
+import com.drocsid.grpc.http.dto.*;
+import com.drocsid.grpc.http.service.GuildService;
+import com.drocsid.grpc.proto.*;
+import com.fasterxml.jackson.databind.JsonNode;
+import io.grpc.Status;
+import jakarta.validation.Valid;
+import lombok.Data;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/guilds")
+public class GuildController {
+
+    private final GuildService guildService;
+    private final JwtAuthService jwtAuthService;
+
+    public GuildController(GuildService guildService, JwtAuthService jwtAuthService) {
+        this.guildService = guildService;
+        this.jwtAuthService = jwtAuthService;
+    }
+
+    @PostMapping
+    public GuildDto createGuild(
+        @RequestHeader(value = "Authorization") String authorization,
+        @RequestBody CreateGuildBody body) {
+        String authedUserId = jwtAuthService.checkAuth(authorization);
+
+        try {
+            return guildService.createGuild(authedUserId, body.getName(), body.getIcon());
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @GetMapping("/{guildId}")
+    public GuildDto getGuild(
+            @RequestHeader("Authorization") String authorization,
+            @PathVariable String guildId) {
+
+        String authedUserId = jwtAuthService.checkAuth(authorization);
+        try {
+            return guildService.getGuild(authedUserId, guildId);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @PutMapping("/{guildId}")
+    public GuildDto putGuild(
+            @RequestHeader("Authorization") String authorization,
+            @PathVariable String guildId,
+            @Valid @RequestBody PutGuildBody body) {
+
+        String authedUserId = jwtAuthService.checkAuth(authorization);
+
+        try {
+            return guildService.updateGuild(authedUserId, guildId, body.getGuild());
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @DeleteMapping("/{guildId}")
+    public ResponseMessageDto deleteGuild(
+            @RequestHeader("Authorization") String authorization,
+            @PathVariable String guildId) {
+
+        String authedUserId = jwtAuthService.checkAuth(authorization);
+
+        try {
+            return guildService.deleteGuild(authedUserId, guildId);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @GetMapping("/{guildId}/channels")
+    public ChannelListDto getAllChannels(
+            @RequestHeader("Authorization") String authorization,
+            @PathVariable String guildId) {
+
+        String authedUserId = jwtAuthService.checkAuth(authorization);
+
+        try {
+            return guildService.getAllChannels(authedUserId, guildId);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @PostMapping("/{guildId}/channels")
+    public ChannelDto createChannel(
+            @RequestHeader("Authorization") String authorization,
+            @PathVariable String guildId,
+            @Valid @RequestBody CreateChannelBody body) {
+
+        String authedUserId = jwtAuthService.checkAuth(authorization);
+
+        try {
+            return guildService.createChannel(authedUserId, guildId, body.getName());
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @GetMapping("/{guildId}/roles")
+    public RoleListDto getRoles(
+            @RequestHeader("Authorization") String authorization,
+            @PathVariable String guildId) {
+
+        String authedUserId = jwtAuthService.checkAuth(authorization);
+
+        try {
+            return guildService.getRoles(authedUserId, guildId);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @GetMapping("/{guildId}/roles/{guildRoleId}")
+    public RoleDto getRole(
+            @RequestHeader("Authorization") String authorization,
+            @PathVariable String guildId,
+            @PathVariable String guildRoleId) {
+
+        String authedUserId = jwtAuthService.checkAuth(authorization);
+        try {
+            return guildService.getRole(authedUserId, guildId, guildRoleId);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @PostMapping("/{guildId}/roles")
+    public RoleDto createRole(
+            @RequestHeader("Authorization") String authorization,
+            @PathVariable String guildId,
+            @Valid @RequestBody CreateRoleBody body) {
+
+        String authedUserId = jwtAuthService.checkAuth(authorization);
+
+        try {
+            return guildService.createRole(authedUserId, guildId, body.getRoleName(), body.getPermissions());
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @PutMapping("/{guildId}/roles/{guildRoleId}")
+    public RoleDto putRole(
+            @RequestHeader("Authorization") String authorization,
+            @PathVariable String guildId,
+            @PathVariable String guildRoleId,
+            @Valid @RequestBody PutRoleBody body) {
+
+        String authedUserId = jwtAuthService.checkAuth(authorization);
+
+        try {
+            return guildService.updateRole(authedUserId, guildId, guildRoleId, body.getRole());
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @DeleteMapping("/{guildId}/roles/{guildRoleId}")
+    public ResponseMessageDto deleteRoleNotImplemented() {
+        throw Status.UNIMPLEMENTED.withDescription("DeleteRole is not implemented in gRPC schema yet").asRuntimeException();
+    }
+
+    @PostMapping("/{guildId}/users")
+    public GuildUserDto addUserToGuild(
+            @RequestHeader("Authorization") String authorization,
+            @PathVariable String guildId) {
+
+        String authedUserId = jwtAuthService.checkAuth(authorization);
+
+        try {
+            return guildService.addUserToGuild(authedUserId, guildId);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @GetMapping("/{guildId}/users")
+    public GuildUserListDto getGuildUsers(
+            @RequestHeader("Authorization") String authorization,
+            @PathVariable String guildId) {
+
+        String authedUserId = jwtAuthService.checkAuth(authorization);
+
+        try {
+            return guildService.getGuildUsers(authedUserId, guildId);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @GetMapping("/{guildId}/users/{guildUserId}")
+    public GuildUserDto getGuildUser(
+            @RequestHeader("Authorization") String authorization,
+            @PathVariable String guildId,
+            @PathVariable String guildUserId) {
+
+        String authedUserId = jwtAuthService.checkAuth(authorization);
+
+        try {
+            return guildService.getGuildUser(authedUserId, guildId, guildUserId);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @PutMapping("/{guildId}/users/{guildUserId}")
+    public GuildUserDto putGuildUser(
+            @RequestHeader("Authorization") String authorization,
+            @PathVariable String guildId,
+            @PathVariable String guildUserId,
+            @Valid @RequestBody PutGuildUserBody body) {
+
+        String authedUserId = jwtAuthService.checkAuth(authorization);
+
+        try {
+            return guildService.updateGuildUser(authedUserId, guildId, guildUserId, body.getUser());
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @DeleteMapping("/{guildId}/users/{guildUserId}")
+    public ResponseMessageDto deleteGuildUser(
+            @RequestHeader("Authorization") String authorization,
+            @PathVariable String guildId,
+            @PathVariable String guildUserId) {
+
+        String authedUserId = jwtAuthService.checkAuth(authorization);
+
+        try {
+            return guildService.deleteGuildUser(authedUserId, guildId, guildUserId);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public static List<Role> mapRoles(List<RoleBody> roles) {
+        if (roles == null) {
+            return List.of();
+        }
+
+        List<Role> protoRoles = new ArrayList<>();
+        for (RoleBody r : roles) {
+            if (r == null) {
+                continue;
+            }
+
+            Role.Builder b = Role.newBuilder();
+
+            if (r.getGuildRoleId() != null) {
+                b.setGuildRoleId(r.getGuildRoleId());
+            }
+            if (r.getRoleName() != null) {
+                b.setRoleName(r.getRoleName());
+            }
+            if (r.getPermissions() != null) {
+                b.setPermissions(r.getPermissions());
+            }
+
+            protoRoles.add(b.build());
+        }
+
+        return protoRoles;
+    }
+
+    @Data
+    public static class CreateGuildBody {
+        private String name;
+        private String icon;
+    }
+
+    @Data
+    public static class PutGuildBody {
+        private GuildBody guild;
+    }
+
+    @Data
+    public static class GuildBody {
+        private String guildId;
+        private String name;
+        private String icon;
+        private String ownerId;
+        private List<RoleBody> roles;
+    }
+
+    @Data
+    public static class RoleBody {
+        private String guildRoleId;
+        private String roleName;
+        private String permissions;
+    }
+
+    @Data
+    public static class CreateRoleBody {
+        private String roleName;
+        private String permissions;
+    }
+
+    @Data
+    public static class PutRoleBody {
+        private RoleBody role;
+    }
+
+    @Data
+    public static class CreateChannelBody {
+        private String name;
+    }
+
+    @Data
+    public static class PutGuildUserBody {
+        private GuildUserBody user;
+    }
+
+    @Data
+    public static class GuildUserBody {
+        private String guildUserId;
+        private String nick;
+        private JsonNode roles;
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\controller\HelloController.java ====
+package com.drocsid.grpc.http.controller;
+
+import com.drocsid.grpc.http.dto.HelloReplyDto;
+import io.grpc.Status;
+import lombok.Data;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api")
+public class HelloController {
+
+    @PostMapping("/hello")
+    public HelloReplyDto hello(@RequestBody HelloBody body) {
+        if (body == null || body.getName() == null || body.getName().trim().isEmpty()) {
+            throw Status.INVALID_ARGUMENT.withDescription("name is required").asRuntimeException();
+        }
+
+        return new HelloReplyDto("Hello " + body.getName());
+    }
+
+    @Data
+    private static class HelloBody {
+        private String name;
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\controller\UserController.java ====
+package com.drocsid.grpc.http.controller;
+
+import com.drocsid.grpc.auth.JwtAuthService;
+import com.drocsid.grpc.http.dto.GuildListDto;
+import com.drocsid.grpc.http.dto.ResponseMessageDto;
+import com.drocsid.grpc.http.dto.UserDto;
+import com.drocsid.grpc.http.service.UserService;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.Valid;
+import lombok.Data;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/users")
+public class UserController {
+
+    private final UserService userService;
+    private final JwtAuthService jwtAuthService;
+
+    public UserController(UserService userService, JwtAuthService jwtAuthService) {
+        this.userService = userService;
+        this.jwtAuthService = jwtAuthService;
+    }
+
+    @PostMapping
+    public UserDto createUser(@Valid @RequestBody CreateUserBody body) {
+
+        return userService.createUser(body);
+    }
+
+    @GetMapping("/get_user")
+    public UserDto getUser(
+            @RequestHeader("Authorization") String authorization) {
+
+        String authedUserId = jwtAuthService.checkAuth(authorization);
+
+        try {
+            return userService.getUser(authedUserId);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @PutMapping("/{userId}")
+    public UserDto putUser(
+            @RequestHeader("Authorization") String authorization,
+            @PathVariable String userId,
+            @Valid @RequestBody PutUserBody body) {
+
+        String authedUserId = jwtAuthService.checkAuth(authorization);
+
+        try {
+            return userService.updateUser(authedUserId, userId, body);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @DeleteMapping("/{userId}")
+    public ResponseMessageDto deleteUser(
+            @RequestHeader("Authorization") String authorization,
+            @PathVariable String userId) {
+
+        String authedUserId = jwtAuthService.checkAuth(authorization);
+
+        try {
+            return userService.deleteUser(authedUserId, userId);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @GetMapping("/{userId}/guilds")
+    public GuildListDto getAllGuilds(
+            @RequestHeader("Authorization") String authorization,
+            @PathVariable String userId) {
+
+        String authedUserId = jwtAuthService.checkAuth(authorization);
+
+        try {
+            return userService.getAllGuilds(authedUserId, userId);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @Data
+    public static class CreateUserBody {
+        private String name;
+    }
+
+    @Data
+    public static class PutUserBody {
+        @JsonProperty("caller_id")
+        private String callerId;
+
+        private String name;
+        private String avatarHash;
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\dto\ChannelDto.java ====
+package com.drocsid.grpc.http.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class ChannelDto {
+    private String channelId;
+    private String name;
+    private String guildId;
+    private RoleListDto overrides;
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\dto\ChannelListDto.java ====
+package com.drocsid.grpc.http.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class ChannelListDto {
+    private List<ChannelDto> channels;
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\dto\GuildDto.java ====
+package com.drocsid.grpc.http.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class GuildDto {
+    private String guildId;
+    private String name;
+    private String icon;
+    private String ownerId;
+    private List<RoleDto> roles;
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\dto\GuildListDto.java ====
+package com.drocsid.grpc.http.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class GuildListDto {
+    private List<GuildDto> guilds;
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\dto\GuildUserDto.java ====
+package com.drocsid.grpc.http.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class GuildUserDto {
+    private String guildUserId;
+    private String nick;
+    private RoleListDto roles;
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\dto\GuildUserListDto.java ====
+package com.drocsid.grpc.http.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class GuildUserListDto {
+    private List<GuildUserDto> guildUsers;
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\dto\HelloReplyDto.java ====
+package com.drocsid.grpc.http.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class HelloReplyDto {
+    private String message;
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\dto\MessageDto.java ====
+package com.drocsid.grpc.http.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class MessageDto {
+    private String messageId;
+    private GuildUserDto author;
+    private String content;
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\dto\MessageListDto.java ====
+package com.drocsid.grpc.http.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class MessageListDto {
+    private List<MessageDto> messages;
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\dto\ResponseMessageDto.java ====
+package com.drocsid.grpc.http.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class ResponseMessageDto {
+    private String text;
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\dto\RoleDto.java ====
+package com.drocsid.grpc.http.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class RoleDto {
+    private String guildRoleId;
+    private String roleName;
+    private String permissions;
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\dto\RoleListDto.java ====
+package com.drocsid.grpc.http.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class RoleListDto {
+    private List<RoleDto> roles;
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\dto\UserDto.java ====
+package com.drocsid.grpc.http.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class UserDto {
+    private String id;
+    private String name;
+    private String avatarHash;
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\error\ApiErrorResponse.java ====
+package com.drocsid.grpc.http.error;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+import java.util.Map;
+
+@Data
+@AllArgsConstructor
+public class ApiErrorResponse {
+
+    private ErrorBody error;
+
+    @Data
+    @AllArgsConstructor
+    public static class ErrorBody {
+        private String code;
+        private String message;
+        private Map<String, Object> details;
+    }
+
+    public static ApiErrorResponse of(String code, String message) {
+        return new ApiErrorResponse(new ErrorBody(code, message, Map.of()));
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\error\GlobalExceptionHandler.java ====
+package com.drocsid.grpc.http.error;
+
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    @ExceptionHandler(StatusRuntimeException.class)
+    public ResponseEntity<ApiErrorResponse> handleStatusRuntimeException(StatusRuntimeException e) {
+        Status status = e.getStatus();
+
+        HttpStatus httpStatus = mapGrpcStatusToHttp(status);
+        String code = mapGrpcStatusToCode(status);
+        String message = status.getDescription() != null ? status.getDescription() : status.getCode().name();
+
+        return ResponseEntity
+            .status(httpStatus)
+            .body(ApiErrorResponse.of(code, message));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiErrorResponse> handleBadJson(HttpMessageNotReadableException e) {
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ApiErrorResponse.of("BAD_REQUEST", "Invalid JSON body"));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiErrorResponse> handleUnexpected(Exception e) {
+        logger.error("Unhandled server error", e);
+
+        return ResponseEntity
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(ApiErrorResponse.of("INTERNAL", "Unexpected server error"));
+    }
+
+    private static HttpStatus mapGrpcStatusToHttp(Status status) {
+        switch (status.getCode()) {
+            case UNAUTHENTICATED:
+                return HttpStatus.UNAUTHORIZED;
+            case PERMISSION_DENIED:
+                return HttpStatus.FORBIDDEN;
+            case NOT_FOUND:
+                return HttpStatus.NOT_FOUND;
+            case INVALID_ARGUMENT:
+                return HttpStatus.BAD_REQUEST;
+            case ALREADY_EXISTS:
+                return HttpStatus.CONFLICT;
+            case FAILED_PRECONDITION:
+                return HttpStatus.PRECONDITION_FAILED;
+            case UNAVAILABLE:
+                return HttpStatus.SERVICE_UNAVAILABLE;
+            default:
+                return HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+    }
+
+    private static String mapGrpcStatusToCode(Status status) {
+        switch (status.getCode()) {
+            case PERMISSION_DENIED:
+                return "FORBIDDEN";
+            case UNAUTHENTICATED:
+                return "UNAUTHENTICATED";
+            case INVALID_ARGUMENT:
+                return "BAD_REQUEST";
+            case NOT_FOUND:
+                return "NOT_FOUND";
+            case ALREADY_EXISTS:
+                return "CONFLICT";
+            case FAILED_PRECONDITION:
+                return "PRECONDITION_FAILED";
+            case UNAVAILABLE:
+                return "UNAVAILABLE";
+            default:
+                return "INTERNAL";
+        }
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\mapper\ProtoMapper.java ====
+package com.drocsid.grpc.http.mapper;
+
+import com.drocsid.grpc.http.dto.*;
+import com.drocsid.grpc.proto.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public final class ProtoMapper {
+
+    private ProtoMapper() {}
+
+    public static UserDto toDto(User user) {
+        if (user == null) {
+            return new UserDto(null, null, null);
+        }
+
+        return new UserDto(
+            user.getId(),
+            user.getName(),
+            user.getAvatarHash()
+        );
+    }
+
+    public static RoleDto toDto(Role role) {
+        if (role == null) {
+            return new RoleDto(null, null, null);
+        }
+
+        return new RoleDto(
+            role.getGuildRoleId(),
+            role.getRoleName(),
+            role.getPermissions()
+        );
+    }
+
+    public static RoleListDto toDto(RoleList roleList) {
+        if (roleList == null) {
+            return new RoleListDto(List.of());
+        }
+
+        return new RoleListDto(
+            roleList.getRolesList().stream().map(ProtoMapper::toDto).collect(Collectors.toList())
+        );
+    }
+
+    public static RoleListDto toDtoFromRoles(List<Role> roles) {
+        if (roles == null) {
+            return new RoleListDto(List.of());
+        }
+
+        return new RoleListDto(
+            roles.stream().map(ProtoMapper::toDto).collect(Collectors.toList())
+        );
+    }
+
+    public static GuildDto toDto(Guild guild) {
+        if (guild == null) {
+            return new GuildDto(null, null, null, null, List.of());
+        }
+
+        return new GuildDto(
+            guild.getGuildId(),
+            guild.getName(),
+            guild.getIcon(),
+            guild.getOwnerId(),
+            guild.getRolesList().stream().map(ProtoMapper::toDto).collect(Collectors.toList())
+        );
+    }
+
+    public static GuildListDto toGuildListDto(List<Guild> guilds) {
+        if (guilds == null) {
+            return new GuildListDto(List.of());
+        }
+
+        return new GuildListDto(
+            guilds.stream().map(ProtoMapper::toDto).collect(Collectors.toList())
+        );
+    }
+
+    public static ChannelDto toDto(Channel channel) {
+        if (channel == null) {
+            return new ChannelDto(null, null, null, new RoleListDto(List.of()));
+        }
+
+        RoleListDto overridesDto = toDto(channel.getOverrides());
+
+        return new ChannelDto(
+            channel.getChannelId(),
+            channel.getName(),
+            channel.getGuildId(),
+            overridesDto
+        );
+    }
+
+    public static ChannelListDto toChannelListDto(List<Channel> channels) {
+        if (channels == null) {
+            return new ChannelListDto(List.of());
+        }
+
+        return new ChannelListDto(
+            channels.stream().map(ProtoMapper::toDto).collect(Collectors.toList())
+        );
+    }
+
+    public static GuildUserDto toDto(GuildUser guildUser) {
+        if (guildUser == null) {
+            return new GuildUserDto(null, null, new RoleListDto(List.of()));
+        }
+
+        return new GuildUserDto(
+            guildUser.getGuildUserId(),
+            guildUser.getNick(),
+            mapGuildUserRoles(guildUser)
+        );
+    }
+
+    public static GuildUserListDto toGuildUserListDto(List<GuildUser> users) {
+        if (users == null) {
+            return new GuildUserListDto(List.of());
+        }
+
+        return new GuildUserListDto(
+            users.stream().map(ProtoMapper::toDto).collect(Collectors.toList())
+        );
+    }
+
+    public static MessageDto toDto(Message message) {
+        if (message == null) {
+            return new MessageDto(null, null, null);
+        }
+
+        return new MessageDto(
+            message.getMessageId(),
+            toDto(message.getAuthor()),
+            message.getContent()
+        );
+    }
+
+    public static MessageListDto toMessageListDto(List<Message> messages) {
+        if (messages == null) {
+            return new MessageListDto(List.of());
+        }
+
+        return new MessageListDto(
+            messages.stream().map(ProtoMapper::toDto).collect(Collectors.toList())
+        );
+    }
+
+    private static RoleListDto mapGuildUserRoles(GuildUser guildUser) {
+        return toDto(guildUser.getRoles());
+    }
+
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\service\ChannelService.java ====
+package com.drocsid.grpc.http.service;
+
+import com.drocsid.grpc.core_requests.channel.*;
+import com.drocsid.grpc.http.controller.ChannelController;
+import com.drocsid.grpc.http.dto.ChannelDto;
+import com.drocsid.grpc.http.dto.MessageDto;
+import com.drocsid.grpc.http.dto.MessageListDto;
+import com.drocsid.grpc.http.dto.ResponseMessageDto;
+import com.drocsid.grpc.http.mapper.ProtoMapper;
+import com.drocsid.grpc.http.util.IdParser;
+import com.drocsid.grpc.mappings.UserCallerMappingRepository;
+import com.drocsid.grpc.mock_classes.CoreClient;
+import com.drocsid.grpc.proto.Channel;
+import com.drocsid.grpc.proto.Message;
+import com.drocsid.grpc.proto.RoleList;
+import io.grpc.Status;
+import org.springframework.stereotype.Service;
+
+import java.math.BigInteger;
+import java.util.List;
+
+import static com.drocsid.grpc.http.controller.ChannelController.mapRoleList;
+
+@Service
+public class ChannelService {
+
+    private final CoreClient coreClient;
+    private final UserCallerMappingRepository repository;
+
+    public ChannelService(CoreClient coreClient, UserCallerMappingRepository repository) {
+        this.coreClient = coreClient;
+        this.repository = repository;
+    }
+
+    public ChannelDto getChannel(String authedUserId, String channelId) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
+        CoreGetChannelRequest req = new CoreGetChannelRequest(
+                callerId,
+                IdParser.toBigInteger(channelId, "channelId")
+        );
+
+        Channel channel = coreClient.getChannel(req);
+        return ProtoMapper.toDto(channel);
+    }
+
+    public ChannelDto updateChannel(String authedUserId, String channelId, ChannelController.ChannelBody ch) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
+        Channel.Builder builder = Channel.newBuilder()
+                .setChannelId(channelId)
+                .setName(ch.getName());
+
+        if (ch.getGuildId() != null) {
+            builder.setGuildId(ch.getGuildId());
+        }
+
+        builder.setOverrides(
+                ch.getOverrides() != null ? mapRoleList(ch.getOverrides()) : RoleList.newBuilder().build()
+        );
+
+        CoreUpdateChannelRequest req = new CoreUpdateChannelRequest(
+                callerId,
+                builder.build()
+        );
+
+        Channel updated = coreClient.updateChannel(req);
+        return ProtoMapper.toDto(updated);
+    }
+
+    public ResponseMessageDto deleteChannel(String authedUserId, String channelId) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
+        CoreDeleteChannelRequest req = new CoreDeleteChannelRequest(
+                callerId,
+                IdParser.toBigInteger(channelId, "channelId")
+        );
+
+        coreClient.deleteChannel(req);
+        return new ResponseMessageDto("Channel deleted successfully.");
+    }
+
+    public MessageListDto getMessages(String authedUserId, String channelId, int offset, int count) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
+        if (offset < 0) {
+            throw Status.INVALID_ARGUMENT.withDescription("offset must be >= 0").asRuntimeException();
+        }
+        if (count <= 0) {
+            throw Status.INVALID_ARGUMENT.withDescription("count must be > 0").asRuntimeException();
+        }
+
+        CoreGetMessagesRequest req = new CoreGetMessagesRequest(
+                callerId,
+                IdParser.toBigInteger(channelId, "channelId"),
+                offset,
+                count
+        );
+
+        List<Message> messages = coreClient.getMessages(req);
+        return ProtoMapper.toMessageListDto(messages);
+    }
+
+    public MessageDto createMessage(String authedUserId, String channelId, String content) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
+        if (content == null || content.trim().isEmpty()) {
+            throw Status.INVALID_ARGUMENT.withDescription("message.content is required").asRuntimeException();
+        }
+
+        CoreCreateMessageRequest req = new CoreCreateMessageRequest(
+                callerId,
+                IdParser.toBigInteger(channelId, "channelId"),
+                content
+        );
+
+        Message msg = coreClient.createMessage(req);
+        return ProtoMapper.toDto(msg);
+    }
+
+    public ResponseMessageDto deleteMessage(String authedUserId, String channelId, String messageId) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
+        CoreDeleteMessageRequest req = new CoreDeleteMessageRequest(
+                callerId,
+                IdParser.toBigInteger(channelId, "channelId"),
+                IdParser.toBigInteger(messageId, "messageId")
+        );
+
+        coreClient.deleteMessage(req);
+        return new ResponseMessageDto("Message deleted successfully.");
+    }
+
+}
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\service\GuildService.java ====
+package com.drocsid.grpc.http.service;
+
+import com.drocsid.grpc.core_requests.guild.*;
+import com.drocsid.grpc.http.controller.GuildController;
+import com.drocsid.grpc.http.dto.*;
+import com.drocsid.grpc.http.mapper.ProtoMapper;
+import com.drocsid.grpc.http.util.IdParser;
+import com.drocsid.grpc.mappings.UserCallerMappingRepository;
+import com.drocsid.grpc.mock_classes.CoreClient;
+import com.drocsid.grpc.proto.Channel;
+import com.drocsid.grpc.proto.Guild;
+import com.drocsid.grpc.proto.GuildUser;
+import com.drocsid.grpc.proto.Role;
+import com.fasterxml.jackson.databind.JsonNode;
+import io.grpc.Status;
+import org.springframework.stereotype.Service;
+
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.drocsid.grpc.http.controller.GuildController.mapRoles;
+
+@Service
+public class GuildService {
+
+    private final CoreClient coreClient;
+    private final UserCallerMappingRepository repository;
+
+    public GuildService(CoreClient coreClient, UserCallerMappingRepository repository) {
+        this.coreClient = coreClient;
+        this.repository = repository;
+    }
+
+    public GuildDto createGuild(String authedUserId, String name, String icon) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
+        if (name == null || name.trim().isEmpty()) {
+            throw Status.INVALID_ARGUMENT.withDescription("name is required").asRuntimeException();
+        }
+
+        CoreCreateGuildRequest req = new CoreCreateGuildRequest(
+                callerId,
+                name,
+                icon == null ? "" : icon
+        );
+
+        Guild guild = coreClient.createGuild(req);
+        return ProtoMapper.toDto(guild);
+    }
+
+    public GuildDto getGuild(String authedUserId, String guildId) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
+        CoreGetGuildRequest req = new CoreGetGuildRequest(
+                callerId,
+                IdParser.toBigInteger(guildId, "guildId")
+        );
+
+        Guild guild = coreClient.getGuild(req);
+        return ProtoMapper.toDto(guild);
+    }
+
+    public GuildDto updateGuild(String authedUserId, String guildId, GuildController.GuildBody guild) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
+        if (guild == null) {
+            throw Status.INVALID_ARGUMENT.withDescription("guild is required").asRuntimeException();
+        }
+
+        String name = guild.getName();
+        if (name == null || name.trim().isEmpty()) {
+            throw Status.INVALID_ARGUMENT.withDescription("guild.name is required").asRuntimeException();
+        }
+
+        String icon = guild.getIcon() == null ? "" : guild.getIcon();
+        BigInteger ownerId = guild.getOwnerId() == null
+                ? IdParser.toBigInteger(authedUserId, "callerId")
+                : IdParser.toBigInteger(guild.getOwnerId(), "ownerId");
+
+        List<Role> roles = mapRoles(guild.getRoles());
+
+        CoreUpdateGuildRequest req = new CoreUpdateGuildRequest(
+                callerId,
+                IdParser.toBigInteger(guildId, "guildId"),
+                name,
+                icon,
+                ownerId,
+                roles
+        );
+
+        Guild updated = coreClient.updateGuild(req);
+        return ProtoMapper.toDto(updated);
+    }
+
+    public ResponseMessageDto deleteGuild(String authedUserId, String guildId) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
+        CoreDeleteGuildRequest req = new CoreDeleteGuildRequest(
+                callerId,
+                IdParser.toBigInteger(guildId, "guildId")
+        );
+
+        coreClient.deleteGuild(req);
+        return new ResponseMessageDto("Guild deleted successfully.");
+    }
+
+    public ChannelListDto getAllChannels(String authedUserId, String guildId) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
+        CoreGetAllChannelsRequest req = new CoreGetAllChannelsRequest(
+                callerId,
+                IdParser.toBigInteger(guildId, "guildId")
+        );
+
+        List<Channel> channels = coreClient.getAllChannels(req);
+        return ProtoMapper.toChannelListDto(channels);
+    }
+
+    public ChannelDto createChannel(String authedUserId, String guildId, String name) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
+        if (name == null || name.trim().isEmpty()) {
+            throw Status.INVALID_ARGUMENT.withDescription("name is required").asRuntimeException();
+        }
+
+        CoreCreateChannelRequest req = new CoreCreateChannelRequest(
+                callerId,
+                name,
+                IdParser.toBigInteger(guildId, "guildId")
+        );
+
+        Channel channel = coreClient.createChannel(req);
+        return ProtoMapper.toDto(channel);
+    }
+
+    public RoleListDto getRoles(String authedUserId, String guildId) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
+        CoreGetRolesRequest req = new CoreGetRolesRequest(
+                callerId,
+                IdParser.toBigInteger(guildId, "guildId")
+        );
+
+        List<Role> roles = coreClient.getRoles(req);
+        return ProtoMapper.toDtoFromRoles(roles);
+    }
+
+    public RoleDto getRole(String authedUserId, String guildId, String guildRoleId) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
+        CoreGetRoleRequest req = new CoreGetRoleRequest(
+                callerId,
+                IdParser.toBigInteger(guildId, "guildId"),
+                IdParser.toBigInteger(guildRoleId, "guildRoleId")
+        );
+
+        Role role = coreClient.getRole(req);
+        return ProtoMapper.toDto(role);
+    }
+
+    public RoleDto createRole(String authedUserId, String guildId, String roleName, String permissions) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
+        if (roleName == null || roleName.trim().isEmpty()) {
+            throw Status.INVALID_ARGUMENT.withDescription("roleName is required").asRuntimeException();
+        }
+
+        if (permissions == null || permissions.trim().isEmpty()) {
+            throw Status.INVALID_ARGUMENT.withDescription("permissions is required").asRuntimeException();
+        }
+
+        CoreCreateRoleRequest req = new CoreCreateRoleRequest(
+                callerId,
+                IdParser.toBigInteger(guildId, "guildId"),
+                roleName,
+                permissions
+        );
+
+        Role role = coreClient.createRole(req);
+        return ProtoMapper.toDto(role);
+    }
+
+    public RoleDto updateRole(String authedUserId, String guildId, String guildRoleId, GuildController.RoleBody roleBody) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
+        if (roleBody == null) {
+            throw Status.INVALID_ARGUMENT.withDescription("role is required").asRuntimeException();
+        }
+
+        String roleName = roleBody.getRoleName();
+        if (roleName == null || roleName.trim().isEmpty()) {
+            throw Status.INVALID_ARGUMENT.withDescription("role.roleName is required").asRuntimeException();
+        }
+
+        String permissions = roleBody.getPermissions();
+        if (permissions == null || permissions.trim().isEmpty()) {
+            throw Status.INVALID_ARGUMENT.withDescription("role.permissions is required").asRuntimeException();
+        }
+
+        CoreUpdateRoleRequest req = new CoreUpdateRoleRequest(
+                callerId,
+                IdParser.toBigInteger(guildId, "guildId"),
+                IdParser.toBigInteger(guildRoleId, "guildRoleId"),
+                roleName,
+                permissions
+        );
+
+        Role role = coreClient.updateRole(req);
+        return ProtoMapper.toDto(role);
+    }
+
+    public GuildUserDto addUserToGuild(String authedUserId, String guildId) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
+        CoreAddUserRequest req = new CoreAddUserRequest(
+                callerId,
+                IdParser.toBigInteger(guildId, "guildId")
+        );
+
+        GuildUser guildUser = coreClient.addUser(req);
+        return ProtoMapper.toDto(guildUser);
+    }
+
+    public GuildUserListDto getGuildUsers(String authedUserId, String guildId) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
+        CoreGetGuildUsersRequest req = new CoreGetGuildUsersRequest(
+                callerId,
+                IdParser.toBigInteger(guildId, "guildId")
+        );
+
+        List<GuildUser> users = coreClient.getGuildUsers(req);
+        return ProtoMapper.toGuildUserListDto(users);
+    }
+
+    public GuildUserDto getGuildUser(String authedUserId, String guildId, String guildUserId) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
+        CoreGetGuildUserRequest req = new CoreGetGuildUserRequest(
+                callerId,
+                IdParser.toBigInteger(guildId, "guildId"),
+                IdParser.toBigInteger(guildUserId, "guildUserId")
+        );
+
+        GuildUser user = coreClient.getGuildUser(req);
+        return ProtoMapper.toDto(user);
+    }
+
+    public GuildUserDto updateGuildUser(String authedUserId, String guildId, String guildUserId, GuildController.GuildUserBody userBody) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
+        if (userBody == null) {
+            throw Status.INVALID_ARGUMENT.withDescription("user is required").asRuntimeException();
+        }
+
+        if (userBody.getGuildUserId() != null && !guildUserId.equals(userBody.getGuildUserId())) {
+            throw Status.INVALID_ARGUMENT.withDescription("guildUserId path/body mismatch").asRuntimeException();
+        }
+
+        if (userBody.getNick() == null || userBody.getNick().trim().isEmpty()) {
+            throw Status.INVALID_ARGUMENT.withDescription("user.nick is required").asRuntimeException();
+        }
+
+        List<Role> roles = parseRolesFromJson(userBody.getRoles());
+
+        CoreUpdateGuildUserRequest req = new CoreUpdateGuildUserRequest(
+                callerId,
+                IdParser.toBigInteger(guildId, "guildId"),
+                userBody.getNick(),
+                roles
+        );
+
+        GuildUser updated = coreClient.updateGuildUser(req);
+        return ProtoMapper.toDto(updated);
+    }
+
+    public ResponseMessageDto deleteGuildUser(String authedUserId, String guildId, String guildUserId) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
+        CoreDeleteGuildUserRequest req = new CoreDeleteGuildUserRequest(
+                callerId,
+                IdParser.toBigInteger(guildId, "guildId"),
+                IdParser.toBigInteger(guildUserId, "guildUserId")
+        );
+
+        coreClient.deleteGuildUser(req);
+        return new ResponseMessageDto("User deleted successfully.");
+    }
+
+    public static List<Role> parseRolesFromJson(JsonNode rolesNode) {
+        if (rolesNode == null || rolesNode.isNull()) {
+            return List.of();
+        }
+
+        List<JsonNode> roleNodes = new ArrayList<>();
+
+        if (rolesNode.isArray()) {
+            rolesNode.forEach(roleNodes::add);
+        } else if (rolesNode.isObject() && rolesNode.has("roles") && rolesNode.get("roles").isArray()) {
+            rolesNode.get("roles").forEach(roleNodes::add);
+        } else {
+            throw Status.INVALID_ARGUMENT.withDescription("user.roles must be an array or { roles: [...] }").asRuntimeException();
+        }
+
+        List<Role> roles = new ArrayList<>();
+        for (JsonNode node : roleNodes) {
+            if (!node.isObject()) {
+                continue;
+            }
+
+            Role.Builder b = Role.newBuilder();
+
+            if (node.hasNonNull("guildRoleId")) {
+                b.setGuildRoleId(node.get("guildRoleId").asText());
+            }
+            if (node.hasNonNull("roleName")) {
+                b.setRoleName(node.get("roleName").asText());
+            }
+            if (node.hasNonNull("permissions")) {
+                b.setPermissions(node.get("permissions").asText());
+            }
+
+            roles.add(b.build());
+        }
+
+        return roles;
+    }
+}
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\service\UserService.java ====
+package com.drocsid.grpc.http.service;
+
+import com.drocsid.grpc.core_requests.user.CoreUpdateUserRequest;
+import com.drocsid.grpc.http.controller.UserController;
+import com.drocsid.grpc.http.dto.GuildListDto;
+import com.drocsid.grpc.http.dto.ResponseMessageDto;
+import com.drocsid.grpc.http.dto.UserDto;
+import com.drocsid.grpc.http.mapper.ProtoMapper;
+import com.drocsid.grpc.mappings.UserCallerMappingRepository;
+import com.drocsid.grpc.mock_classes.CoreClient;
+import com.drocsid.grpc.proto.CreateUserRequest;
+import com.drocsid.grpc.proto.Guild;
+import com.drocsid.grpc.proto.User;
+import io.grpc.Status;
+import org.springframework.stereotype.Service;
+
+import java.math.BigInteger;
+import java.util.List;
+
+@Service
+public class UserService {
+
+    private final CoreClient coreClient;
+    private final UserCallerMappingRepository repository;
+
+    public UserService(CoreClient coreClient, UserCallerMappingRepository repository) {
+        this.coreClient = coreClient;
+        this.repository = repository;
+    }
+
+    public UserDto createUser(UserController.CreateUserBody body) {
+        if (body == null || body.getName() == null || body.getName().trim().isEmpty()) {
+            throw Status.INVALID_ARGUMENT.withDescription("name is required").asRuntimeException();
+        }
+
+        CreateUserRequest req = CreateUserRequest.newBuilder()
+                .setName(body.getName())
+                .build();
+
+        User user = coreClient.createUser(req);
+        return ProtoMapper.toDto(user);
+    }
+
+    public UserDto getUser(String authedUserId) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
+        User user = coreClient.getUser(callerId);
+        return ProtoMapper.toDto(user);
+    }
+
+    public UserDto updateUser(String authedUserId, String userId, UserController.PutUserBody body) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
+        if (!userId.equals(authedUserId)) {
+            throw Status.PERMISSION_DENIED.withDescription("User ID mismatch").asRuntimeException();
+        }
+
+        if (body == null) {
+            throw Status.INVALID_ARGUMENT.withDescription("body is required").asRuntimeException();
+        }
+
+        CoreUpdateUserRequest request = new CoreUpdateUserRequest(
+                callerId,
+                body.getName(),
+                body.getAvatarHash()
+        );
+
+        User user = coreClient.updateUser(request);
+        return ProtoMapper.toDto(user);
+    }
+
+    public ResponseMessageDto deleteUser(String authedUserId, String userId) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
+        if (!userId.equals(authedUserId)) {
+            throw Status.PERMISSION_DENIED.withDescription("User ID mismatch").asRuntimeException();
+        }
+
+        coreClient.deleteUser(callerId);
+        return new ResponseMessageDto("User deleted successfully.");
+    }
+
+    public GuildListDto getAllGuilds(String authedUserId, String userId) throws Exception{
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
+        if (!userId.equals(authedUserId)) {
+            throw Status.PERMISSION_DENIED.withDescription("User ID mismatch").asRuntimeException();
+        }
+
+        List<Guild> guilds = coreClient.getAllGuilds(callerId);
+        return ProtoMapper.toGuildListDto(guilds);
+    }
+}
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\http\util\IdParser.java ====
+package com.drocsid.grpc.http.util;
+
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
+
+import java.math.BigInteger;
+
+public final class IdParser {
+
+    private IdParser() {}
+
+    /**
+     * Parses ids used in API paths/queries as numeric strings.
+     * Throws INVALID_ARGUMENT (400 in REST mapping) when parsing fails.
+     */
+    public static BigInteger toBigInteger(String raw, String fieldName) throws StatusRuntimeException {
+        if (raw == null || raw.trim().isEmpty()) {
+            throw Status.INVALID_ARGUMENT
+                .withDescription(fieldName + " is required")
+                .asRuntimeException();
+        }
+
+        try {
+            return new BigInteger(raw);
+        } catch (NumberFormatException e) {
+            throw Status.INVALID_ARGUMENT
+                .withDescription(fieldName + " must be a numeric string")
+                .asRuntimeException();
+        }
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\mappings\UserCallerMapping.java ====
+package com.drocsid.grpc.mappings;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.math.BigInteger;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Entity
+@Table(name = "map")
+public class UserCallerMapping {
+
+    @Id
+    @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "token_id")
+    private String tokenId;
+
+    @Column(name = "caller_id", unique = true, nullable = false)
+    private BigInteger callerId;
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\mappings\UserCallerMappingRepository.java ====
+package com.drocsid.grpc.mappings;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.math.BigInteger;
+import java.util.Optional;
+
+@Repository
+public interface UserCallerMappingRepository extends JpaRepository<UserCallerMapping, Long> {
+
+    Optional<UserCallerMapping> findByCallerId(BigInteger callerId);
+
+    Optional<UserCallerMapping> findByTokenId(String tokenId);
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\mock_classes\CoreClient.java ====
+package com.drocsid.grpc.mock_classes;
+
+import com.drocsid.grpc.core_requests.channel.*;
+import com.drocsid.grpc.core_requests.guild.*;
+import com.drocsid.grpc.core_requests.guild.CoreCreateGuildRequest;
+import com.drocsid.grpc.core_requests.user.CoreUpdateUserRequest;
+import com.drocsid.grpc.proto.CreateUserRequest;
+import com.drocsid.grpc.proto.GuildUser;
+import org.springframework.stereotype.Component;
+import com.drocsid.grpc.proto.*;
+
+import java.math.BigInteger;
+import java.util.List;
+
+@Component
+public class CoreClient {
+
+    public Guild createGuild(CoreCreateGuildRequest request) { return Guild.newBuilder().build(); }
+
+    public Guild getGuild(CoreGetGuildRequest request) { return Guild.newBuilder().build(); }
+
+    public Guild updateGuild(CoreUpdateGuildRequest request) { return Guild.newBuilder().build(); }
+
+    public void deleteGuild(CoreDeleteGuildRequest request) {}
+
+    public List<Guild> getAllGuilds(BigInteger userId) {
+        return List.of();
+    }
+
+    public List<Channel> getAllChannels(CoreGetAllChannelsRequest request) {
+        return List.of();
+    }
+
+    public Role getRole(CoreGetRoleRequest request) { return Role.newBuilder().build(); }
+
+    public Role createRole(CoreCreateRoleRequest request) { return Role.newBuilder().build(); }
+
+    public List<Role> getRoles(CoreGetRolesRequest request) { return List.of(); }
+
+    public Role updateRole(CoreUpdateRoleRequest request) { return Role.newBuilder().build(); }
+
+    public Channel createChannel(CoreCreateChannelRequest request) { return Channel.newBuilder().build(); }
+
+    public GuildUser addUser(CoreAddUserRequest request) { return GuildUser.newBuilder().build(); }
+
+    public GuildUser updateGuildUser(CoreUpdateGuildUserRequest request) {return GuildUser.newBuilder().build();}
+
+    public GuildUser getGuildUser(CoreGetGuildUserRequest request) { return GuildUser.newBuilder().build(); }
+
+    public List<GuildUser> getGuildUsers(CoreGetGuildUsersRequest request) {
+        return List.of();
+    }
+
+    public void deleteGuildUser(CoreDeleteGuildUserRequest request) {}
+
+    public Channel getChannel(CoreGetChannelRequest request) { return Channel.newBuilder().build(); }
+
+    public Channel updateChannel(CoreUpdateChannelRequest request) { return Channel.newBuilder().build(); }
+
+    public void deleteChannel(CoreDeleteChannelRequest request) {}
+
+    public List<Message> getMessages(CoreGetMessagesRequest request) { return List.of(); }
+
+    public Message createMessage(CoreCreateMessageRequest request) { return Message.newBuilder().build(); }
+
+    public void deleteMessage(CoreDeleteMessageRequest request) {}
+
+    public User createUser(CreateUserRequest request) { return User.newBuilder().build(); }
+
+    public User getUser(BigInteger id) { return User.newBuilder().build(); }
+
+    public User updateUser(CoreUpdateUserRequest request) { return User.newBuilder().build(); }
+
+    public void deleteUser(BigInteger userId) {}
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\service\ChannelService.java ====
+package com.drocsid.grpc.service;
+import com.drocsid.grpc.auth.JwtAuthService;
+import com.drocsid.grpc.core_requests.channel.*;
+import com.drocsid.grpc.mock_classes.CoreClient;
+import com.drocsid.grpc.proto.*;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
+import io.grpc.stub.StreamObserver;
+import net.devh.boot.grpc.server.service.GrpcService;
+
+import java.util.List;
+
+@GrpcService
+public class ChannelService extends ChannelServiceGrpc.ChannelServiceImplBase {
+
+    private final CoreClient coreClient;
+    private final JwtAuthService jwtAuthService;
+
+    public ChannelService(CoreClient coreClient, JwtAuthService jwtAuthService) {
+        this.coreClient = coreClient;
+        this.jwtAuthService = jwtAuthService;
+    }
+
+    @Override
+    public void getChannel(ChannelInfoReq request, StreamObserver<Channel> responseObserver) {
+        try {
+            String userId = jwtAuthService.checkAuth(request.getToken());
+            Channel channel = coreClient.getChannel(new CoreGetChannelRequest(userId, request));
+
+            responseObserver.onNext(channel);
+            responseObserver.onCompleted();
+
+        }
+        catch (StatusRuntimeException e) {
+            responseObserver.onError(e);
+        }
+        catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Unexpected server error: " + e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+        }
+    }
+
+    @Override
+    public void updateChannel(UpdateChannelRequest request,
+                           StreamObserver<Channel> responseObserver) {
+        try {
+            String userId = jwtAuthService.checkAuth(request.getToken());
+            Channel channel = coreClient.updateChannel(new CoreUpdateChannelRequest(userId, request));
+
+            responseObserver.onNext(channel);
+            responseObserver.onCompleted();
+
+        }
+        catch (StatusRuntimeException e) {
+            responseObserver.onError(e);
+        }
+        catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Unexpected server error: " + e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+        }
+    }
+
+
+    @Override
+    public void deleteChannel(ChannelInfoReq request, StreamObserver<ResponseMessage> responseObserver) {
+        try {
+            String userId = jwtAuthService.checkAuth(request.getToken());
+            coreClient.deleteChannel(new CoreDeleteChannelRequest(userId, request));
+
+            ResponseMessage response = ResponseMessage
+                    .newBuilder()
+                    .setText("Channel deleted successfully.")
+                    .build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+
+        }
+        catch (StatusRuntimeException e) {
+            responseObserver.onError(e);
+        }
+        catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Unexpected server error: " + e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+        }
+    }
+
+
+    @Override
+    public void getMessages(MessageBucketReq request, StreamObserver<MessageList> responseObserver) {
+        try {
+            String userId = jwtAuthService.checkAuth(request.getReq().getToken());
+            List<Message> messages = coreClient.getMessages(new CoreGetMessagesRequest(userId, request));
+            MessageList messageList = MessageList.newBuilder().addAllMessages(messages).build();
+
+            responseObserver.onNext(messageList);
+            responseObserver.onCompleted();
+
+        }
+        catch (StatusRuntimeException e) {
+            responseObserver.onError(e);
+        }
+        catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Unexpected server error: " + e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+        }
+    }
+
+
+    @Override
+    public void createMessage(CreateMessageReq request, StreamObserver<Message> responseObserver) {
+        try {
+            String userId = jwtAuthService.checkAuth(request.getReq().getToken());
+            Message message = coreClient.createMessage(new CoreCreateMessageRequest(userId, request));
+
+            responseObserver.onNext(message);
+            responseObserver.onCompleted();
+
+        }
+        catch (StatusRuntimeException e) {
+            responseObserver.onError(e);
+        }
+        catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Unexpected server error: " + e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+        }
+    }
+
+    @Override
+    public void deleteMessage(MessageReq request, StreamObserver<ResponseMessage> responseObserver) {
+        try {
+            String userId = jwtAuthService.checkAuth(request.getReq().getToken());
+            coreClient.deleteMessage(new CoreDeleteMessageRequest(userId, request));
+
+            ResponseMessage response = ResponseMessage
+                    .newBuilder()
+                    .setText("Message deleted successfully.")
+                    .build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+
+        }
+        catch (StatusRuntimeException e) {
+            responseObserver.onError(e);
+        }
+        catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Unexpected server error: " + e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+        }
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\service\GreeterService.java ====
+package com.drocsid.grpc.service;
+
+import com.drocsid.grpc.proto.HelloReply;
+import com.drocsid.grpc.proto.HelloRequest;
+import com.drocsid.grpc.proto.GreeterGrpc;
+import io.grpc.stub.StreamObserver;
+import net.devh.boot.grpc.server.service.GrpcService;
+
+
+@GrpcService
+public class GreeterService extends GreeterGrpc.GreeterImplBase {
+
+
+    @Override
+    public void sayHello(HelloRequest request, StreamObserver<HelloReply> responseObserver) {
+        HelloReply reply = HelloReply.newBuilder()
+                .setMessage("Hello " + request.getName())
+                .build();
+
+        responseObserver.onNext(reply);
+        responseObserver.onCompleted();
+    }
+}
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\service\GuildService.java ====
+package com.drocsid.grpc.service;
+
+import com.drocsid.grpc.auth.JwtAuthService;
+import com.drocsid.grpc.core_requests.guild.*;
+import com.drocsid.grpc.core_requests.guild.CoreCreateGuildRequest;
+import com.drocsid.grpc.mock_classes.CoreClient;
+import com.drocsid.grpc.proto.*;
+import com.drocsid.grpc.proto.UpdateGuildRequest;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
+import io.grpc.stub.StreamObserver;
+import net.devh.boot.grpc.server.service.GrpcService;
+
+import java.math.BigInteger;
+import java.util.List;
+
+@GrpcService
+public class GuildService extends GuildServiceGrpc.GuildServiceImplBase {
+
+    private final CoreClient coreClient;
+    public final JwtAuthService jwtAuthService;
+
+    public GuildService(CoreClient coreClient, JwtAuthService jwtAuthService) {
+        this.coreClient = coreClient;
+        this.jwtAuthService = jwtAuthService;
+    }
+
+    @Override
+    public void createGuild(CreateGuildRequest request, StreamObserver<Guild> responseObserver) {
+        try {
+            String userId = jwtAuthService.checkAuth(request.getToken());
+            Guild guild = coreClient.createGuild(new CoreCreateGuildRequest(userId, request));
+
+            responseObserver.onNext(guild);
+            responseObserver.onCompleted();
+
+        }
+        catch (StatusRuntimeException e) {
+            responseObserver.onError(e);
+        }
+        catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Unexpected server error: " + e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+        }
+    }
+
+    @Override
+    public void getGuild(GuildInfoReq request, StreamObserver<Guild> responseObserver) {
+        try {
+            String userId = jwtAuthService.checkAuth(request.getToken());
+            Guild guild = coreClient.getGuild(new CoreGetGuildRequest(userId, request));
+
+            responseObserver.onNext(guild);
+            responseObserver.onCompleted();
+
+        }
+        catch (StatusRuntimeException e) {
+            responseObserver.onError(e);
+        }
+        catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Unexpected server error: " + e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+        }
+    }
+
+    @Override
+    public void updateGuild(UpdateGuildRequest request, StreamObserver<Guild> responseObserver) {
+        try {
+            String userId = jwtAuthService.checkAuth(request.getToken());
+            Guild guild = coreClient.updateGuild(new CoreUpdateGuildRequest(userId, request));
+
+            responseObserver.onNext(guild);
+            responseObserver.onCompleted();
+
+        }
+        catch (StatusRuntimeException e) {
+            responseObserver.onError(e);
+        }
+        catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Unexpected server error: " + e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+        }
+    }
+
+    @Override
+    public void deleteGuild(GuildInfoReq request, StreamObserver<ResponseMessage> responseObserver) {
+        try {
+            String userId = jwtAuthService.checkAuth(request.getToken());
+            coreClient.deleteGuild(new CoreDeleteGuildRequest(userId, request));
+
+            ResponseMessage response = ResponseMessage
+                    .newBuilder()
+                    .setText("Guild deleted successfully.")
+                    .build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        }
+        catch (StatusRuntimeException e) {
+            responseObserver.onError(e);
+        }
+        catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Unexpected server error: " + e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+        }
+    }
+
+    @Override
+    public void getAllGuilds(UserId userIdObj, StreamObserver<GuildList> responseObserver) {
+        try {
+            String userId = jwtAuthService.checkAuth(userIdObj.getToken());
+            List<Guild> guilds = coreClient.getAllGuilds(new BigInteger(userId));
+            GuildList list = GuildList.newBuilder().addAllGuilds(guilds).build();
+            responseObserver.onNext(list);
+            responseObserver.onCompleted();
+        }
+        catch (StatusRuntimeException e) {
+            responseObserver.onError(e);
+        }
+        catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Unexpected server error: " + e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+        }
+    }
+
+    @Override
+    public void getAllChannels(GuildInfoReq request, StreamObserver<ChannelList> responseObserver) {
+        try {
+            String userId = jwtAuthService.checkAuth(request.getToken());
+            List<Channel> channels = coreClient.getAllChannels(new CoreGetAllChannelsRequest(userId,
+                request));
+
+            ChannelList list = ChannelList.newBuilder().addAllChannels(channels).build();
+            responseObserver.onNext(list);
+            responseObserver.onCompleted();
+
+        }
+        catch (StatusRuntimeException e) {
+            responseObserver.onError(e);
+        }
+        catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Unexpected server error: " + e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+        }
+    }
+
+    @Override
+    public void getRole(RoleReq request, StreamObserver<Role> responseObserver) {
+        try {
+            String userId = jwtAuthService.checkAuth(request.getToken());
+            Role role = coreClient.getRole(new CoreGetRoleRequest(userId, request));
+
+            responseObserver.onNext(role);
+            responseObserver.onCompleted();
+        }
+        catch (StatusRuntimeException e) {
+            responseObserver.onError(e);
+        }
+        catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Unexpected server error: " + e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+        }
+    }
+
+    @Override
+    public void createRole(CreateRoleReq request, StreamObserver<Role> responseObserver) {
+        try {
+            String userId = jwtAuthService.checkAuth(request.getToken());
+            Role role = coreClient.createRole(new CoreCreateRoleRequest(userId, request));
+
+            responseObserver.onNext(role);
+            responseObserver.onCompleted();
+        }
+        catch (StatusRuntimeException e) {
+            responseObserver.onError(e);
+        }
+        catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Unexpected server error: " + e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+        }
+    }
+
+    @Override
+    public void getRoles(GuildInfoReq request, StreamObserver<RoleList> responseObserver) {
+        try {
+            String userId = jwtAuthService.checkAuth(request.getToken());
+            List<Role> role = coreClient.getRoles(new CoreGetRolesRequest(userId, request));
+            RoleList list = RoleList.newBuilder().addAllRoles(role).build();
+
+            responseObserver.onNext(list);
+            responseObserver.onCompleted();
+        }
+        catch (StatusRuntimeException e) {
+            responseObserver.onError(e);
+        }
+        catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Unexpected server error: " + e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+        }
+    }
+
+    @Override
+    public void updateRole(UpdateRoleReq request, StreamObserver<Role> responseObserver) {
+        try {
+            String userId = jwtAuthService.checkAuth(request.getToken());
+            Role role = coreClient.updateRole(new CoreUpdateRoleRequest(userId, request));
+
+            responseObserver.onNext(role);
+            responseObserver.onCompleted();
+        }
+        catch (StatusRuntimeException e) {
+            responseObserver.onError(e);
+        }
+        catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Unexpected server error: " + e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+        }
+    }
+
+    @Override
+    public void createChannel(CreateChannelRequest request, StreamObserver<Channel> responseObserver) {
+        try {
+            String userId = jwtAuthService.checkAuth(request.getToken());
+            Channel channel = coreClient.createChannel(new CoreCreateChannelRequest(userId, request));
+
+            responseObserver.onNext(channel);
+            responseObserver.onCompleted();
+        }
+        catch (StatusRuntimeException e) {
+            responseObserver.onError(e);
+        }
+        catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Unexpected server error: " + e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+        }
+    }
+
+    @Override
+    public void addUser(AddUser addUserObj, StreamObserver<GuildUser> responseObserver) {
+        try {
+            String userId = jwtAuthService.checkAuth(addUserObj.getToken());
+            GuildUser guildUser = coreClient.addUser(new CoreAddUserRequest(userId, addUserObj));
+
+            responseObserver.onNext(guildUser);
+            responseObserver.onCompleted();
+        }
+        catch (StatusRuntimeException e) {
+            responseObserver.onError(e);
+        }
+        catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Unexpected server error: " + e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+        }
+    }
+
+    @Override
+    public void updateUser(UpdateUserReq request, StreamObserver<GuildUser> responseObserver) {
+        try {
+            String userId = jwtAuthService.checkAuth(request.getToken());
+            GuildUser guildUser = coreClient.updateGuildUser(new CoreUpdateGuildUserRequest(userId, request));
+
+            responseObserver.onNext(guildUser);
+            responseObserver.onCompleted();
+        }
+        catch (StatusRuntimeException e) {
+            responseObserver.onError(e);
+        }
+        catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Unexpected server error: " + e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+        }
+    }
+
+    @Override
+    public void getUser(GuildUserReq request, StreamObserver<GuildUser> responseObserver) {
+        try {
+            String userId = jwtAuthService.checkAuth(request.getToken());
+            GuildUser guildUser = coreClient.getGuildUser(new CoreGetGuildUserRequest(userId,
+                request));
+
+            responseObserver.onNext(guildUser);
+            responseObserver.onCompleted();
+        }
+        catch (StatusRuntimeException e) {
+            responseObserver.onError(e);
+        }
+        catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Unexpected server error: " + e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+        }
+    }
+
+    @Override
+    public void getUsers(GuildInfoReq request, StreamObserver<GuildUserList> responseObserver) {
+        try {
+            String userId = jwtAuthService.checkAuth(request.getToken());
+            List<GuildUser> guildUsers = coreClient.getGuildUsers(new CoreGetGuildUsersRequest(userId,
+                    request));
+            GuildUserList guildUserList = GuildUserList.newBuilder().addAllGuildUsers(guildUsers).build();
+
+            responseObserver.onNext(guildUserList);
+            responseObserver.onCompleted();
+        }
+        catch (StatusRuntimeException e) {
+            responseObserver.onError(e);
+        }
+        catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Unexpected server error: " + e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+        }
+    }
+
+    @Override
+    public void deleteUser(GuildUserReq request, StreamObserver<ResponseMessage> responseObserver) {
+        try {
+            String userId = jwtAuthService.checkAuth(request.getToken());
+            coreClient.deleteGuildUser(new CoreDeleteGuildUserRequest(userId, request));
+
+            ResponseMessage response = ResponseMessage
+                    .newBuilder()
+                    .setText("User deleted successfully.")
+                    .build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        }
+        catch (StatusRuntimeException e) {
+            responseObserver.onError(e);
+        }
+        catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Unexpected server error: " + e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+        }
+    }
+}
+
+
+==== ./spring_grpc/src/main\java\com\drocsid\grpc\service\UserService.java ====
+package com.drocsid.grpc.service;
+import com.drocsid.grpc.auth.JwtAuthService;
+import com.drocsid.grpc.core_requests.user.CoreUpdateUserRequest;
+import com.drocsid.grpc.mock_classes.CoreClient;
+import com.drocsid.grpc.proto.*;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
+import io.grpc.stub.StreamObserver;
+import net.devh.boot.grpc.server.service.GrpcService;
+import java.math.BigInteger;
+
+@GrpcService
+public class UserService extends UserServiceGrpc.UserServiceImplBase {
+
+    private final CoreClient coreClient;
+    private final JwtAuthService jwtAuthService;
+
+    public UserService(CoreClient coreClient, JwtAuthService jwtAuthService) {
+        this.coreClient = coreClient;
+        this.jwtAuthService = jwtAuthService;
+    }
+
+    @Override
+    public void createUser(CreateUserRequest request, StreamObserver<User> responseObserver) {
+        try {
+            User user = coreClient.createUser(request);
+
+            responseObserver.onNext(user);
+            responseObserver.onCompleted();
+        }
+        catch (StatusRuntimeException e) {
+            responseObserver.onError(e);
+        }
+        catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Unexpected server error: " + e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+        }
+    }
+
+    @Override
+    public void getUser(UserId userIdObj, StreamObserver<User> responseObserver) {
+        try {
+            String userId = jwtAuthService.checkAuth(userIdObj.getToken());
+            User user = coreClient.getUser(new BigInteger(userId));
+
+            responseObserver.onNext(user);
+            responseObserver.onCompleted();
+        }
+        catch (StatusRuntimeException e) {
+            responseObserver.onError(e);
+        }
+        catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Unexpected server error: " + e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+        }
+    }
+
+    @Override
+    public void updateUser(UpdateUserRequest request, StreamObserver<User> responseObserver) {
+        try {
+            String userId = jwtAuthService.checkAuth(request.getToken());
+            User user = coreClient.updateUser(new CoreUpdateUserRequest(userId, request));
+
+            responseObserver.onNext(user);
+            responseObserver.onCompleted();
+
+        }
+        catch (StatusRuntimeException e) {
+            responseObserver.onError(e);
+        }
+        catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Unexpected server error: " + e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+        }
+    }
+
+    @Override
+    public void deleteUser(UserId userIdObj, StreamObserver<ResponseMessage> responseObserver) {
+        try {
+            String userId = jwtAuthService.checkAuth(userIdObj.getToken());
+            coreClient.deleteUser(new BigInteger(userId));
+
+            ResponseMessage response = ResponseMessage
+                    .newBuilder()
+                    .setText("User deleted successfully.")
+                    .build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+
+        }
+        catch (StatusRuntimeException e) {
+            responseObserver.onError(e);
+        }
+        catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Unexpected server error: " + e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+        }
+    }
+}
+
+
+==== ./spring_grpc/src/main\proto\channel.proto ====
+syntax = "proto3";
+package channel;
+option java_package = "com.drocsid.grpc.proto";
+option java_multiple_files = true;
+import "common.proto";
+import "role.proto";
+import "message.proto";
+
+
+service ChannelService {
+
+  rpc GetChannel(ChannelInfoReq) returns (Channel);
+  rpc UpdateChannel(UpdateChannelRequest) returns (Channel);
+  rpc DeleteChannel(ChannelInfoReq) returns (common.ResponseMessage);
+
+  // messages
+  rpc GetMessages(MessageBucketReq) returns (dmessage.MessageList);
+  rpc CreateMessage(CreateMessageReq) returns (dmessage.Message);
+  rpc DeleteMessage(MessageReq) returns (common.ResponseMessage);
+}
+
+message Channel {
+  string channel_id = 1;
+  string name = 2;
+  string guild_id = 3;
+  role.RoleList overrides = 4;
+}
+
+message CreateChannelRequest {
+  string caller_id = 1;
+  string name = 2;
+  string guild_id = 3;
+}
+
+message ChannelInfoReq {
+  string caller_id = 1;
+  string channel_id = 2;
+}
+
+message UpdateChannelRequest {
+  string caller_id = 1;
+  Channel channel = 2;
+}
+
+message ChannelList {
+  repeated Channel channels = 1;
+}
+
+message MessageBucketReq {
+  ChannelInfoReq req = 1;
+  int32 offset = 2;
+  int32 count = 3;
+}
+
+message CreateMessageReq {
+  ChannelInfoReq req = 1;
+  dmessage.GeneralCreateMessageRequest message = 2;
+}
+
+message MessageReq {
+  ChannelInfoReq req = 1;
+  dmessage.GeneralMessageReq message_req = 2;
+}
+
+==== ./spring_grpc/src/main\proto\common.proto ====
+syntax = "proto3";
+package common;
+option java_package = "com.drocsid.grpc.proto";
+option java_multiple_files = true;
+
+message ResponseMessage {
+  string text = 1;
+}
+
+message Empty {}
+
+==== ./spring_grpc/src/main\proto\guild.proto ====
+syntax = "proto3";
+package guild;
+option java_package = "com.drocsid.grpc.proto";
+option java_multiple_files = true;
+import "common.proto";
+import "role.proto";
+import "guild_user.proto";
+import "user.proto";
+import "channel.proto";
+
+
+service GuildService {
+  // basic management
+  rpc CreateGuild(CreateGuildRequest) returns (Guild);
+  rpc GetGuild(GuildInfoReq) returns (Guild);
+  rpc UpdateGuild(UpdateGuildRequest) returns (Guild);
+  rpc DeleteGuild(GuildInfoReq) returns (common.ResponseMessage);
+  rpc GetAllGuilds(user.UserId) returns (GuildList);
+  rpc GetAllChannels(GuildInfoReq) returns (channel.ChannelList);
+
+  // role management
+  rpc GetRole(role.RoleReq) returns (role.Role);
+  rpc CreateRole(role.CreateRoleReq) returns (role.Role);
+  rpc GetRoles(GuildInfoReq) returns (role.RoleList);
+  rpc UpdateRole(role.UpdateRoleReq) returns (role.Role);
+
+  // channel creation
+  rpc CreateChannel(channel.CreateChannelRequest) returns (channel.Channel);
+
+  // guild user management
+  rpc AddUser(guild_user.AddUser) returns (guild_user.GuildUser);
+  rpc UpdateUser(guild_user.UpdateUserReq) returns (guild_user.GuildUser); // future
+  rpc GetUser(guild_user.GuildUserReq) returns (guild_user.GuildUser);
+  rpc GetUsers(GuildInfoReq) returns (guild_user.GuildUserList);
+  rpc DeleteUser(guild_user.GuildUserReq) returns (common.ResponseMessage);
+}
+
+message Guild {
+  string guild_id = 1;
+  string name = 2;
+  string icon = 3; // not used, future
+  string owner_id = 4;
+  repeated role.Role roles = 5;
+}
+
+message CreateGuildRequest {
+  string caller_id = 1;
+  string name = 2;
+  string icon = 3; // not used, future
+}
+
+message GuildInfoReq {
+  string guild_id = 1;
+  string caller_id = 2;
+}
+
+message UpdateGuildRequest {
+  string caller_id = 1;
+  Guild guild = 2;
+}
+
+message GuildList {
+  repeated Guild guilds = 1;
+}
+
+
+==== ./spring_grpc/src/main\proto\guild_user.proto ====
+syntax = "proto3";
+package guild_user;
+option java_package = "com.drocsid.grpc.proto";
+option java_multiple_files = true;
+
+import "role.proto";
+
+message GuildUser {
+  string guild_user_id = 1;
+  string nick = 2;
+  role.RoleList roles = 3;
+}
+
+message GuildUserList {
+  repeated GuildUser guild_users = 1;
+}
+
+message UpdateUserReq {
+  string caller_id = 1;
+  string guild_id = 2;
+  GuildUser user = 3;
+}
+
+message GuildUserReq {
+  string caller_id = 1;
+  string guild_id = 2;
+  string guild_user_id = 3;
+}
+
+message AddUser {
+  string caller_id = 1;
+  string guild_id = 2;
+}
+
+==== ./spring_grpc/src/main\proto\message.proto ====
+syntax = "proto3";
+package dmessage;
+option java_package = "com.drocsid.grpc.proto";
+option java_multiple_files = true;
+import "guild_user.proto";
+
+
+message Message {
+  string message_id = 1;
+  guild_user.GuildUser author = 2;
+  string content = 3;
+}
+
+message GeneralCreateMessageRequest {
+  string content = 4;
+}
+
+message GeneralMessageReq {
+  string message_id = 1;
+}
+
+message MessageList {
+  repeated Message messages = 1;
+}
+
+==== ./spring_grpc/src/main\proto\role.proto ====
+syntax = "proto3";
+option java_package = "com.drocsid.grpc.proto";
+option java_multiple_files = true;
+package role;
+
+message Role {
+  string guild_role_id = 1;
+  string role_name = 2;
+  string permissions = 3;
+}
+
+message RoleList {
+  repeated Role roles = 1;
+}
+
+message CreateRoleReq {
+  string guild_id = 1;
+  string role_name = 2;
+  string permissions = 3;
+  string caller_id = 4;
+}
+
+message UpdateRoleReq {
+  string guild_id = 1;
+  Role role = 2;
+  string caller_id = 3;
+}
+
+message RoleReq {
+  string guild_id = 1;
+  string guild_role_id = 2;
+  string caller_id = 3;
+}
+
+==== ./spring_grpc/src/main\proto\say_hello.proto ====
+syntax = "proto3";
+package say_hello;
+
+
+option java_package = "com.drocsid.grpc.proto";
+option java_multiple_files = true;
+
+
+service Greeter {
+  rpc SayHello (HelloRequest) returns (HelloReply) {}
+}
+
+
+message HelloRequest {
+  string name = 1;
+}
+
+
+message HelloReply {
+  string message = 1;
+}
+
+==== ./spring_grpc/src/main\proto\user.proto ====
+syntax = "proto3";
+package user;
+option java_package = "com.drocsid.grpc.proto";
+option java_multiple_files = true;
+import "common.proto";
+
+service UserService {
+  rpc CreateUser(CreateUserRequest) returns (User);
+  rpc GetUser(UserId) returns (User);
+  rpc UpdateUser(UpdateUserRequest) returns (User);
+  rpc DeleteUser(UserId) returns (common.ResponseMessage);
+}
+
+message User {
+  string id = 1;
+  string name = 2;
+  string avatarHash = 3; // future
+}
+
+message CreateUserRequest {
+  string name = 1;
+}
+
+message UserId {
+  string caller_id = 1;
+}
+
+message UpdateUserRequest {
+  string caller_id = 1;
+  string name = 2;
+  string avatarHash = 3; // future
+}
+
+==== ./spring_grpc/src/main\resources\application.yml ====
+server:
+    port: 8080
+
+grpc:
+    server:
+        port: 9090
+
+logging:
+    level:
+        root: INFO
+
+spring:
+    main:
+        banner-mode: "off"
+
+

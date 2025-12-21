@@ -1,209 +1,132 @@
-import type { DrocsidServer, DrocsidMessage, DrocsidFriend, DrocsidUser } from "../types";
+import type { DrocsidFriend, DrocsidGuild, DrocsidGuildUser, DrocsidMessage, DrocsidRole, DrocsidUser } from "../types";
 
 export const currentUser: DrocsidUser = {
 	id: "user-1",
 	name: "Rafał",
 	avatarLetter: "R",
-	status: "online",
+	avatarHash: "hash-user-1",
 };
 
-export const mockServers: DrocsidServer[] = [
+function role(guildRoleId: string, roleName: string, permissions: string, system?: boolean): DrocsidRole {
+	return { guildRoleId, roleName, permissions, system };
+}
+
+function user(guildUserId: string, nick: string, roles: DrocsidRole[]): DrocsidGuildUser {
+	return {
+		guildUserId,
+		nick,
+		roles: { roles },
+	};
+}
+
+function msg(messageId: string, author: DrocsidGuildUser, timestamp: string, content: string): DrocsidMessage {
+	return { messageId, author, timestamp, content };
+}
+
+const server1Roles: DrocsidRole[] = [
+	role("server-1-role-owner", "@owner", "MANAGE_GUILD_USERS|MANAGE_CHANNEL|ADMIN_DELETE_MESSAGES|MANAGE_GUILD|READ|WRITE", true),
+	role("server-1-role-everyone", "@everyone", "READ|WRITE", true),
+	role("server-1-role-admin", "Admin", "MANAGE_GUILD_USERS|MANAGE_CHANNEL|ADMIN_DELETE_MESSAGES|MANAGE_GUILD|READ|WRITE"),
+	role("server-1-role-moderator", "Moderator", "MANAGE_GUILD_USERS|MANAGE_CHANNEL|ADMIN_DELETE_MESSAGES|READ|WRITE"),
+];
+
+const server1UserRafal = user("server-1-user-1", "Rafał", [server1Roles[0], server1Roles[2], server1Roles[1]]);
+const server1UserKuba = user("server-1-user-2", "Kuba", [server1Roles[3], server1Roles[1]]);
+const server1UserMiron = user("server-1-user-3", "Miron", [server1Roles[1]]);
+
+const server2Roles: DrocsidRole[] = [
+	role("server-2-role-owner", "@owner", "MANAGE_GUILD_USERS|MANAGE_CHANNEL|ADMIN_DELETE_MESSAGES|MANAGE_GUILD|READ|WRITE", true),
+	role("server-2-role-everyone", "@everyone", "READ|WRITE", true),
+	role("server-2-role-builder", "Builder", "MANAGE_CHANNEL|READ|WRITE"),
+];
+
+const server2UserRafal = user("server-2-user-1", "Rafał", [server2Roles[0], server2Roles[2], server2Roles[1]]);
+const server2UserAnia = user("server-2-user-2", "Ania", [server2Roles[1]]);
+
+export const mockServers: DrocsidGuild[] = [
 	{
-		id: "server-1",
+		guildId: "server-1",
 		name: "drocsid / server-1",
 		icon: "🏡",
+		ownerId: "user-1",
+		roles: server1Roles,
+		users: [server1UserRafal, server1UserKuba, server1UserMiron],
 		channels: [
 			{
-				id: "general",
+				channelId: "11",
 				name: "general",
-				type: "text",
-				topic: "Ogólna rozmowa o projekcie",
+				guildId: "server-1",
+				overrides: { roles: [] },
 				messages: [
-					{
-						id: "m1",
-						user: "Rafał",
-						time: "09:12",
-						text: "Siemano, oceniajcie design",
-					},
-					{
-						id: "m2",
-						user: "Twój stary",
-						time: "09:13",
-						text: "Ej, zajebisty drocsid",
-					},
-					{
-						id: "m3",
-						user: "Miron",
-						time: "09:15",
-						text: "No i git. Kuba, rób elixira",
-					},
+					msg("m1", server1UserRafal, "09:12", "Siemano, oceniajcie design"),
+					msg("m2", user("server-1-user-4", "Twój stary", []), "09:13", "Ej, zajebisty drocsid"),
+					msg("m3", server1UserMiron, "09:15", "No i git. Kuba, rób elixira"),
 				],
 			},
 			{
-				id: "dev",
+				channelId: "12",
 				name: "dev",
-				type: "text",
-				topic: "Programowanie, PRy, bugi",
-				messages: [
-					{
-						id: "m4",
-						user: "Kuba",
-						time: "10:01",
-						text: "Dodałem upload plików, przetestujcie",
-					},
-					{
-						id: "m5",
-						user: "Rafał",
-						time: "10:05",
-						text: "Front podpięty pod nowy endpoint",
-					},
-				],
+				guildId: "server-1",
+				overrides: { roles: [] },
+				messages: [msg("m4", server1UserKuba, "10:01", "Dodałem upload plików, przetestujcie"), msg("m5", server1UserRafal, "10:05", "Front podpięty pod nowy endpoint")],
 			},
 			{
-				id: "design",
+				channelId: "13",
 				name: "design",
-				type: "text",
-				topic: "UX, UI",
-				messages: [
-					{
-						id: "m6",
-						user: "Rafał",
-						time: "11:20",
-						text: "Nowy layout sidebaru wrzucony",
-					},
-				],
+				guildId: "server-1",
+				overrides: { roles: [] },
+				messages: [msg("m6", server1UserRafal, "11:20", "Nowy layout sidebaru wrzucony")],
 			},
 			{
-				id: "random",
+				channelId: "14",
 				name: "random",
-				type: "text",
-				topic: "Memy i offtop",
-				messages: [
-					{
-						id: "m7",
-						user: "Twój stary",
-						time: "12:00",
-						text: "Miał być side project, a znowu wychodzi produkt",
-					},
-				],
+				guildId: "server-1",
+				overrides: { roles: [] },
+				messages: [msg("m7", user("server-1-user-4", "Twój stary", []), "12:00", "Miał być side project, a znowu wychodzi produkt")],
 			},
 		],
 	},
 	{
-		id: "server-2",
+		guildId: "server-2",
 		name: "side-projecty",
 		icon: "🧪",
+		ownerId: "user-2",
+		roles: server2Roles,
+		users: [server2UserRafal, server2UserAnia],
 		channels: [
 			{
-				id: "ideas",
+				channelId: "21",
 				name: "ideas",
-				type: "text",
-				topic: "Pomysły na projekty",
-				messages: [
-					{
-						id: "m8",
-						user: "Rafał",
-						time: "14:10",
-						text: "Zróbmy mini SaaS do boardów kanban jak w Discordzie",
-					},
-				],
+				guildId: "server-2",
+				overrides: { roles: [] },
+				messages: [msg("m8", server2UserRafal, "14:10", "Zróbmy mini SaaS do boardów kanban jak w Discordzie")],
 			},
 			{
-				id: "build-in-public",
+				channelId: "22",
 				name: "build-in-public",
-				type: "text",
-				topic: "Dzienniczek progressu",
-				messages: [
-					{
-						id: "m9",
-						user: "Rafał",
-						time: "14:30",
-						text: "Dzień 1: działa logowanie Google i layout discorda",
-					},
-				],
+				guildId: "server-2",
+				overrides: { roles: [] },
+				messages: [msg("m9", server2UserRafal, "14:30", "Dzień 1: działa logowanie Google i layout discorda")],
 			},
 		],
 	},
 ];
 
 export const mockFriends: DrocsidFriend[] = [
-	{
-		id: "friend-1",
-		name: "Kuba",
-		avatarLetter: "K",
-		status: "online",
-	},
-	{
-		id: "friend-2",
-		name: "Miron",
-		avatarLetter: "M",
-		status: "online",
-	},
-	{
-		id: "friend-3",
-		name: "Twój stary",
-		avatarLetter: "T",
-		status: "idle",
-	},
-	{
-		id: "friend-4",
-		name: "Ania",
-		avatarLetter: "A",
-		status: "dnd",
-	},
-	{
-		id: "friend-5",
-		name: "Piotr",
-		avatarLetter: "P",
-		status: "offline",
-	},
+	{ id: "friend-1", name: "Kuba", avatarLetter: "K", status: "online" },
+	{ id: "friend-2", name: "Miron", avatarLetter: "M", status: "online" },
+	{ id: "friend-3", name: "Twój stary", avatarLetter: "T", status: "idle" },
+	{ id: "friend-4", name: "Ania", avatarLetter: "A", status: "dnd" },
+	{ id: "friend-5", name: "Piotr", avatarLetter: "P", status: "offline" },
 ];
 
 export const mockFriendMessages: Record<string, DrocsidMessage[]> = {
 	"friend-1": [
-		{
-			id: "dm1",
-			user: "Kuba",
-			time: "09:00",
-			text: "Zróbmy jeszcze voice chat kiedyś",
-		},
-		{
-			id: "dm2",
-			user: "Rafał",
-			time: "09:02",
-			text: "Najpierw tekst, potem reszta",
-		},
+		{ messageId: "dm1", author: { guildUserId: "dm-kuba", nick: "Kuba", roles: { roles: [] } }, timestamp: "09:00", content: "Zróbmy jeszcze voice chat kiedyś" },
+		{ messageId: "dm2", author: { guildUserId: "dm-rafal", nick: "Rafał", roles: { roles: [] } }, timestamp: "09:02", content: "Najpierw tekst, potem reszta" },
 	],
-	"friend-2": [
-		{
-			id: "dm3",
-			user: "Miron",
-			time: "10:15",
-			text: "Elixir backend jeszcze nie działa???",
-		},
-	],
-	"friend-3": [
-		{
-			id: "dm4",
-			user: "Twój stary",
-			time: "11:11",
-			text: "No i co z tym side projectem",
-		},
-	],
-	"friend-4": [
-		{
-			id: "dm5",
-			user: "Ania",
-			time: "12:34",
-			text: "Fajny ten layout pod discorda",
-		},
-	],
-	"friend-5": [
-		{
-			id: "dm6",
-			user: "Piotr",
-			time: "13:37",
-			text: "Jak coś, to testuję ten drocsid",
-		},
-	],
+	"friend-2": [{ messageId: "dm3", author: { guildUserId: "dm-miron", nick: "Miron", roles: { roles: [] } }, timestamp: "10:15", content: "Elixir backend jeszcze nie działa???" }],
+	"friend-3": [{ messageId: "dm4", author: { guildUserId: "dm-tata", nick: "Twój stary", roles: { roles: [] } }, timestamp: "11:11", content: "No i co z tym side projectem" }],
+	"friend-4": [{ messageId: "dm5", author: { guildUserId: "dm-ania", nick: "Ania", roles: { roles: [] } }, timestamp: "12:34", content: "Fajny ten layout pod discorda" }],
+	"friend-5": [{ messageId: "dm6", author: { guildUserId: "dm-piotr", nick: "Piotr", roles: { roles: [] } }, timestamp: "13:37", content: "Jak coś, to testuję ten drocsid" }],
 };

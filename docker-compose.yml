@@ -11,14 +11,15 @@ services:
         tty: true
         env_file:
             - ./frontend/.env.local
+        ports:
+            - "5173:5173"
 
     backend:
-      build:
-        context: ./spring_grpc
-        dockerfile: Dockerfile
-      working_dir: /app
-    gateway:
-      build:
-        context: ./nginx
-      ports: 
-        - "8080:8080"
+        build:
+            context: ./spring_grpc
+            dockerfile: Dockerfile
+        ports:
+            - "8080:8080"
+            - "9090:9090"
+        environment:
+            GOOGLE_OAUTH_CLIENT_ID: "494375853488-nu5h6bsffjafo3s2srddijrgstqvs7nc.apps.googleusercontent.com"

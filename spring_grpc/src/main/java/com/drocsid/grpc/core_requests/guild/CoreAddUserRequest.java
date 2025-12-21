@@ -1,6 +1,6 @@
 package com.drocsid.grpc.core_requests.guild;
 
-import com.drocsid.grpc.proto.GuildUserInfo;
+import com.drocsid.grpc.proto.AddUser;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,12 +12,10 @@ import java.math.BigInteger;
 @Data
 public class CoreAddUserRequest {
     private BigInteger userId;
-    private BigInteger id;
-    private BigInteger guildUserId;
+    private BigInteger guildId;
 
-    public CoreAddUserRequest(GuildUserInfo guildUserInfo) {
-        userId = new BigInteger(guildUserInfo.getUserId());
-        id = new BigInteger(guildUserInfo.getId());
-        guildUserId = new BigInteger(guildUserInfo.getGuildUserId());
+    public CoreAddUserRequest(String userIdString, AddUser addUserObj) {
+        userId = new BigInteger(userIdString);
+        guildId = new BigInteger(addUserObj.getGuildId());
     }
 }

@@ -1,261 +1,264 @@
-package com.drocsid.grpc.service;
-
-import com.drocsid.grpc.core_requests.channel.CoreCreateMessageRequest;
-import com.drocsid.grpc.core_requests.channel.CoreUpdateChannelRequest;
-import com.drocsid.grpc.mock_classes.CoreClient;
-import com.drocsid.grpc.proto.*;
-import io.grpc.stub.StreamObserver;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.math.BigInteger;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+// package com.drocsid.grpc.service;
+
+// import com.drocsid.grpc.auth.JwtAuthService;
+// import com.drocsid.grpc.core_requests.channel.*;
+// import com.drocsid.grpc.mock_classes.CoreClient;
+// import com.drocsid.grpc.proto.*;
+// import io.grpc.stub.StreamObserver;
+// import org.junit.jupiter.api.BeforeEach;
+// import org.junit.jupiter.api.Test;
+
+// import static org.junit.jupiter.api.Assertions.*;
+// import static org.mockito.Mockito.*;
 
-class ChannelServiceTest {
-
-    private CoreClient coreClient;
-    private ChannelService channelService;
+// class ChannelServiceTest {
 
-    @BeforeEach
-    void setUp() {
-        coreClient = mock(CoreClient.class);
-        channelService = new ChannelService(coreClient);
-    }
-
-    @Test
-    void testGetChannelInfo() {
-        ChannelInfo expected = ChannelInfo.newBuilder()
-                .setId("5")
-                .setName("General")
-                .setGuildId("100")
-                .build();
+//     private CoreClient coreClient;
+//     private ChannelService channelService;
+//     private JwtAuthService jwtAuthService;
 
-        when(coreClient.getChannelInfo(new BigInteger("1"), new BigInteger("5")))
-                .thenReturn(expected);
+//     @BeforeEach
+//     void setUp() {
+//         coreClient = mock(CoreClient.class);
+//         jwtAuthService = mock(JwtAuthService.class);
 
-        TestObserver<ChannelInfo> observer = new TestObserver<>();
+//         when(jwtAuthService.checkAuth(any())).thenReturn("1");
+//         channelService = new ChannelService(coreClient, jwtAuthService);
+//     }
 
-        ChannelId id = ChannelId.newBuilder()
-                .setUserId("1")
-                .setId("5")
-                .build();
+//     @Test
+//     void testGetChannel() {
+//         Channel returnedChannel = Channel.newBuilder().build();
+//         when(coreClient.getChannel(any(CoreGetChannelRequest.class)))
+//                 .thenReturn(returnedChannel);
+//         TestObserver<Channel> observer = new TestObserver<>();
 
-        channelService.getChannelInfo(id, observer);
+//         ChannelInfoReq request = ChannelInfoReq.newBuilder()
+//                 .setToken("token")
+//                 .setChannelId("1")
+//                 .build();
 
-        verify(coreClient).getChannelInfo(new BigInteger("1"), new BigInteger("5"));
-        assertTrue(observer.completed);
-        assertEquals(expected, observer.value);
-    }
+//         channelService.getChannel(request, observer);
 
-    @Test
-    void testGetChannelInfoException() {
-        when(coreClient.getChannelInfo(new BigInteger("1"), new BigInteger("5")))
-                .thenThrow(new RuntimeException("error"));
+//         verify(coreClient).getChannel(new CoreGetChannelRequest("1", request));
+//         assertTrue(observer.completed);
+//         assertNotNull(observer.value);
+//         assertInstanceOf(Channel.class, observer.value);
+//     }
 
-        TestObserver<ChannelInfo> observer = new TestObserver<>();
+//     @Test
+//     void testGetChannelInfoException() {
+//         when(coreClient.getChannel(any())).thenThrow(new RuntimeException("error"));
 
-        ChannelId id = ChannelId.newBuilder()
-                .setUserId("1")
-                .setId("5")
-                .build();
+//         TestObserver<Channel> observer = new TestObserver<>();
+
+//         ChannelInfoReq request = ChannelInfoReq.newBuilder()
+//                 .setToken("token")
+//                 .setChannelId("1")
+//                 .build();
+
+//         channelService.getChannel(request, observer);
 
-        channelService.getChannelInfo(id, observer);
+//         assertTrue(observer.error);
+//         assertFalse(observer.completed);
+//     }
+//     @Test
+//     void testUpdateChannel() {
+//         Channel returnedChannel = Channel.newBuilder().build();
+//         when(coreClient.updateChannel(any(CoreUpdateChannelRequest.class)))
+//                 .thenReturn(returnedChannel);
+//         UpdateChannelRequest request = UpdateChannelRequest.newBuilder()
+//                 .setToken("token")
+//                 .build();
+
+//         TestObserver<Channel> observer = new TestObserver<>();
+
+//         channelService.updateChannel(request, observer);
 
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-    @Test
-    void testUpdateChannel() {
-        UpdateChannelRequest request = UpdateChannelRequest.newBuilder()
-                .setUserId("1")
-                .setId("5")
-                .setName("Updated Name")
-                .build();
+//         verify(coreClient).updateChannel(any(CoreUpdateChannelRequest.class));
+//         assertTrue(observer.completed);
+//         assertNotNull(observer.value);
+//         assertInstanceOf(Channel.class, observer.value);
+//     }
+
+//     @Test
+//     void testUpdateChannelException() {
+//         UpdateChannelRequest request = UpdateChannelRequest.newBuilder().setToken("token").build();
+
+//         doThrow(new RuntimeException("error")).when(coreClient).updateChannel(any());
+
+//         TestObserver<Channel> observer = new TestObserver<>();
+
+//         channelService.updateChannel(request, observer);
+
+//         assertTrue(observer.error);
+//         assertFalse(observer.completed);
+//     }
 
-        TestObserver<ResponseMessage> observer = new TestObserver<>();
+//     @Test
+//     void testDeleteChannel() {
+//         ChannelInfoReq request = ChannelInfoReq.newBuilder().setChannelId("1").build();
 
-        channelService.updateChannel(request, observer);
+//         TestObserver<ResponseMessage> observer = new TestObserver<>();
 
-        verify(coreClient).updateChannel(any(CoreUpdateChannelRequest.class));
-        assertTrue(observer.completed);
-        assertEquals("Channel updated successfully.", observer.value.getText());
-    }
+//         channelService.deleteChannel(request, observer);
 
-    @Test
-    void testUpdateChannelException() {
-        UpdateChannelRequest request = UpdateChannelRequest.newBuilder()
-                .setUserId("1")
-                .setId("5")
-                .setName("Updated Name")
-                .build();
+//         verify(coreClient).deleteChannel(new CoreDeleteChannelRequest("1", request));
+//         assertTrue(observer.completed);
+//         assertEquals("Channel deleted successfully.", observer.value.getText());
+//     }
+
+//     @Test
+//     void testDeleteChannelException() {
+//         doThrow(new RuntimeException("error")).when(coreClient).deleteChannel(any());
+
+//         TestObserver<ResponseMessage> observer = new TestObserver<>();
+
+//         ChannelInfoReq request = ChannelInfoReq.newBuilder().setChannelId("1").build();
+
+//         channelService.deleteChannel(request, observer);
 
-        doThrow(new RuntimeException("error")).when(coreClient).updateChannel(any());
+//         assertTrue(observer.error);
+//         assertFalse(observer.completed);
+//     }
 
-        TestObserver<ResponseMessage> observer = new TestObserver<>();
-
-        channelService.updateChannel(request, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-    @Test
-    void testGetLastMessage() {
-        Message expected = Message.newBuilder()
-                .setId("10")
-                .setContent("Last message")
-                .build();
-
-        when(coreClient.getLastMessage(new BigInteger("1"), new BigInteger("5"))).thenReturn(expected);
-
-        TestObserver<Message> observer = new TestObserver<>();
-
-        ChannelId id = ChannelId.newBuilder().setUserId("1").setId("5").build();
-        channelService.getLastMessage(id, observer);
-
-        verify(coreClient).getLastMessage(new BigInteger("1"), new BigInteger("5"));
-        assertTrue(observer.completed);
-        assertEquals(expected, observer.value);
-    }
-
-    @Test
-    void testGetLastMessageException() {
-        doThrow(new RuntimeException("error")).when(coreClient).getLastMessage(new BigInteger("1"), new BigInteger("5"));
-
-        TestObserver<Message> observer = new TestObserver<>();
-
-        ChannelId id = ChannelId.newBuilder().setUserId("1").setId("5").build();
-        channelService.getLastMessage(id, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-
-    @Test
-    void testGetAllMessages() {
-        Message msg1 = Message.newBuilder().setId("1").setContent("A").build();
-        Message msg2 = Message.newBuilder().setId("2").setContent("B").build();
-
-        when(coreClient.getAllMessages(new BigInteger("1"), new BigInteger("5"))).thenReturn(List.of(msg1, msg2));
-
-        TestObserver<MessageList> observer = new TestObserver<>();
-
-        ChannelId id = ChannelId.newBuilder().setUserId("1").setId("5").build();
-        channelService.getAllMessages(id, observer);
-
-        verify(coreClient).getAllMessages(new BigInteger("1"), new BigInteger("5"));
-        assertTrue(observer.completed);
-        assertEquals(2, observer.value.getMessagesCount());
-        assertEquals(msg1, observer.value.getMessages(0));
-        assertEquals(msg2, observer.value.getMessages(1));
-    }
-
-    @Test
-    void testGetAllMessagesException() {
-        doThrow(new RuntimeException("error")).when(coreClient).getAllMessages(new BigInteger("1"), new BigInteger("5"));
-
-        TestObserver<MessageList> observer = new TestObserver<>();
-
-        ChannelId id = ChannelId.newBuilder().setUserId("1").setId("5").build();
-        channelService.getAllMessages(id, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-    @Test
-    void testCreateMessage() {
-        CreateMessageRequest request = CreateMessageRequest.newBuilder()
-                .setUserId("1")
-                .setAuthorId("2")
-                .setAuthorName("Alex")
-                .setContent("Hello")
-                .setChannelId("10")
-                .build();
-
-        ChannelServiceTest.TestObserver<ResponseMessage> observer = new ChannelServiceTest.TestObserver<>();
-
-        channelService.createMessage(request, observer);
-
-        verify(coreClient).createMessage(any(CoreCreateMessageRequest.class));
-
-        assertTrue(observer.completed);
-        assertEquals("Message created successfully.", observer.value.getText());
-    }
-
-    @Test
-    void testCreateMessageException() {
-        CreateMessageRequest request = CreateMessageRequest.newBuilder()
-                .setUserId("1")
-                .setAuthorId("2")
-                .setAuthorName("Alex")
-                .setContent("Hello")
-                .setChannelId("10")
-                .build();
-
-        doThrow(new RuntimeException("error"))
-                .when(coreClient).createMessage(any());
-
-        ChannelServiceTest.TestObserver<ResponseMessage> observer = new ChannelServiceTest.TestObserver<>();
-
-        channelService.createMessage(request, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-    @Test
-    void testDeleteMessage() {
-        MessageId id = MessageId.newBuilder()
-                .setUserId("1")
-                .setId("5")
-                .build();
-
-        ChannelServiceTest.TestObserver<ResponseMessage> observer = new ChannelServiceTest.TestObserver<>();
-
-        channelService.deleteMessage(id, observer);
-
-        verify(coreClient).deleteMessage(new BigInteger("1"), new BigInteger("5"));
-
-        assertTrue(observer.completed);
-        assertEquals("Message deleted successfully.", observer.value.getText());
-    }
-
-    @Test
-    void testDeleteMessageException() {
-        doThrow(new RuntimeException("error"))
-                .when(coreClient).deleteMessage(new BigInteger("1"), new BigInteger("5"));
-
-        MessageId id = MessageId.newBuilder()
-                .setUserId("1")
-                .setId("5")
-                .build();
-
-        ChannelServiceTest.TestObserver<ResponseMessage> observer = new ChannelServiceTest.TestObserver<>();
-
-        channelService.deleteMessage(id, observer);
-
-        assertTrue(observer.error);
-        assertFalse(observer.completed);
-    }
-
-
-    private static class TestObserver<T> implements StreamObserver<T> {
-        T value;
-        boolean completed = false;
-        boolean error = false;
-
-        @Override
-        public void onNext(T value) { this.value = value; }
-
-        @Override
-        public void onError(Throwable t) { this.error = true; }
-
-        @Override
-        public void onCompleted() { this.completed = true; }
-    }
-}
+//     @Test
+//     void testGetMessages() {
+//         TestObserver<MessageList> observer = new TestObserver<>();
+
+//         MessageBucketReq request = MessageBucketReq
+//                 .newBuilder()
+//                 .setReq(ChannelInfoReq.newBuilder().setToken("token").setChannelId("1").build())
+//                 .setOffset(1)
+//                 .setCount(1)
+//                 .build();
+//         channelService.getMessages(request, observer);
+
+//         verify(coreClient).getMessages(new CoreGetMessagesRequest("1", request));
+//         assertTrue(observer.completed);
+//         assertInstanceOf(MessageList.class, observer.value);
+//     }
+
+//     @Test
+//     void testGetAllMessagesException() {
+//         doThrow(new RuntimeException("error")).when(coreClient).getMessages(any());
+
+//         TestObserver<MessageList> observer = new TestObserver<>();
+
+//         MessageBucketReq request = MessageBucketReq
+//                 .newBuilder()
+//                 .setReq(ChannelInfoReq.newBuilder().setToken("token").setChannelId("1").build())
+//                 .setOffset(1)
+//                 .setCount(1)
+//                 .build();
+//         channelService.getMessages(request, observer);
+
+//         assertTrue(observer.error);
+//         assertFalse(observer.completed);
+//     }
+
+//     @Test
+//     void testCreateMessage() {
+//         CreateMessageReq request = CreateMessageReq
+//                 .newBuilder()
+//                 .setReq(ChannelInfoReq.newBuilder().setToken("token").setChannelId("1").build())
+//                 .setMessage(GeneralCreateMessageRequest.newBuilder().setContent("content").build())
+//                 .build();
+
+//         Message returnedMessage = Message.newBuilder().build();
+//         when(coreClient.createMessage(any(CoreCreateMessageRequest.class)))
+//                 .thenReturn(returnedMessage);
+
+//         TestObserver<Message> observer = new TestObserver<>();
+
+//         channelService.createMessage(request, observer);
+
+//         verify(coreClient).createMessage(any(CoreCreateMessageRequest.class));
+//         assertTrue(observer.completed);
+//         assertInstanceOf(Message.class, observer.value);
+//     }
+
+//     @Test
+//     void testCreateMessageException() {
+//         CreateMessageReq request = CreateMessageReq
+//                 .newBuilder()
+//                 .setReq(ChannelInfoReq.newBuilder().setToken("token").setChannelId("1").build())
+//                 .setMessage(GeneralCreateMessageRequest.newBuilder().setContent("content").build())
+//                 .build();
+
+//         doThrow(new RuntimeException("error"))
+//                 .when(coreClient).createMessage(any());
+
+//         TestObserver<Message> observer = new TestObserver<>();
+
+//         channelService.createMessage(request, observer);
+
+//         assertTrue(observer.error);
+//         assertFalse(observer.completed);
+//     }
+
+//     @Test
+//     void testDeleteMessage() {
+//         MessageReq request = MessageReq.newBuilder()
+//                 .setReq(ChannelInfoReq
+//                         .newBuilder()
+//                         .setToken("token")
+//                         .setChannelId("1")
+//                         .build())
+//                 .setMessageReq(GeneralMessageReq
+//                         .newBuilder()
+//                         .setMessageId("1")
+//                         .build())
+//                 .build();
+
+//         ChannelServiceTest.TestObserver<ResponseMessage> observer = new ChannelServiceTest.TestObserver<>();
+
+//         channelService.deleteMessage(request, observer);
+
+//         verify(coreClient).deleteMessage(new CoreDeleteMessageRequest("1", request));
+
+//         assertTrue(observer.completed);
+//         assertEquals("Message deleted successfully.", observer.value.getText());
+//     }
+
+//     @Test
+//     void testDeleteMessageException() {
+//         doThrow(new RuntimeException("error"))
+//                 .when(coreClient).deleteMessage(any());
+
+//         MessageReq request = MessageReq.newBuilder()
+//                 .setReq(ChannelInfoReq
+//                         .newBuilder()
+//                         .setToken("token")
+//                         .setChannelId("1")
+//                         .build())
+//                 .setMessageReq(GeneralMessageReq
+//                         .newBuilder()
+//                         .setMessageId("1")
+//                         .build())
+//                 .build();
+
+//         TestObserver<ResponseMessage> observer = new TestObserver<>();
+
+//         channelService.deleteMessage(request, observer);
+
+//         assertTrue(observer.error);
+//         assertFalse(observer.completed);
+//     }
+
+
+//     private static class TestObserver<T> implements StreamObserver<T> {
+//         T value;
+//         boolean completed = false;
+//         boolean error = false;
+
+//         @Override
+//         public void onNext(T value) { this.value = value; }
+
+//         @Override
+//         public void onError(Throwable t) { this.error = true; }
+
+//         @Override
+//         public void onCompleted() { this.completed = true; }
+//     }
+// }

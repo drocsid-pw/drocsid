@@ -1,31 +1,29 @@
 import React from "react";
-import type { DrocsidServer } from "../types";
-import { DROCSID_THEME } from "../theme";
+import type { DrocsidGuild } from "../types";
+import { useDrocsidTheme } from "../theme-provider";
 
 type DrocsidSideMode = "servers" | "friends";
 
 type DrocsidServersBarProps = {
-	servers: DrocsidServer[];
+	servers: DrocsidGuild[];
 	activeServerId: string | null;
 	sideMode: DrocsidSideMode;
 	onSelectSideMode: (mode: DrocsidSideMode) => void;
-	onSelectServer: (serverId: string) => void;
-	onOpenServerSettings: () => void;
+	onSelectServer: (guildId: string) => void;
+	onOpenCreateServer: () => void;
 };
 
-/**
- * Pasek serwerów z przyciskiem prywatnych wiadomości u góry,
- * listą serwerów oraz przyciskiem dodania/edycji serwera na dole.
- */
 export function DrocsidServersBar(props: DrocsidServersBarProps) {
-	const { servers, activeServerId, sideMode, onSelectSideMode, onSelectServer, onOpenServerSettings } = props;
+	const { servers, activeServerId, sideMode, onSelectSideMode, onSelectServer, onOpenCreateServer } = props;
+
+	const { theme } = useDrocsidTheme();
 
 	return (
 		<aside
 			className="flex flex-col items-center gap-3 py-3"
 			style={{
-				backgroundColor: DROCSID_THEME.serversBar.background,
-				color: DROCSID_THEME.serversBar.text,
+				backgroundColor: theme.serversBar.background,
+				color: theme.serversBar.text,
 			}}>
 			<button
 				type="button"
@@ -35,20 +33,20 @@ export function DrocsidServersBar(props: DrocsidServersBarProps) {
 				d
 			</button>
 
-			<div className="w-8 h-px my-2" style={{ backgroundColor: DROCSID_THEME.serversBar.divider }} />
+			<div className="w-8 h-px my-2" style={{ backgroundColor: theme.serversBar.divider }} />
 
 			{servers.map((server) => {
-				const isActive = sideMode === "servers" && server.id === activeServerId;
+				const isActive = sideMode === "servers" && activeServerId !== null && server.guildId === activeServerId;
 
 				return (
 					<button
-						key={server.id}
+						key={server.guildId}
 						type="button"
 						className={`w-12 h-12 rounded-2xl grid place-items-center transition ${isActive ? "bg-white text-[#1f2937]" : "bg-white/10 hover:bg-white/20"}`}
 						title={server.name}
 						onClick={() => {
 							onSelectSideMode("servers");
-							onSelectServer(server.id);
+							onSelectServer(server.guildId);
 						}}>
 						<span className="text-xl">{server.icon}</span>
 					</button>
@@ -56,7 +54,7 @@ export function DrocsidServersBar(props: DrocsidServersBarProps) {
 			})}
 
 			<div className="mt-auto mb-1">
-				<button type="button" className="w-12 h-12 rounded-2xl grid place-items-center bg-white/10 hover:bg-white/20 transition" title="Dodaj lub edytuj serwer" onClick={onOpenServerSettings}>
+				<button type="button" className="w-12 h-12 rounded-2xl grid place-items-center bg-white/10 hover:bg-white/20 transition" title="Utwórz serwer" onClick={onOpenCreateServer}>
 					+
 				</button>
 			</div>

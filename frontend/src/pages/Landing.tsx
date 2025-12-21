@@ -1,21 +1,12 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
-
-function handleGoogleSuccess(response: CredentialResponse) {
-	if (!response.credential) {
-		console.error("Brak tokenu ID z Google");
-		return;
-	}
-
-	console.log("Google ID token:", response.credential);
-}
-
-function handleGoogleError() {
-	console.error("Logowanie Google nie powiodło się");
-}
+import { Link, useNavigate } from "react-router-dom";
+import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
+import { useAuth } from "../auth/auth";
 
 export default function Landing() {
+	const navigate = useNavigate();
+	const { setToken, isAuthenticated, payload, callerId } = useAuth();
+
 	const colors = [
 		{ name: "Blurple", hex: "#5865F2", desc: "Akcent, CTA, linki" },
 		{ name: "Success", hex: "#57F287", desc: "Potwierdzenia, status online" },
@@ -24,18 +15,40 @@ export default function Landing() {
 		{ name: "Slate 900", hex: "#0f172a", desc: "Tło dark / header" },
 	];
 
+	const handleGoogleSuccess = (response: CredentialResponse) => {
+		if (!response.credential) {
+			console.error("Brak tokenu ID z Google");
+			return;
+		}
+
+		setToken(response.credential);
+		navigate("/app");
+	};
+
+	const handleGoogleError = () => {
+		console.error("Logowanie Google nie powiodło się");
+	};
+
 	return (
 		<section className="grid gap-8">
 			<div className="rounded-3xl overflow-hidden border shadow-sm">
 				<div className="bg-[#5865F2] text-white px-8 py-10">
 					<h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">drocsid</h1>
-					<p className="mt-3 max-w-2xl text-white/90">Oto Drocsid - klon Discorda. Chcemy, żeby działał</p>
-					<div className="mt-6 flex flex-wrap gap-3">
+					<p className="mt-3 max-w-2xl text-white/90">Oto Drocsid - klon Discorda. Teraz podpięty pod backend REST.</p>
+
+					<div className="mt-6 flex flex-wrap items-center gap-3">
 						<Link to="/app" className="px-5 py-2.5 rounded-xl bg-white text-slate-900 hover:bg-slate-100 transition">
-							Otwórz demo drocsida
+							Otwórz drocsida
 						</Link>
 
-						<GoogleLogin onSuccess={handleGoogleSuccess} onError={handleGoogleError} />
+						{isAuthenticated ? (
+							<div className="text-sm text-white/90">
+								Zalogowany jako <span className="font-semibold">{payload?.name ?? "user"}</span>
+								{callerId ? <span className="ml-2 text-white/70">(id: {callerId})</span> : null}
+							</div>
+						) : (
+							<GoogleLogin onSuccess={handleGoogleSuccess} onError={handleGoogleError} />
+						)}
 					</div>
 				</div>
 
@@ -57,7 +70,7 @@ export default function Landing() {
 					</div>
 
 					<div className="mt-6 grid md:grid-cols-3 gap-4">
-						{["Layout prosto od Discorda", "Core napisany w Elixirze - jak oryginał", "Działa wysyłanie plików"].map((t) => (
+						{["Layout prosto od Discorda", "Core w Elixirze (docelowo)", "Front gada z REST-em"].map((t) => (
 							<div key={t} className="rounded-2xl border bg-white p-5 shadow-sm">
 								<h3 className="font-semibold">{t}</h3>
 								<p className="text-sm text-slate-600 mt-1">drocsid drocsid drocsid</p>
@@ -69,8 +82,8 @@ export default function Landing() {
 
 			<div className="rounded-3xl border bg-white p-6 shadow-sm">
 				<div className="mt-4">
-					<Link to="/app" className="px-5 py-2.5 rounded-xl bg-[#5865F2] text-white hover:bg-[#4c57d6] text-slate-900 hover:bg-slate-100 transition">
-						Otwórz demo drocsida
+					<Link to="/app" className="px-5 py-2.5 rounded-xl bg-[#5865F2] text-white hover:bg-[#4c57d6] transition">
+						Otwórz drocsida
 					</Link>
 				</div>
 			</div>
