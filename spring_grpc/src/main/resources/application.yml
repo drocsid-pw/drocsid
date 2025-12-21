@@ -10,5 +10,14 @@ logging:
         root: INFO
 
 spring:
+    datasource:
+        url: jdbc:mysql://mysql:3306/token_id_caller_id_mapping
+        username: root
+        password: example
+        driver-class-name: com.mysql.cj.jdbc.Driver
+    jpa:
+        hibernate:
+        ddl-auto: update
+        show-sql: true
     main:
         banner-mode: "off"
