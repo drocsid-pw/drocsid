@@ -32,7 +32,13 @@ public class ChannelController {
         @PathVariable String channelId) {
         String authedUserId = jwtAuthService.checkAuth(authorization);
 
-        return channelService.getChannel(channelId, authedUserId);
+        try {
+            return channelService.getChannel(channelId, authedUserId);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
     }
 
     @PutMapping("/{channelId}")
@@ -45,7 +51,13 @@ public class ChannelController {
 
         ChannelBody ch = body.getChannel();
 
-        return channelService.updateChannel(authedUserId, channelId, ch);
+        try {
+            return channelService.updateChannel(authedUserId, channelId, ch);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
     }
 
     @DeleteMapping("/{channelId}")
@@ -54,7 +66,13 @@ public class ChannelController {
         @PathVariable String channelId) {
         String authedUserId = jwtAuthService.checkAuth(authorization);
 
-        return channelService.deleteChannel(authedUserId, channelId);
+        try {
+            return channelService.deleteChannel(authedUserId, channelId);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
     }
 
     @GetMapping("/{channelId}/messages")
@@ -65,7 +83,13 @@ public class ChannelController {
         @RequestParam(value = "count", defaultValue = "50") int count) {
         String authedUserId = jwtAuthService.checkAuth(authorization);
 
-        return channelService.getMessages(authedUserId, channelId, offset, count);
+        try {
+            return channelService.getMessages(authedUserId, channelId, offset, count);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
     }
 
     @PostMapping("/{channelId}/messages")
@@ -77,7 +101,13 @@ public class ChannelController {
         String authedUserId = jwtAuthService.checkAuth(authorization);
         String content = body.getMessage().getContent();
 
-        return channelService.createMessage(authedUserId, channelId, content);
+        try {
+            return channelService.createMessage(authedUserId, channelId, content);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
     }
 
     @DeleteMapping("/{channelId}/messages/{messageId}")
@@ -88,7 +118,13 @@ public class ChannelController {
 
         String authedUserId = jwtAuthService.checkAuth(authorization);
 
-        return channelService.deleteMessage(authedUserId, channelId, messageId);
+        try {
+            return channelService.deleteMessage(authedUserId, channelId, messageId);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
     }
 
     public static RoleList mapRoleList(RoleListBody body) {

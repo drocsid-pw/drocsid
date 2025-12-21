@@ -44,18 +44,18 @@ message Guild {
 }
 
 message CreateGuildRequest {
-  string token = 1;
+  string caller_id = 1;
   string name = 2;
   string icon = 3; // not used, future
 }
 
 message GuildInfoReq {
   string guild_id = 1;
-  string token = 2;
+  string caller_id = 2;
 }
 
 message UpdateGuildRequest {
-  string token = 1;
+  string caller_id = 1;
   Guild guild = 2;
 }
 

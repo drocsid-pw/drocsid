@@ -32,7 +32,13 @@ public class GuildController {
         @RequestBody CreateGuildBody body) {
         String authedUserId = jwtAuthService.checkAuth(authorization);
 
-        return guildService.createGuild(authedUserId, body.getName(), body.getIcon());
+        try {
+            return guildService.createGuild(authedUserId, body.getName(), body.getIcon());
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
     }
 
     @GetMapping("/{guildId}")
@@ -41,7 +47,13 @@ public class GuildController {
             @PathVariable String guildId) {
 
         String authedUserId = jwtAuthService.checkAuth(authorization);
-        return guildService.getGuild(authedUserId, guildId);
+        try {
+            return guildService.getGuild(authedUserId, guildId);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
     }
 
     @PutMapping("/{guildId}")
@@ -51,7 +63,14 @@ public class GuildController {
             @Valid @RequestBody PutGuildBody body) {
 
         String authedUserId = jwtAuthService.checkAuth(authorization);
-        return guildService.updateGuild(authedUserId, guildId, body.getGuild());
+
+        try {
+            return guildService.updateGuild(authedUserId, guildId, body.getGuild());
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
     }
 
     @DeleteMapping("/{guildId}")
@@ -60,7 +79,14 @@ public class GuildController {
             @PathVariable String guildId) {
 
         String authedUserId = jwtAuthService.checkAuth(authorization);
-        return guildService.deleteGuild(authedUserId, guildId);
+
+        try {
+            return guildService.deleteGuild(authedUserId, guildId);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
     }
 
     @GetMapping("/{guildId}/channels")
@@ -69,7 +95,14 @@ public class GuildController {
             @PathVariable String guildId) {
 
         String authedUserId = jwtAuthService.checkAuth(authorization);
-        return guildService.getAllChannels(authedUserId, guildId);
+
+        try {
+            return guildService.getAllChannels(authedUserId, guildId);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
     }
 
     @PostMapping("/{guildId}/channels")
@@ -79,7 +112,14 @@ public class GuildController {
             @Valid @RequestBody CreateChannelBody body) {
 
         String authedUserId = jwtAuthService.checkAuth(authorization);
-        return guildService.createChannel(authedUserId, guildId, body.getName());
+
+        try {
+            return guildService.createChannel(authedUserId, guildId, body.getName());
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
     }
 
     @GetMapping("/{guildId}/roles")
@@ -88,7 +128,14 @@ public class GuildController {
             @PathVariable String guildId) {
 
         String authedUserId = jwtAuthService.checkAuth(authorization);
-        return guildService.getRoles(authedUserId, guildId);
+
+        try {
+            return guildService.getRoles(authedUserId, guildId);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
     }
 
     @GetMapping("/{guildId}/roles/{guildRoleId}")
@@ -98,7 +145,13 @@ public class GuildController {
             @PathVariable String guildRoleId) {
 
         String authedUserId = jwtAuthService.checkAuth(authorization);
-        return guildService.getRole(authedUserId, guildId, guildRoleId);
+        try {
+            return guildService.getRole(authedUserId, guildId, guildRoleId);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
     }
 
     @PostMapping("/{guildId}/roles")
@@ -108,7 +161,14 @@ public class GuildController {
             @Valid @RequestBody CreateRoleBody body) {
 
         String authedUserId = jwtAuthService.checkAuth(authorization);
-        return guildService.createRole(authedUserId, guildId, body.getRoleName(), body.getPermissions());
+
+        try {
+            return guildService.createRole(authedUserId, guildId, body.getRoleName(), body.getPermissions());
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
     }
 
     @PutMapping("/{guildId}/roles/{guildRoleId}")
@@ -119,7 +179,14 @@ public class GuildController {
             @Valid @RequestBody PutRoleBody body) {
 
         String authedUserId = jwtAuthService.checkAuth(authorization);
-        return guildService.updateRole(authedUserId, guildId, guildRoleId, body.getRole());
+
+        try {
+            return guildService.updateRole(authedUserId, guildId, guildRoleId, body.getRole());
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
     }
 
     @DeleteMapping("/{guildId}/roles/{guildRoleId}")
@@ -133,7 +200,14 @@ public class GuildController {
             @PathVariable String guildId) {
 
         String authedUserId = jwtAuthService.checkAuth(authorization);
-        return guildService.addUserToGuild(authedUserId, guildId);
+
+        try {
+            return guildService.addUserToGuild(authedUserId, guildId);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
     }
 
     @GetMapping("/{guildId}/users")
@@ -142,7 +216,14 @@ public class GuildController {
             @PathVariable String guildId) {
 
         String authedUserId = jwtAuthService.checkAuth(authorization);
-        return guildService.getGuildUsers(authedUserId, guildId);
+
+        try {
+            return guildService.getGuildUsers(authedUserId, guildId);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
     }
 
     @GetMapping("/{guildId}/users/{guildUserId}")
@@ -152,7 +233,14 @@ public class GuildController {
             @PathVariable String guildUserId) {
 
         String authedUserId = jwtAuthService.checkAuth(authorization);
-        return guildService.getGuildUser(authedUserId, guildId, guildUserId);
+
+        try {
+            return guildService.getGuildUser(authedUserId, guildId, guildUserId);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
     }
 
     @PutMapping("/{guildId}/users/{guildUserId}")
@@ -163,7 +251,14 @@ public class GuildController {
             @Valid @RequestBody PutGuildUserBody body) {
 
         String authedUserId = jwtAuthService.checkAuth(authorization);
-        return guildService.updateGuildUser(authedUserId, guildId, guildUserId, body.getUser());
+
+        try {
+            return guildService.updateGuildUser(authedUserId, guildId, guildUserId, body.getUser());
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
     }
 
     @DeleteMapping("/{guildId}/users/{guildUserId}")
@@ -173,7 +268,14 @@ public class GuildController {
             @PathVariable String guildUserId) {
 
         String authedUserId = jwtAuthService.checkAuth(authorization);
-        return guildService.deleteGuildUser(authedUserId, guildId, guildUserId);
+
+        try {
+            return guildService.deleteGuildUser(authedUserId, guildId, guildUserId);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
     }
 
     public static List<Role> mapRoles(List<RoleBody> roles) {

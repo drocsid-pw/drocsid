@@ -8,6 +8,7 @@ import com.drocsid.grpc.http.dto.MessageListDto;
 import com.drocsid.grpc.http.dto.ResponseMessageDto;
 import com.drocsid.grpc.http.mapper.ProtoMapper;
 import com.drocsid.grpc.http.util.IdParser;
+import com.drocsid.grpc.mappings.UserCallerMappingRepository;
 import com.drocsid.grpc.mock_classes.CoreClient;
 import com.drocsid.grpc.proto.Channel;
 import com.drocsid.grpc.proto.Message;
@@ -15,6 +16,7 @@ import com.drocsid.grpc.proto.RoleList;
 import io.grpc.Status;
 import org.springframework.stereotype.Service;
 
+import java.math.BigInteger;
 import java.util.List;
 
 import static com.drocsid.grpc.http.controller.ChannelController.mapRoleList;
@@ -23,14 +25,20 @@ import static com.drocsid.grpc.http.controller.ChannelController.mapRoleList;
 public class ChannelService {
 
     private final CoreClient coreClient;
+    private final UserCallerMappingRepository repository;
 
-    public ChannelService(CoreClient coreClient) {
+    public ChannelService(CoreClient coreClient, UserCallerMappingRepository repository) {
         this.coreClient = coreClient;
+        this.repository = repository;
     }
 
-    public ChannelDto getChannel(String authedUserId, String channelId) {
+    public ChannelDto getChannel(String authedUserId, String channelId) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
         CoreGetChannelRequest req = new CoreGetChannelRequest(
-                IdParser.toBigInteger(authedUserId, "callerId"),
+                callerId,
                 IdParser.toBigInteger(channelId, "channelId")
         );
 
@@ -38,7 +46,11 @@ public class ChannelService {
         return ProtoMapper.toDto(channel);
     }
 
-    public ChannelDto updateChannel(String authedUserId, String channelId, ChannelController.ChannelBody ch) {
+    public ChannelDto updateChannel(String authedUserId, String channelId, ChannelController.ChannelBody ch) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
         Channel.Builder builder = Channel.newBuilder()
                 .setChannelId(channelId)
                 .setName(ch.getName());
@@ -52,7 +64,7 @@ public class ChannelService {
         );
 
         CoreUpdateChannelRequest req = new CoreUpdateChannelRequest(
-                IdParser.toBigInteger(authedUserId, "callerId"),
+                callerId,
                 builder.build()
         );
 
@@ -60,9 +72,13 @@ public class ChannelService {
         return ProtoMapper.toDto(updated);
     }
 
-    public ResponseMessageDto deleteChannel(String authedUserId, String channelId) {
+    public ResponseMessageDto deleteChannel(String authedUserId, String channelId) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
         CoreDeleteChannelRequest req = new CoreDeleteChannelRequest(
-                IdParser.toBigInteger(authedUserId, "callerId"),
+                callerId,
                 IdParser.toBigInteger(channelId, "channelId")
         );
 
@@ -70,7 +86,11 @@ public class ChannelService {
         return new ResponseMessageDto("Channel deleted successfully.");
     }
 
-    public MessageListDto getMessages(String authedUserId, String channelId, int offset, int count) {
+    public MessageListDto getMessages(String authedUserId, String channelId, int offset, int count) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
         if (offset < 0) {
             throw Status.INVALID_ARGUMENT.withDescription("offset must be >= 0").asRuntimeException();
         }
@@ -79,7 +99,7 @@ public class ChannelService {
         }
 
         CoreGetMessagesRequest req = new CoreGetMessagesRequest(
-                IdParser.toBigInteger(authedUserId, "callerId"),
+                callerId,
                 IdParser.toBigInteger(channelId, "channelId"),
                 offset,
                 count
@@ -89,13 +109,17 @@ public class ChannelService {
         return ProtoMapper.toMessageListDto(messages);
     }
 
-    public MessageDto createMessage(String authedUserId, String channelId, String content) {
+    public MessageDto createMessage(String authedUserId, String channelId, String content) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
         if (content == null || content.trim().isEmpty()) {
             throw Status.INVALID_ARGUMENT.withDescription("message.content is required").asRuntimeException();
         }
 
         CoreCreateMessageRequest req = new CoreCreateMessageRequest(
-                IdParser.toBigInteger(authedUserId, "callerId"),
+                callerId,
                 IdParser.toBigInteger(channelId, "channelId"),
                 content
         );
@@ -104,9 +128,13 @@ public class ChannelService {
         return ProtoMapper.toDto(msg);
     }
 
-    public ResponseMessageDto deleteMessage(String authedUserId, String channelId, String messageId) {
+    public ResponseMessageDto deleteMessage(String authedUserId, String channelId, String messageId) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
         CoreDeleteMessageRequest req = new CoreDeleteMessageRequest(
-                IdParser.toBigInteger(authedUserId, "callerId"),
+                callerId,
                 IdParser.toBigInteger(channelId, "channelId"),
                 IdParser.toBigInteger(messageId, "messageId")
         );

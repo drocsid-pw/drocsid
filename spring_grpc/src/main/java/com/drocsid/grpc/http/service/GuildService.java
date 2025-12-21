@@ -5,6 +5,7 @@ import com.drocsid.grpc.http.controller.GuildController;
 import com.drocsid.grpc.http.dto.*;
 import com.drocsid.grpc.http.mapper.ProtoMapper;
 import com.drocsid.grpc.http.util.IdParser;
+import com.drocsid.grpc.mappings.UserCallerMappingRepository;
 import com.drocsid.grpc.mock_classes.CoreClient;
 import com.drocsid.grpc.proto.Channel;
 import com.drocsid.grpc.proto.Guild;
@@ -24,18 +25,24 @@ import static com.drocsid.grpc.http.controller.GuildController.mapRoles;
 public class GuildService {
 
     private final CoreClient coreClient;
+    private final UserCallerMappingRepository repository;
 
-    public GuildService(CoreClient coreClient) {
+    public GuildService(CoreClient coreClient, UserCallerMappingRepository repository) {
         this.coreClient = coreClient;
+        this.repository = repository;
     }
 
-    public GuildDto createGuild(String authedUserId, String name, String icon) {
+    public GuildDto createGuild(String authedUserId, String name, String icon) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
         if (name == null || name.trim().isEmpty()) {
             throw Status.INVALID_ARGUMENT.withDescription("name is required").asRuntimeException();
         }
 
         CoreCreateGuildRequest req = new CoreCreateGuildRequest(
-                IdParser.toBigInteger(authedUserId, "callerId"),
+                callerId,
                 name,
                 icon == null ? "" : icon
         );
@@ -44,9 +51,13 @@ public class GuildService {
         return ProtoMapper.toDto(guild);
     }
 
-    public GuildDto getGuild(String authedUserId, String guildId) {
+    public GuildDto getGuild(String authedUserId, String guildId) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
         CoreGetGuildRequest req = new CoreGetGuildRequest(
-                IdParser.toBigInteger(authedUserId, "callerId"),
+                callerId,
                 IdParser.toBigInteger(guildId, "guildId")
         );
 
@@ -54,7 +65,11 @@ public class GuildService {
         return ProtoMapper.toDto(guild);
     }
 
-    public GuildDto updateGuild(String authedUserId, String guildId, GuildController.GuildBody guild) {
+    public GuildDto updateGuild(String authedUserId, String guildId, GuildController.GuildBody guild) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
         if (guild == null) {
             throw Status.INVALID_ARGUMENT.withDescription("guild is required").asRuntimeException();
         }
@@ -72,7 +87,7 @@ public class GuildService {
         List<Role> roles = mapRoles(guild.getRoles());
 
         CoreUpdateGuildRequest req = new CoreUpdateGuildRequest(
-                IdParser.toBigInteger(authedUserId, "callerId"),
+                callerId,
                 IdParser.toBigInteger(guildId, "guildId"),
                 name,
                 icon,
@@ -84,9 +99,13 @@ public class GuildService {
         return ProtoMapper.toDto(updated);
     }
 
-    public ResponseMessageDto deleteGuild(String authedUserId, String guildId) {
+    public ResponseMessageDto deleteGuild(String authedUserId, String guildId) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
         CoreDeleteGuildRequest req = new CoreDeleteGuildRequest(
-                IdParser.toBigInteger(authedUserId, "callerId"),
+                callerId,
                 IdParser.toBigInteger(guildId, "guildId")
         );
 
@@ -94,9 +113,13 @@ public class GuildService {
         return new ResponseMessageDto("Guild deleted successfully.");
     }
 
-    public ChannelListDto getAllChannels(String authedUserId, String guildId) {
+    public ChannelListDto getAllChannels(String authedUserId, String guildId) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
         CoreGetAllChannelsRequest req = new CoreGetAllChannelsRequest(
-                IdParser.toBigInteger(authedUserId, "callerId"),
+                callerId,
                 IdParser.toBigInteger(guildId, "guildId")
         );
 
@@ -104,13 +127,17 @@ public class GuildService {
         return ProtoMapper.toChannelListDto(channels);
     }
 
-    public ChannelDto createChannel(String authedUserId, String guildId, String name) {
+    public ChannelDto createChannel(String authedUserId, String guildId, String name) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
         if (name == null || name.trim().isEmpty()) {
             throw Status.INVALID_ARGUMENT.withDescription("name is required").asRuntimeException();
         }
 
         CoreCreateChannelRequest req = new CoreCreateChannelRequest(
-                IdParser.toBigInteger(authedUserId, "callerId"),
+                callerId,
                 name,
                 IdParser.toBigInteger(guildId, "guildId")
         );
@@ -119,9 +146,13 @@ public class GuildService {
         return ProtoMapper.toDto(channel);
     }
 
-    public RoleListDto getRoles(String authedUserId, String guildId) {
+    public RoleListDto getRoles(String authedUserId, String guildId) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
         CoreGetRolesRequest req = new CoreGetRolesRequest(
-                IdParser.toBigInteger(authedUserId, "callerId"),
+                callerId,
                 IdParser.toBigInteger(guildId, "guildId")
         );
 
@@ -129,9 +160,13 @@ public class GuildService {
         return ProtoMapper.toDtoFromRoles(roles);
     }
 
-    public RoleDto getRole(String authedUserId, String guildId, String guildRoleId) {
+    public RoleDto getRole(String authedUserId, String guildId, String guildRoleId) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
         CoreGetRoleRequest req = new CoreGetRoleRequest(
-                IdParser.toBigInteger(authedUserId, "callerId"),
+                callerId,
                 IdParser.toBigInteger(guildId, "guildId"),
                 IdParser.toBigInteger(guildRoleId, "guildRoleId")
         );
@@ -140,7 +175,11 @@ public class GuildService {
         return ProtoMapper.toDto(role);
     }
 
-    public RoleDto createRole(String authedUserId, String guildId, String roleName, String permissions) {
+    public RoleDto createRole(String authedUserId, String guildId, String roleName, String permissions) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
         if (roleName == null || roleName.trim().isEmpty()) {
             throw Status.INVALID_ARGUMENT.withDescription("roleName is required").asRuntimeException();
         }
@@ -150,7 +189,7 @@ public class GuildService {
         }
 
         CoreCreateRoleRequest req = new CoreCreateRoleRequest(
-                IdParser.toBigInteger(authedUserId, "callerId"),
+                callerId,
                 IdParser.toBigInteger(guildId, "guildId"),
                 roleName,
                 permissions
@@ -160,7 +199,11 @@ public class GuildService {
         return ProtoMapper.toDto(role);
     }
 
-    public RoleDto updateRole(String authedUserId, String guildId, String guildRoleId, GuildController.RoleBody roleBody) {
+    public RoleDto updateRole(String authedUserId, String guildId, String guildRoleId, GuildController.RoleBody roleBody) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
         if (roleBody == null) {
             throw Status.INVALID_ARGUMENT.withDescription("role is required").asRuntimeException();
         }
@@ -176,7 +219,7 @@ public class GuildService {
         }
 
         CoreUpdateRoleRequest req = new CoreUpdateRoleRequest(
-                IdParser.toBigInteger(authedUserId, "callerId"),
+                callerId,
                 IdParser.toBigInteger(guildId, "guildId"),
                 IdParser.toBigInteger(guildRoleId, "guildRoleId"),
                 roleName,
@@ -187,9 +230,13 @@ public class GuildService {
         return ProtoMapper.toDto(role);
     }
 
-    public GuildUserDto addUserToGuild(String authedUserId, String guildId) {
+    public GuildUserDto addUserToGuild(String authedUserId, String guildId) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
         CoreAddUserRequest req = new CoreAddUserRequest(
-                IdParser.toBigInteger(authedUserId, "callerId"),
+                callerId,
                 IdParser.toBigInteger(guildId, "guildId")
         );
 
@@ -197,9 +244,13 @@ public class GuildService {
         return ProtoMapper.toDto(guildUser);
     }
 
-    public GuildUserListDto getGuildUsers(String authedUserId, String guildId) {
+    public GuildUserListDto getGuildUsers(String authedUserId, String guildId) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
         CoreGetGuildUsersRequest req = new CoreGetGuildUsersRequest(
-                IdParser.toBigInteger(authedUserId, "callerId"),
+                callerId,
                 IdParser.toBigInteger(guildId, "guildId")
         );
 
@@ -207,9 +258,13 @@ public class GuildService {
         return ProtoMapper.toGuildUserListDto(users);
     }
 
-    public GuildUserDto getGuildUser(String authedUserId, String guildId, String guildUserId) {
+    public GuildUserDto getGuildUser(String authedUserId, String guildId, String guildUserId) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
         CoreGetGuildUserRequest req = new CoreGetGuildUserRequest(
-                IdParser.toBigInteger(authedUserId, "callerId"),
+                callerId,
                 IdParser.toBigInteger(guildId, "guildId"),
                 IdParser.toBigInteger(guildUserId, "guildUserId")
         );
@@ -218,7 +273,11 @@ public class GuildService {
         return ProtoMapper.toDto(user);
     }
 
-    public GuildUserDto updateGuildUser(String authedUserId, String guildId, String guildUserId, GuildController.GuildUserBody userBody) {
+    public GuildUserDto updateGuildUser(String authedUserId, String guildId, String guildUserId, GuildController.GuildUserBody userBody) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
         if (userBody == null) {
             throw Status.INVALID_ARGUMENT.withDescription("user is required").asRuntimeException();
         }
@@ -234,7 +293,7 @@ public class GuildService {
         List<Role> roles = parseRolesFromJson(userBody.getRoles());
 
         CoreUpdateGuildUserRequest req = new CoreUpdateGuildUserRequest(
-                IdParser.toBigInteger(authedUserId, "callerId"),
+                callerId,
                 IdParser.toBigInteger(guildId, "guildId"),
                 userBody.getNick(),
                 roles
@@ -244,9 +303,13 @@ public class GuildService {
         return ProtoMapper.toDto(updated);
     }
 
-    public ResponseMessageDto deleteGuildUser(String authedUserId, String guildId, String guildUserId) {
+    public ResponseMessageDto deleteGuildUser(String authedUserId, String guildId, String guildUserId) throws Exception {
+        BigInteger callerId = repository.findByTokenId(authedUserId)
+                .orElseThrow(() -> new Exception("Invalid token id."))
+                .getCallerId();
+
         CoreDeleteGuildUserRequest req = new CoreDeleteGuildUserRequest(
-                IdParser.toBigInteger(authedUserId, "callerId"),
+                callerId,
                 IdParser.toBigInteger(guildId, "guildId"),
                 IdParser.toBigInteger(guildUserId, "guildUserId")
         );
