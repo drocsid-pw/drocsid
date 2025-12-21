@@ -22,7 +22,24 @@ services:
             - "8080:8080"
             - "9090:9090"
         environment:
-            GOOGLE_OAUTH_CLIENT_ID: "494375853488-nu5h6bsffjafo3s2srddijrgstqvs7nc.apps.googleusercontent.com"
+          GOOGLE_OAUTH_CLIENT_ID: "494375853488-nu5h6bsffjafo3s2srddijrgstqvs7nc.apps.googleusercontent.com"
+          DB_HOST: mysql
+          DB_PORT: 3306
+          DB_NAME: token_id_caller_id_mapping
+          DB_USER: root
+          DB_PASSWORD: example
+
+    mysql:
+      image: mysql:8.0
+      container_name: mysql
+      restart: always
+      environment:
+        MYSQL_ROOT_PASSWORD: example
+        MYSQL_DATABASE: token_id_caller_id_mapping
+      ports:
+        - "3306:3306"
+      volumes:
+        - mysql_data:/var/lib/mysql
 
     cdn:
         build:
@@ -44,3 +61,4 @@ services:
 
 volumes:
   cdn:
+  mysql_data: {}
