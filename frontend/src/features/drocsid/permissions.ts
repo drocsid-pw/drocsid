@@ -38,22 +38,32 @@ export function permissionsStringToRecord(raw: string | undefined): PermissionsR
 	return base;
 }
 
-export function permissionsListToRecord(list: DrocsidPermission[] | undefined): PermissionsRecord {
-	if (!list || list.length === 0) {
-		return emptyPermissionsRecord();
-	}
-
-	const base = emptyPermissionsRecord();
-	for (const p of list) {
-		base[p] = true;
-	}
-	return base;
-}
-
 export function recordToPermissionsString(record: PermissionsRecord): string {
 	return PERMISSION_FLAGS.filter((flag) => record[flag]).join("|");
 }
 
+export function togglePermissionString(raw: string, flag: PermissionFlag): string {
+	const record = permissionsStringToRecord(raw);
+	record[flag] = !record[flag];
+	return recordToPermissionsString(record);
+}
+
 export function recordToPermissionsList(record: PermissionsRecord): DrocsidPermission[] {
 	return PERMISSION_FLAGS.filter((flag) => record[flag]);
+}
+
+export function permissionsListToRecord(raw: DrocsidPermission[] | string | undefined): PermissionsRecord {
+	if (typeof raw === "string") {
+		return permissionsStringToRecord(raw);
+	}
+
+	const base = emptyPermissionsRecord();
+
+	for (const key of raw ?? []) {
+		if (key in base) {
+			base[key as PermissionFlag] = true;
+		}
+	}
+
+	return base;
 }

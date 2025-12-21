@@ -1,6 +1,7 @@
-// vite.config.ts
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+
+const backendTarget = process.env.DROCSID_BACKEND_URL ?? "http://localhost:8080";
 
 export default defineConfig({
 	plugins: [react()],
@@ -8,6 +9,12 @@ export default defineConfig({
 		host: true,
 		port: 5173,
 		strictPort: true,
+		proxy: {
+			"/api": {
+				target: backendTarget,
+				changeOrigin: true,
+			},
+		},
 	},
 	preview: {
 		host: true,

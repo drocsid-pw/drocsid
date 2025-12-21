@@ -1,54 +1,35 @@
 import React, { useEffect, useMemo, useState } from "react";
-import type { DrocsidChannel, DrocsidRole, DrocsidServer } from "../types";
+import type { DrocsidChannel, DrocsidGuild, DrocsidRole } from "../types";
 import { useDrocsidTheme } from "../theme-provider";
-import { PERMISSION_FLAGS, type PermissionFlag, permissionsListToRecord, recordToPermissionsString, recordToPermissionsList } from "../permissions";
-
-type ProtoRole = {
-	guild_role_id: string;
-	role_name: string;
-	permissions: string;
-};
-
-type ProtoRoleList = {
-	roles: ProtoRole[];
-};
-
-type ProtoChannel = {
-	channel_id: string;
-	name: string;
-	guild_id: string;
-	overrides: ProtoRoleList;
-};
-
-type ProtoUpdateChannelRequest = {
-	caller_id: string;
-	channel: ProtoChannel;
-};
+import { PERMISSION_FLAGS, type PermissionFlag, permissionsStringToRecord, recordToPermissionsString, type PermissionsRecord } from "../permissions";
 
 type OverrideRow = {
-	guild_role_id: string;
-	role_name: string;
-	permissions: ReturnType<typeof permissionsListToRecord>;
+	guildRoleId: string;
+	roleName: string;
+	system?: boolean;
+	permissions: PermissionsRecord;
 };
 
 function buildOverrideRows(serverRoles: DrocsidRole[], channelOverrides: DrocsidRole[] | undefined): OverrideRow[] {
 	const overridesMap = new Map<string, DrocsidRole>();
 	for (const r of channelOverrides ?? []) {
-		overridesMap.set(r.id, r);
+		overridesMap.set(r.guildRoleId, r);
 	}
 
 	return serverRoles.map((role) => {
-		const override = overridesMap.get(role.id);
+		const override = overridesMap.get(role.guildRoleId) ?? role;
+
 		return {
-			guild_role_id: role.id,
-			role_name: role.name,
-			permissions: permissionsListToRecord((override ?? role).permissions),
+			guildRoleId: role.guildRoleId,
+			roleName: role.roleName,
+			system: role.system,
+			permissions: permissionsStringToRecord(override.permissions),
 		};
 	});
 }
 
-export function DrocsidChannelSettings(props: { callerId: string; server: DrocsidServer | null; channel: DrocsidChannel | null; onCancel: () => void; onSaved: (nextChannel: DrocsidChannel) => void }) {
-	const { callerId, server, channel, onCancel, onSaved } = props;
+export function DrocsidChannelSettings(props: { callerId: string; server: DrocsidGuild | null; channel: DrocsidChannel | null; onCancel: () => void; onSaved: (nextChannel: DrocsidChannel) => void }) {
+	const { server, channel, onCancel, onSaved } = props;
 
 	const { isDark } = useDrocsidTheme();
 
@@ -70,15 +51,14 @@ export function DrocsidChannelSettings(props: { callerId: string; server: Drocsi
 	}, [isDark]);
 
 	const [activeSection, setActiveSection] = useState<"general" | "overrides">("general");
-
 	const [channelName, setChannelName] = useState(channel?.name ?? "");
-	const [rows, setRows] = useState<OverrideRow[]>(() => buildOverrideRows(server?.roles ?? [], channel?.overrides));
+	const [rows, setRows] = useState<OverrideRow[]>(() => buildOverrideRows(server?.roles ?? [], channel?.overrides?.roles));
 
 	useEffect(() => {
 		setChannelName(channel?.name ?? "");
-		setRows(buildOverrideRows(server?.roles ?? [], channel?.overrides));
+		setRows(buildOverrideRows(server?.roles ?? [], channel?.overrides?.roles));
 		setActiveSection("general");
-	}, [server?.id, channel?.id]);
+	}, [server?.guildId, channel?.channelId]);
 
 	if (!server || !channel) {
 		return (
@@ -89,13 +69,10 @@ export function DrocsidChannelSettings(props: { callerId: string; server: Drocsi
 		);
 	}
 
-	const guildId = server.id;
-	const channelId = channel.id;
-
-	const handleTogglePermission = (roleId: string, flag: PermissionFlag) => {
+	const handleTogglePermission = (guildRoleId: string, flag: PermissionFlag) => {
 		setRows((current) =>
 			current.map((r) => {
-				if (r.guild_role_id !== roleId) {
+				if (r.guildRoleId !== guildRoleId) {
 					return r;
 				}
 				return {
@@ -112,32 +89,17 @@ export function DrocsidChannelSettings(props: { callerId: string; server: Drocsi
 	const handleSave = (event: React.FormEvent) => {
 		event.preventDefault();
 
-		const overridesRoles: ProtoRole[] = rows.map((r) => ({
-			guild_role_id: r.guild_role_id,
-			role_name: r.role_name,
+		const nextOverrides: DrocsidRole[] = rows.map((r) => ({
+			guildRoleId: r.guildRoleId,
+			roleName: r.roleName,
+			system: r.system,
 			permissions: recordToPermissionsString(r.permissions),
 		}));
-
-		const req: ProtoUpdateChannelRequest = {
-			caller_id: callerId,
-			channel: {
-				channel_id: channelId,
-				name: channelName.trim(),
-				guild_id: guildId,
-				overrides: { roles: overridesRoles },
-			},
-		};
-
-		alert(["ChannelService.UpdateChannel(UpdateChannelRequest)", JSON.stringify(req, null, 2)].join("\n"));
 
 		const nextChannel: DrocsidChannel = {
 			...channel,
 			name: channelName.trim(),
-			overrides: rows.map((r) => ({
-				id: r.guild_role_id,
-				name: r.role_name,
-				permissions: recordToPermissionsList(r.permissions),
-			})),
+			overrides: { roles: nextOverrides },
 		};
 
 		onSaved(nextChannel);
@@ -160,14 +122,14 @@ export function DrocsidChannelSettings(props: { callerId: string; server: Drocsi
 
 					<div className="flex flex-col gap-1 text-sm">
 						<span className={`font-medium ${ui.label}`}>Channel ID</span>
-						<div className={`px-3 py-2 rounded-lg border text-xs ${ui.box}`}>{channelId}</div>
-						<span className={`text-xs ${ui.muted}`}>channel.channel_id</span>
+						<div className={`px-3 py-2 rounded-lg border text-xs ${ui.box}`}>{channel.channelId}</div>
+						<span className={`text-xs ${ui.muted}`}>channel.channelId</span>
 					</div>
 
 					<div className="flex flex-col gap-1 text-sm">
 						<span className={`font-medium ${ui.label}`}>Guild ID</span>
-						<div className={`px-3 py-2 rounded-lg border text-xs ${ui.box}`}>{guildId}</div>
-						<span className={`text-xs ${ui.muted}`}>channel.guild_id</span>
+						<div className={`px-3 py-2 rounded-lg border text-xs ${ui.box}`}>{server.guildId}</div>
+						<span className={`text-xs ${ui.muted}`}>channel.guildId</span>
 					</div>
 				</div>
 			</div>
@@ -179,14 +141,14 @@ export function DrocsidChannelSettings(props: { callerId: string; server: Drocsi
 			<div className="space-y-6">
 				<div>
 					<h3 className="text-sm font-semibold">Overrides ról</h3>
-					<p className={`text-xs mt-1 ${ui.muted}`}>channel.Channel.overrides: role.RoleList</p>
+					<p className={`text-xs mt-1 ${ui.muted}`}>channel.overrides.roles</p>
 				</div>
 
 				<div className={`overflow-auto border rounded-xl ${ui.border}`}>
 					<table className="min-w-full text-xs">
 						<thead className={`${ui.tableHead} border-b ${ui.border}`}>
 							<tr>
-								<th className={`text-left px-3 py-2 font-medium w-60 ${ui.label}`}>role</th>
+								<th className={`text-left px-3 py-2 font-medium w-60 ${ui.label}`}>roleName</th>
 								{PERMISSION_FLAGS.map((flag) => (
 									<th key={flag} className={`text-left px-3 py-2 font-medium ${ui.label}`}>
 										{flag}
@@ -198,16 +160,16 @@ export function DrocsidChannelSettings(props: { callerId: string; server: Drocsi
 
 						<tbody>
 							{rows.map((row) => (
-								<tr key={row.guild_role_id} className={`border-t ${ui.border} ${ui.tableRowHover}`}>
+								<tr key={row.guildRoleId} className={`border-t ${ui.border} ${ui.tableRowHover}`}>
 									<td className="px-3 py-2 align-top">
-										<div className="font-medium">{row.role_name}</div>
-										<div className={`text-[10px] mt-1 ${ui.muted}`}>{row.guild_role_id}</div>
+										<div className="font-medium">{row.roleName}</div>
+										<div className={`text-[10px] mt-1 ${ui.muted}`}>{row.guildRoleId}</div>
 									</td>
 
 									{PERMISSION_FLAGS.map((flag) => (
 										<td key={flag} className="px-3 py-2 text-center align-middle">
 											<label className="inline-flex items-center justify-center">
-												<input type="checkbox" checked={row.permissions[flag]} onChange={() => handleTogglePermission(row.guild_role_id, flag)} className="h-4 w-4" />
+												<input type="checkbox" checked={row.permissions[flag]} onChange={() => handleTogglePermission(row.guildRoleId, flag)} className="h-4 w-4" />
 											</label>
 										</td>
 									))}
@@ -229,7 +191,7 @@ export function DrocsidChannelSettings(props: { callerId: string; server: Drocsi
 					</table>
 				</div>
 
-				<div className={`text-[11px] ${ui.muted}`}>Overrides są zawsze kompletne: każda rola ma swój wpis (domyślnie jak rola).</div>
+				<div className={`text-[11px] ${ui.muted}`}>Overrides są kompletne: każda rola ma swój wpis (domyślnie jak rola).</div>
 			</div>
 		);
 	};
@@ -240,7 +202,7 @@ export function DrocsidChannelSettings(props: { callerId: string; server: Drocsi
 		<section className={`h-full rounded-2xl border p-4 shadow-sm flex flex-col ${ui.panel}`}>
 			<header className="mb-4">
 				<h2 className="text-lg font-semibold">Ustawienia kanału</h2>
-				<p className={`text-xs mt-1 ${ui.muted}`}>UpdateChannel + overrides</p>
+				<p className={`text-xs mt-1 ${ui.muted}`}>Mock edycji kanału</p>
 			</header>
 
 			<div className="flex-1 flex gap-6 overflow-hidden">
@@ -268,7 +230,7 @@ export function DrocsidChannelSettings(props: { callerId: string; server: Drocsi
 							className={`px-4 py-2 text-sm rounded-lg border transition ${ui.buttonGhost}`}
 							onClick={() => {
 								setChannelName(channel.name);
-								setRows(buildOverrideRows(server.roles ?? [], channel.overrides));
+								setRows(buildOverrideRows(server.roles ?? [], channel.overrides?.roles));
 								setActiveSection("general");
 							}}>
 							Przywróć

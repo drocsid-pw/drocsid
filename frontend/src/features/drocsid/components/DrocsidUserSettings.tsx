@@ -1,21 +1,46 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import type { DrocsidUser } from "../types";
 import { getInitialDrocsidThemeKey, useDrocsidTheme, DROCSID_THEME_STORAGE_KEY } from "../theme-provider";
+import { useDrocsidApi } from "../../../api/useDrocsidApi";
+import { isDrocsidApiError } from "../../../api/http";
+import { mapUserDto } from "../mappers";
+import { useAuth } from "../../../auth/auth";
 
-type ProtoUpdateUserRequest = {
-	caller_id: string;
-	name: string;
-	avatarHash: string;
+type DrocsidUserSettingsProps = {
+	user: DrocsidUser;
+	onUserUpdated: (user: DrocsidUser) => void;
+	onClose: () => void;
 };
 
-export function DrocsidUserSettings() {
-	const [activeSection, setActiveSection] = useState<"account" | "appearance">("account");
+function getErrorText(err: unknown): string {
+	if (isDrocsidApiError(err)) {
+		return `${err.code}: ${err.message}`;
+	}
+	if (err instanceof Error) {
+		return err.message;
+	}
+	return "Nieznany błąd";
+}
 
+export function DrocsidUserSettings(props: DrocsidUserSettingsProps) {
+	const { user, onUserUpdated, onClose } = props;
+
+	const api = useDrocsidApi();
+	const { callerId, payload, clearToken } = useAuth();
+
+	const [activeSection, setActiveSection] = useState<"account" | "appearance">("account");
 	const { themeKey, setThemeKey, isDark } = useDrocsidTheme();
 
-	const currentUserId = "user-1";
+	const [displayName, setDisplayName] = useState(user.name);
+	const [avatarHash, setAvatarHash] = useState(user.avatarHash);
 
-	const [displayName, setDisplayName] = useState("Rafał");
-	const [avatarHash, setAvatarHash] = useState("");
+	const [isSaving, setIsSaving] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+
+	useEffect(() => {
+		setDisplayName(user.name);
+		setAvatarHash(user.avatarHash);
+	}, [user.id]);
 
 	const ui = useMemo(() => {
 		return {
@@ -31,16 +56,37 @@ export function DrocsidUserSettings() {
 		};
 	}, [isDark]);
 
-	const handleSave = (event: React.FormEvent) => {
+	const handleSave = async (event: React.FormEvent) => {
 		event.preventDefault();
+		setError(null);
 
-		const payload: ProtoUpdateUserRequest = {
-			caller_id: currentUserId,
-			name: displayName.trim(),
-			avatarHash: avatarHash.trim(),
-		};
+		if (!api || !callerId) {
+			setError("Brak API (auth). Zaloguj się ponownie.");
+			return;
+		}
 
-		alert(`UserService.UpdateUser(UpdateUserRequest)\n\n${JSON.stringify(payload, null, 2)}`);
+		const name = displayName.trim();
+		if (!name) {
+			setError("Nazwa jest wymagana.");
+			return;
+		}
+
+		setIsSaving(true);
+
+		try {
+			const dto = await api.putUser(callerId, {
+				name,
+				avatarHash: avatarHash.trim(),
+			});
+
+			const next = mapUserDto(dto, { id: callerId, name: payload?.name ?? undefined });
+			onUserUpdated(next);
+			onClose();
+		} catch (e) {
+			setError(getErrorText(e));
+		} finally {
+			setIsSaving(false);
+		}
 	};
 
 	const renderAccountSection = () => {
@@ -48,20 +94,20 @@ export function DrocsidUserSettings() {
 			<div className="space-y-6">
 				<div>
 					<h3 className="text-sm font-semibold">Konto</h3>
-					<p className={`text-xs mt-1 ${ui.muted}`}>user.User</p>
+					<p className={`text-xs mt-1 ${ui.muted}`}>PUT /api/users/{`{userId}`}</p>
 				</div>
 
 				<div className="grid gap-4 md:grid-cols-2">
 					<label className="flex flex-col gap-1 text-sm">
 						<span className={`font-medium ${ui.label}`}>Nazwa</span>
 						<input value={displayName} onChange={(event) => setDisplayName(event.target.value)} className={`px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 ${ui.input}`} />
-						<span className={`text-xs ${ui.muted}`}>user.name</span>
+						<span className={`text-xs ${ui.muted}`}>name</span>
 					</label>
 
 					<div className="flex flex-col gap-1 text-sm">
 						<span className={`font-medium ${ui.label}`}>User ID</span>
-						<div className={`px-3 py-2 rounded-lg border text-xs ${ui.box}`}>{currentUserId}</div>
-						<span className={`text-xs ${ui.muted}`}>user.id</span>
+						<div className={`px-3 py-2 rounded-lg border text-xs ${ui.box}`}>{callerId ?? user.id}</div>
+						<span className={`text-xs ${ui.muted}`}>id</span>
 					</div>
 
 					<label className="flex flex-col gap-1 text-sm md:col-span-2">
@@ -72,8 +118,14 @@ export function DrocsidUserSettings() {
 							placeholder="(opcjonalnie)"
 							className={`px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 ${ui.input}`}
 						/>
-						<span className={`text-xs ${ui.muted}`}>user.avatarHash</span>
+						<span className={`text-xs ${ui.muted}`}>avatarHash</span>
 					</label>
+				</div>
+
+				<div className="pt-2">
+					<button type="button" className={`px-4 py-2 text-sm rounded-lg border transition ${ui.buttonGhost}`} onClick={() => clearToken()}>
+						Wyloguj
+					</button>
 				</div>
 			</div>
 		);
@@ -111,7 +163,8 @@ export function DrocsidUserSettings() {
 		<section className={`h-full rounded-2xl border p-4 shadow-sm flex flex-col ${ui.panel}`}>
 			<header className="mb-4">
 				<h2 className="text-lg font-semibold">Ustawienia użytkownika</h2>
-				<p className={`text-xs mt-1 ${ui.muted}`}>UpdateUser: caller_id, name, avatarHash</p>
+				<p className={`text-xs mt-1 ${ui.muted}`}>REST: GET/PUT user</p>
+				{error && <div className="mt-2 text-xs text-red-400">{error}</div>}
 			</header>
 
 			<div className="flex-1 flex gap-6 overflow-hidden">
@@ -138,14 +191,20 @@ export function DrocsidUserSettings() {
 							type="button"
 							className={`px-4 py-2 text-sm rounded-lg border transition ${ui.buttonGhost}`}
 							onClick={() => {
-								setDisplayName("Rafał");
-								setAvatarHash("");
+								setDisplayName(user.name);
+								setAvatarHash(user.avatarHash);
 								setThemeKey(getInitialDrocsidThemeKey());
-							}}>
+							}}
+							disabled={isSaving}>
 							Przywróć
 						</button>
-						<button type="submit" className={`px-4 py-2 text-sm rounded-lg transition ${ui.buttonPrimary}`}>
-							Zapisz
+
+						<button type="button" className={`px-4 py-2 text-sm rounded-lg border transition ${ui.buttonGhost}`} onClick={onClose} disabled={isSaving}>
+							Zamknij
+						</button>
+
+						<button type="submit" className={`px-4 py-2 text-sm rounded-lg transition ${ui.buttonPrimary}`} disabled={isSaving}>
+							{isSaving ? "Zapisuję..." : "Zapisz"}
 						</button>
 					</div>
 				</form>

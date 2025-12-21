@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import type { DrocsidMessage } from "../types";
 import { useDrocsidTheme } from "../theme-provider";
 
@@ -6,18 +6,33 @@ type DrocsidChatViewProps = {
 	title: string;
 	messages: DrocsidMessage[];
 	isDm: boolean;
+	onSendMessage?: (content: string) => Promise<void> | void;
+	sendDisabledReason?: string;
+	isSending?: boolean;
 };
 
-/**
- * Wyświetla okno czatu dla kanału serwerowego lub prywatnej rozmowy.
- */
 export function DrocsidChatView(props: DrocsidChatViewProps) {
-	const { title, messages, isDm } = props;
+	const { title, messages, isDm, onSendMessage, sendDisabledReason, isSending } = props;
 
 	const { theme } = useDrocsidTheme();
 
-	const displayTitle = title || (isDm ? "Znajomy" : "brak-kanału");
+	const [draft, setDraft] = useState("");
+	const [localError, setLocalError] = useState<string | null>(null);
+
+	const displayTitle = title || (isDm ? "Prywatne wiadomości" : "brak-kanału");
 	const inputTargetLabel = isDm ? displayTitle : `#${displayTitle}`;
+
+	const canSend = !!onSendMessage && !isSending && !sendDisabledReason;
+
+	const info = useMemo(() => {
+		if (sendDisabledReason) {
+			return sendDisabledReason;
+		}
+		if (isDm && !onSendMessage) {
+			return "DM-y nie są jeszcze podpięte w backendzie.";
+		}
+		return null;
+	}, [sendDisabledReason, isDm, onSendMessage]);
 
 	return (
 		<main className="grid grid-rows-[auto_1fr_auto]" style={{ backgroundColor: theme.mainChat.background }}>
@@ -35,23 +50,23 @@ export function DrocsidChatView(props: DrocsidChatViewProps) {
 
 			<div className="overflow-auto p-4 space-y-4">
 				{messages.map((message) => (
-					<div key={String(message.id)} className="flex gap-3">
+					<div key={message.messageId} className="flex gap-3">
 						<div className="w-10 h-10 rounded-full bg-slate-300 grid place-items-center">👤</div>
 						<div className="flex-1">
 							<div className="flex items-baseline gap-2">
 								<span className="font-semibold" style={{ color: theme.mainChat.headline }}>
-									{message.user}
+									{message.author.nick}
 								</span>
-								<span className="text-xs text-slate-500">{message.timestamp}</span>
+								<span className="text-xs text-slate-500">{message.timestamp || ""}</span>
 							</div>
-							<div style={{ color: theme.mainChat.text }}>{message.text}</div>
+							<div style={{ color: theme.mainChat.text }}>{message.content}</div>
 						</div>
 					</div>
 				))}
 
 				{messages.length === 0 && (
 					<div className="text-sm" style={{ color: theme.mainChat.text }}>
-						Brak wiadomości. Napisz coś jako pierwszy.
+						Brak wiadomości.
 					</div>
 				)}
 			</div>
@@ -62,23 +77,48 @@ export function DrocsidChatView(props: DrocsidChatViewProps) {
 					backgroundColor: theme.mainChat.headerBackground,
 					borderColor: theme.mainChat.border,
 				}}
-				onSubmit={(event) => {
+				onSubmit={async (event) => {
 					event.preventDefault();
-					alert("To jeszcze nie wysyła wiadomości. Na razie jest to mock.");
+					setLocalError(null);
+
+					if (!onSendMessage) {
+						return;
+					}
+
+					const content = draft.trim();
+					if (!content) {
+						return;
+					}
+
+					try {
+						await onSendMessage(content);
+						setDraft("");
+					} catch (e) {
+						const msg = e instanceof Error ? e.message : "Nie udało się wysłać wiadomości";
+						setLocalError(msg);
+					}
 				}}>
-				<div className="flex items-center gap-2">
-					<input
-						className="flex-1 px-4 py-3 rounded-2xl border outline-none focus:ring-2"
-						style={{
-							backgroundColor: theme.mainChat.inputBackground,
-							borderColor: theme.mainChat.border,
-							color: theme.mainChat.text,
-						}}
-						placeholder={`Napisz wiadomość do ${inputTargetLabel}…`}
-					/>
-					<button type="submit" className="px-4 py-3 rounded-2xl text-white hover:brightness-110 transition" style={{ backgroundColor: theme.accent }}>
-						Wyślij
-					</button>
+				<div className="flex flex-col gap-2">
+					{info && <div className="text-xs text-slate-500">{info}</div>}
+					{localError && <div className="text-xs text-red-500">{localError}</div>}
+
+					<div className="flex items-center gap-2">
+						<input
+							value={draft}
+							onChange={(e) => setDraft(e.target.value)}
+							disabled={!canSend}
+							className="flex-1 px-4 py-3 rounded-2xl border outline-none focus:ring-2 disabled:opacity-60"
+							style={{
+								backgroundColor: theme.mainChat.inputBackground,
+								borderColor: theme.mainChat.border,
+								color: theme.mainChat.text,
+							}}
+							placeholder={`Napisz wiadomość do ${inputTargetLabel}…`}
+						/>
+						<button type="submit" disabled={!canSend} className="px-4 py-3 rounded-2xl text-white hover:brightness-110 transition disabled:opacity-60" style={{ backgroundColor: theme.accent }}>
+							{isSending ? "..." : "Wyślij"}
+						</button>
+					</div>
 				</div>
 			</form>
 		</main>

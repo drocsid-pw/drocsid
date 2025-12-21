@@ -3,6 +3,7 @@ import { BrowserRouter, NavLink, Route, Routes, useLocation } from "react-router
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import Landing from "./pages/Landing";
 import DrocsidApp from "./pages/DrocsidApp";
+import { AuthProvider } from "./auth/auth";
 
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
@@ -58,9 +59,11 @@ function AppShell() {
 export default function App() {
 	return (
 		<GoogleOAuthProvider clientId={googleClientId}>
-			<BrowserRouter>
-				<AppShell />
-			</BrowserRouter>
+			<AuthProvider>
+				<BrowserRouter>
+					<AppShell />
+				</BrowserRouter>
+			</AuthProvider>
 		</GoogleOAuthProvider>
 	);
 }

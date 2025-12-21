@@ -11,3 +11,8 @@ frontend/output.txt
 venv
 .idea/
 spring_grpc/target
+skrypt.py
+output.txt
+output_proto.txt
+output_frontend.txt
+output_backend.txt
