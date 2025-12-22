@@ -3,7 +3,8 @@ import json
 import requests
 from pathlib import Path
 
-API_URL = "http://localhost:8080/uploadImage"
+# API_URL = "http://localhost:9000/uploadImage"               # mediaproxy
+API_URL = "http://localhost:8080/api/media/uploadImage"     # backend
 FILE_PATH = "image.png"
 SAS_FILE = "sas.txt"
 

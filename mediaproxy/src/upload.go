@@ -11,6 +11,7 @@ import (
 func AzuriteUploadImage(file []byte, azuriteURL string, name string, sasToken string) (string, error) {
 
 	url := fmt.Sprintf("%s/%s?%s", azuriteURL, name, sasToken)
+	ret_url := fmt.Sprintf("%s/%s", azuriteURL, name)
 
 	reader := bytes.NewReader(file)
 
@@ -35,12 +36,13 @@ func AzuriteUploadImage(file []byte, azuriteURL string, name string, sasToken st
 		return "", fmt.Errorf("upload failed (%s): %s", resp.Status, string(body))
 	}
 
-	return url, nil
+	return ret_url, nil
 }
 
 func AzuriteUploadVideo(file []byte, azuriteURL string, name string, sasToken string) (string, error) {
 
 	url := fmt.Sprintf("%s/%s?%s", azuriteURL, name, sasToken)
+	ret_url := fmt.Sprintf("%s/%s", azuriteURL, name)
 
 	reader := bytes.NewReader(file)
 
@@ -71,5 +73,5 @@ func AzuriteUploadVideo(file []byte, azuriteURL string, name string, sasToken st
 		return "", fmt.Errorf("upload failed (%s): %s", resp.Status, string(body))
 	}
 
-	return url, nil
+	return ret_url, nil
 }

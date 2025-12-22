@@ -17,7 +17,7 @@ type Response struct {
 	FileUrl string `json:"url"`
 }
 
-const cdnUrl string = "http://127.0.0.1:10000/devstoreaccount1/drocsid"
+const cdnUrl string = "http://cdn:10000/devstoreaccount1/drocsid"
 
 func uploadVideoHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -123,6 +123,6 @@ func main() {
 	http.HandleFunc("/uploadImage", uploadImageHandler)
 	http.HandleFunc("/uploadVideo", uploadVideoHandler)
 
-	log.Println("Server running on http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Println("Server running on http://localhost:9000")
+	log.Fatal(http.ListenAndServe(":9000", nil))
 }
