@@ -23,7 +23,9 @@ defmodule DrocsidCore.MixProject do
   defp deps do
     [
       {:grpc, "~> 0.11"},
-      {:protobuf, "~> 0.14"}
+      {:protobuf, "~> 0.14"},
+      {:xandra, "~> 0.19"},
+      {:decimal, "~> 2.1"}
     ]
   end
 end

@@ -31,11 +31,12 @@ RUN protoc \
 RUN mix compile
 RUN mix release
 
-FROM debian:bookworm-slim AS runtime
+FROM alpine:3.22 AS runtime
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libstdc++6 ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk update && apk add --no-cache \
+    libstdc++ ca-certificates \
+    ncurses-libs openssl \
+    libcrypto3 libssl3
 
 WORKDIR /app
 
