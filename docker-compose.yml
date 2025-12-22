@@ -23,3 +23,34 @@ services:
             - "9090:9090"
         environment:
             GOOGLE_OAUTH_CLIENT_ID: "494375853488-nu5h6bsffjafo3s2srddijrgstqvs7nc.apps.googleusercontent.com"
+    cassandra:
+        image: cassandra:4.1
+        container_name: cassandra
+        ports:
+            - "9042:9042"
+    cassandra-init:
+        image: cassandra:4.1
+        depends_on:
+            - cassandra
+        volumes:
+            - ./schema/schema.cql:/schema.cql
+        entrypoint: ["/bin/bash", "-c"]
+        command: >
+            "
+            echo 'Waiting for Cassandra...' &&
+            until cqlsh cassandra -e 'DESCRIBE KEYSPACES'; do
+            sleep 5
+            done &&
+            echo 'Applying schema.cql...' &&
+            cqlsh cassandra -f /schema.cql &&
+            echo 'Schema applied.'
+            "
+        restart: "no"
+    core:
+        build:
+            context: ./drocsid_core
+        depends_on:
+            - cassandra
+            - cassandra-init
+        ports:
+            - "50051:50051"
