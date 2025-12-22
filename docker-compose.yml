@@ -1,64 +1,100 @@
 services:
-    frontend:
-        build:
-            context: ./frontend
-            dockerfile: Dockerfile
-        working_dir: /app
-        volumes:
-            - ./frontend:/app
-            - /app/node_modules
-        stdin_open: true
-        tty: true
-        env_file:
-            - ./frontend/.env.local
-        ports:
-            - "5173:5173"
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    stdin_open: true
+    tty: true
+    env_file:
+      - ./frontend/.env.local
+    ports:
+      - "5173:5173"
 
-    backend:
-        build:
-            context: ./spring_grpc
-            dockerfile: Dockerfile
-        ports:
-            - "8080:8080"
-            - "9090:9090"
-        environment:
-          GOOGLE_OAUTH_CLIENT_ID: "494375853488-nu5h6bsffjafo3s2srddijrgstqvs7nc.apps.googleusercontent.com"
-          DB_HOST: mysql
-          DB_PORT: 3306
-          DB_NAME: token_id_caller_id_mapping
-          DB_USER: root
-          DB_PASSWORD: example
+  backend:
+    build:
+      context: ./spring_grpc
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+      - "9090:9090"
+    environment:
+      GOOGLE_OAUTH_CLIENT_ID: "494375853488-nu5h6bsffjafo3s2srddijrgstqvs7nc.apps.googleusercontent.com"
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: token_id_caller_id_mapping
+      DB_USER: root
+      DB_PASSWORD: example
+    depends_on:
+      - mysql
 
-    mysql:
-      image: mysql:8.0
-      container_name: mysql
-      restart: always
-      environment:
-        MYSQL_ROOT_PASSWORD: example
-        MYSQL_DATABASE: token_id_caller_id_mapping
-      ports:
-        - "3306:3306"
-      volumes:
-        - mysql_data:/var/lib/mysql
-        - ./id_map_db:/docker-entrypoint-initdb.d
+  cassandra:
+    image: cassandra:4.1
+    container_name: cassandra
+    ports:
+      - "9042:9042"
 
-    cdn:
-        build:
-            context: ./cdn
-            dockerfile: Dockerfile
-        volumes:
-            - cdn:/workspace/data
-        env_file:
-            - ./cdn/.env
-        ports:
-            - 10000:10000
+  cassandra-init:
+    image: cassandra:4.1
+    depends_on:
+      - cassandra
+    volumes:
+      - ./schema/schema.cql:/schema.cql
+    entrypoint: ["/bin/bash", "-c"]
+    command: >
+      "
+      echo 'Waiting for Cassandra...' &&
+      until cqlsh cassandra -e 'DESCRIBE KEYSPACES'; do
+        sleep 5
+      done &&
+      echo 'Applying schema.cql...' &&
+      cqlsh cassandra -f /schema.cql &&
+      echo 'Schema applied.'
+      "
+    restart: "no"
 
-    mediaproxy:
-        build:
-            context: ./mediaproxy
-            dockerfile: Dockerfile
-        ports:
-            - 9000:9000
+  core:
+    build:
+      context: ./drocsid_core
+    depends_on:
+      - cassandra
+      - cassandra-init
+    ports:
+      - "50051:50051"
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+      MYSQL_DATABASE: token_id_caller_id_mapping
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./id_map_db:/docker-entrypoint-initdb.d
+
+  cdn:
+    build:
+      context: ./cdn
+      dockerfile: Dockerfile
+    volumes:
+      - cdn:/workspace/data
+    env_file:
+      - ./cdn/.env
+    ports:
+      - "10000:10000"
+
+  mediaproxy:
+    build:
+      context: ./mediaproxy
+      dockerfile: Dockerfile
+    ports:
+      - "9000:9000"
 
 volumes:
   cdn:

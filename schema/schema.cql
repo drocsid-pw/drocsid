@@ -1,24 +1,32 @@
-CREATE TABLE users (
+CREATE KEYSPACE IF NOT EXISTS drocsid
+WITH replication = {
+  'class': 'SimpleStrategy',
+  'replication_factor': 1
+};
+
+USE drocsid;
+
+CREATE TABLE IF NOT EXISTS users (
     user_id bigint PRIMARY KEY,
     email   text,
     name    text
 );
 
-CREATE TABLE guilds (
+CREATE TABLE IF NOT EXISTS guilds (
     guild_id bigint PRIMARY KEY,
     owner_id bigint,
     name     text
 );
 
-CREATE TABLE guild_users {
+CREATE TABLE IF NOT EXISTS guild_users (
     guild_user_id   bigint PRIMARY KEY,
     guild_id        bigint,
     user_id         bigint,
     nick            text
-};
+);
 
-CREATE TABLE roles {
-    role_id             bigint,
+CREATE TABLE IF NOT EXISTS roles (
+    role_id             bigint PRIMARY KEY,
     name                text,
     position            smallint,
     read_permission     boolean,
@@ -27,21 +35,21 @@ CREATE TABLE roles {
     channel_edit_perm   boolean,
     user_edit_perm      boolean,
     message_del_perm    boolean
-};
+);
 
-CREATE TABLE guild_user_roles {
+CREATE TABLE IF NOT EXISTS guild_user_roles (
     guild_user_role_id  bigint PRIMARY KEY,
     guild_user_id       bigint,
     role_id             bigint
-}
+);
 
-CREATE TABLE channels (
+CREATE TABLE IF NOT EXISTS channels (
     channel_id bigint PRIMARY KEY,
     guild_id   bigint,
     name       text
 );
 
-CREATE TABLE channel_overrides (
+CREATE TABLE IF NOT EXISTS channel_overrides (
     channel_override_id bigint PRIMARY KEY,
     channel_id          bigint,
     role_id             bigint,
@@ -51,7 +59,7 @@ CREATE TABLE channel_overrides (
     message_del_perm    boolean
 );
 
-CREATE TABLE messages (
+CREATE TABLE IF NOT EXISTS messages (
     channel_id bigint,
     bucket     int,
     message_id bigint,
