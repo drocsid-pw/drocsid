@@ -94,7 +94,7 @@ export function DrocsidMainView() {
 		}
 
 		try {
-			const dto = await api.getUser(callerId);
+			const dto = await api.getCurrentUser();
 			return mapUserDto(dto, { id: callerId, name: payload?.name ?? undefined });
 		} catch (e) {
 			if (!isDrocsidApiError(e) || e.code !== "NOT_FOUND") {
@@ -105,7 +105,7 @@ export function DrocsidMainView() {
 			await api.createUser(name);
 
 			try {
-				const dto = await api.getUser(callerId);
+				const dto = await api.getCurrentUser();
 				return mapUserDto(dto, { id: callerId, name: payload?.name ?? undefined });
 			} catch {
 				return {
@@ -323,8 +323,7 @@ export function DrocsidMainView() {
 
 			try {
 				const dto = await api.createMessage(activeChannel.channelId, trimmed);
-				const timestamp = new Date().toISOString();
-				const msg = mapMessageDto(dto, { timestamp });
+				const msg = mapMessageDto(dto, { timestamp: dto.timestamp ?? new Date().toISOString() });
 
 				setServers((prev) =>
 					prev.map((g) => {
