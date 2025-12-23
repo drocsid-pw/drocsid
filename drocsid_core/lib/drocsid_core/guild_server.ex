@@ -40,7 +40,17 @@ defmodule DrocsidCore.GuildServer do
         {i, ""} -> i
         _ -> raise GRPC.RPCError, status: :invalid_argument, message: "guild_id must be an integer"
       end
-    %Guild.Guild{}
+    with {:ok, name, owner_id } <- GuildProcess.get_guild(gid, cid) do
+      %Guild.Guild{
+        name: name,
+        owner_id: Integer.to_string(owner_id),
+        guild_id: guild_id
+      }
+    else
+      _ -> raise GRPC.RPCError,
+        status: :invalid_argument,
+        message: "Invalid username"
+    end
   end
 
   def update_guild(request, _stream) do
@@ -60,7 +70,25 @@ defmodule DrocsidCore.GuildServer do
         {i, ""} -> i
         _ -> raise GRPC.RPCError, status: :invalid_argument, message: "user_id must be an integer"
       end
-    %Guild.GuildList{}
+    with {:ok, guild_ids} <- DrocsidCore.DB.get_guild_ids_for_user(uid) do
+      guilds =
+        guild_ids
+        |> Enum.map(fn gid ->
+          case GuildProcess.get_guild(gid, uid) do
+            {:ok, name, owner_id} ->
+              %Guild.Guild{
+                guild_id: Integer.to_string(gid),
+                name: name,
+                owner_id: Integer.to_string(owner_id)
+              }
+          end
+        end)
+      %Guild.GuildList{guilds: guilds}
+    else
+      _ -> raise GRPC.RPCError,
+        status: :invalid_argument,
+        message: "Invalid username"
+    end
   end
 
   def get_all_channels(%{guild_id: guild_id, caller_id: caller_id}, _stream) do
@@ -75,7 +103,15 @@ defmodule DrocsidCore.GuildServer do
         {i, ""} -> i
         _ -> raise GRPC.RPCError, status: :invalid_argument, message: "guild_id must be an integer"
       end
-    %Channel.ChannelList{}
+    with {:ok, channels } <- GuildProcess.get_channels(gid, cid) do
+      %Channel.ChannelList{
+        channels: channels
+      }
+    else
+      _ -> raise GRPC.RPCError,
+        status: :invalid_argument,
+        message: "Invalid username"
+    end
   end
 
   # role managment
@@ -171,7 +207,16 @@ defmodule DrocsidCore.GuildServer do
         {i, ""} -> i
         _ -> raise GRPC.RPCError, status: :invalid_argument, message: "guild_user_id must be an integer"
       end
-    %GuildUser.GuildUser{}
+    with {:ok, nick } <- GuildProcess.get_user(gid, guid, cid) do
+      %GuildUser.GuildUser{
+        nick: nick,
+        guild_user_id: guild_user_id
+      }
+    else
+      _ -> raise GRPC.RPCError,
+        status: :invalid_argument,
+        message: "Invalid username"
+    end
   end
 
   def get_users(%{guild_id: guild_id, caller_id: caller_id}, _stream) do
@@ -186,7 +231,15 @@ defmodule DrocsidCore.GuildServer do
         {i, ""} -> i
         _ -> raise GRPC.RPCError, status: :invalid_argument, message: "guild_id must be an integer"
       end
-    %GuildUser.GuildUserList{}
+    with {:ok, users } <- GuildProcess.get_users(gid, cid) do
+      %GuildUser.GuildUserList{
+        guild_users: users
+      }
+    else
+      _ -> raise GRPC.RPCError,
+        status: :invalid_argument,
+        message: "Invalid username"
+    end
   end
 
   def delete_user(request, _stream) do
