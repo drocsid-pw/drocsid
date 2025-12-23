@@ -22,22 +22,24 @@ public class UserController {
         this.jwtAuthService = jwtAuthService;
     }
 
-    @PostMapping
-    public UserDto createUser(@Valid @RequestBody CreateUserBody body) {
+    // @PostMapping
+    // public UserDto createUser(@Valid @RequestBody CreateUserBody body) {
 
-        return userService.createUser(body);
-    }
+    //     return userService.createUser(body);
+    // }
 
     @GetMapping("/get_user")
-    public UserDto getUser(
-            @RequestHeader("Authorization") String authorization) {
-
-        String authedUserId = jwtAuthService.checkAuth(authorization);
+    public UserDto getUser(@RequestHeader("Authorization") String authorization) {
+        
+        System.out.println("/get_user");
+        String authedUserId = jwtAuthService.getUserId(authorization);
+        System.out.println("/get_user");
 
         try {
             return userService.getUser(authedUserId);
         }
         catch (NoSuchFieldException e){
+            System.out.println("Creating new User");
             return userService.createUser(authedUserId, jwtAuthService.getName(authorization));
         }
         catch (Exception e) {
