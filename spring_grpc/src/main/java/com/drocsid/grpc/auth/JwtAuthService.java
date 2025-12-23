@@ -5,6 +5,8 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import io.grpc.Status;
+import jakarta.validation.constraints.DecimalMax;
+
 import io.grpc.StatusRuntimeException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -26,10 +28,12 @@ public class JwtAuthService {
                 .build();
     }
 
+    @Deprecated
     public String checkAuth(String jwt) throws StatusRuntimeException {
         return checkAuth(jwt, Optional.empty());
     }
 
+    @Deprecated
     public String checkAuth(String jwt, Optional<String> userId) throws StatusRuntimeException {
         if (jwt == null || jwt.trim().isEmpty()) {
             throw Status.UNAUTHENTICATED
@@ -65,4 +69,42 @@ public class JwtAuthService {
 
         return userIdFromToken;
     }
+
+    private GoogleIdToken.Payload getPayload(String jwt) {
+        if (jwt == null || jwt.trim().isEmpty()) {
+            throw Status.UNAUTHENTICATED
+                .withDescription("JWT token is missing")
+                .asRuntimeException();
+        }
+
+        String token = jwt.startsWith("Bearer ") ? jwt.substring(7) : jwt;
+
+        GoogleIdToken idToken;
+        try {
+            idToken = verifier.verify(token);
+        } 
+        catch (Exception e) {
+            throw Status.UNAUTHENTICATED
+                    .withDescription("Failed to verify JWT token: " + e.getMessage())
+                    .asRuntimeException();
+        }
+
+        if (idToken == null) {
+            throw Status.UNAUTHENTICATED
+                    .withDescription("Invalid JWT token")
+                    .asRuntimeException();
+        }
+
+        return idToken.getPayload();
+    }
+    
+    public String getUserId(String jwt) {
+        return getPayload(jwt).getSubject();
+    }
+
+    public String getName(String jwt) {
+        Object name = getPayload(jwt).get("name");
+        return name != null ? name.toString() : null;
+    }
+
 }

@@ -12,6 +12,7 @@ import com.drocsid.grpc.proto.CreateUserRequest;
 import com.drocsid.grpc.proto.Guild;
 import com.drocsid.grpc.proto.User;
 import io.grpc.Status;
+
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
@@ -28,22 +29,23 @@ public class UserService {
         this.repository = repository;
     }
 
-    public UserDto createUser(UserController.CreateUserBody body) {
-        if (body == null || body.getName() == null || body.getName().trim().isEmpty()) {
-            throw Status.INVALID_ARGUMENT.withDescription("name is required").asRuntimeException();
-        }
+    public UserDto createUser(String authedUserId, String name) {
+        // if (body == null || body.getName() == null || body.getName().trim().isEmpty()) {
+        //     throw Status.INVALID_ARGUMENT.withDescription("name is required").asRuntimeException();
+        // }
 
         CreateUserRequest req = CreateUserRequest.newBuilder()
-                .setName(body.getName())
+                .setName(name)
                 .build();
 
         User user = coreClient.createUser(req);
+
         return ProtoMapper.toDto(user);
     }
 
-    public UserDto getUser(String authedUserId) throws Exception {
+    public UserDto getUser(String authedUserId) throws NoSuchFieldException {
         BigInteger callerId = repository.findByTokenId(authedUserId)
-                .orElseThrow(() -> new Exception("Invalid token id."))
+                .orElseThrow(() -> new NoSuchFieldException("Invalid token id."))
                 .getCallerId();
 
         User user = coreClient.getUser(callerId);
