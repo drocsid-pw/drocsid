@@ -31,6 +31,82 @@ defmodule DrocsidCore.DB do
     end
   end
 
+  def get_guild_user(guild_id, user_id) do
+    query = """
+    SELECT guild_user_id, guild_id, user_id, nick
+    FROM guild_users
+    WHERE guild_id = ?
+      AND guild_user_id = ?
+    ALLOW FILTERING
+    """
+
+    prepared = Xandra.prepare!(@conn, query)
+    params = [guild_id, user_id]
+
+    with {:ok, %Xandra.Page{} = page} <- Xandra.execute(@conn, prepared, params) do
+      case Enum.to_list(page) do
+        [row] -> {:ok, row}
+        [] -> :not_found
+      end
+    end
+  end
+
+  def get_users_for_guild(guild_id) do
+    query = """
+    SELECT guild_user_id, guild_id, user_id, nick
+    FROM guild_users
+    WHERE guild_id = ?
+    ALLOW FILTERING
+    """
+
+    prepared = Xandra.prepare!(@conn, query)
+    params = [guild_id]
+
+    with {:ok, %Xandra.Page{} = page} <- Xandra.execute(@conn, prepared, params) do
+      {:ok, Enum.to_list(page)}
+    end
+  end
+
+  def get_channel(guild_id, channel_id) do
+    query = """
+    SELECT channel_id, guild_id, name
+    FROM channels
+    WHERE channel_id = ?
+    """
+
+    prepared = Xandra.prepare!(@conn, query)
+    params = [channel_id]
+
+    with {:ok, %Xandra.Page{} = page} <- Xandra.execute(@conn, prepared, params) do
+      case Enum.to_list(page) do
+        [%{guild_id: row_guild_id} = row] when row_guild_id == guild_id ->
+          {:ok, row}
+
+        [_row] ->
+          :not_found
+
+        [] ->
+          :not_found
+      end
+    end
+  end
+
+  def get_channels_for_guild(guild_id) do
+    query = """
+    SELECT channel_id, guild_id, name
+    FROM channels
+    WHERE guild_id = ?
+    ALLOW FILTERING
+    """
+
+    prepared = Xandra.prepare!(@conn, query)
+    params = [guild_id]
+
+    with {:ok, %Xandra.Page{} = page} <- Xandra.execute(@conn, prepared, params) do
+      {:ok, Enum.to_list(page)}
+    end
+  end
+
   ## ========== USERS ==========
 
   def insert_user(name) do
@@ -140,34 +216,21 @@ defmodule DrocsidCore.DB do
     end
   end
 
-  def get_guilds_for_user(user_id) do
-    memberships_query = """
-    SELECT guild_id, user_id, nick
+  def get_guild_ids_for_user(user_id) do
+    query = """
+    SELECT guild_id
     FROM guild_users
-    WHERE user_id = :user_id
+    WHERE user_id = ?
     ALLOW FILTERING
     """
 
-    params = %{user_id: user_id}
+    prepared = Xandra.prepare!(@conn, query)
+    params = [user_id]
 
-    with {:ok, %Xandra.Page{} = page} <- Xandra.execute(@conn, memberships_query, params) do
-      memberships = Enum.to_list(page)
-
-      guilds =
-        memberships
-        |> Enum.map(fn %{guild_id: guild_id, nick: nick} ->
-          case get_guild(guild_id) do
-            {:ok, guild} ->
-              # guild to np. %{guild_id: ..., owner_id: ..., name: ...}
-              Map.put(guild, :nick, nick)
-
-            :not_found ->
-              nil
-          end
-        end)
-        |> Enum.reject(&is_nil/1)
-
-      {:ok, guilds}
+    with {:ok, %Xandra.Page{} = page} <- Xandra.execute(@conn, prepared, params) do
+      rows = Enum.to_list(page)
+      guild_ids = Enum.map(rows, & &1.guild_id)
+      {:ok, guild_ids}
     end
   end
 
@@ -193,46 +256,14 @@ defmodule DrocsidCore.DB do
     end
   end
 
-  def get_channel(channel_id) do
-    query = """
-    SELECT channel_id, guild_id, name
-    FROM channels
-    WHERE channel_id = :channel_id
-    """
-
-    params = %{channel_id: channel_id}
-
-    with {:ok, %Xandra.Page{} = page} <- Xandra.execute(@conn, query, params) do
-      case Enum.to_list(page) do
-        [row] -> {:ok, row}
-        [] -> :not_found
-      end
-    end
-  end
-
-  def get_channels_for_guild(guild_id) do
-    query = """
-    SELECT channel_id, guild_id, name
-    FROM channels
-    WHERE guild_id = :guild_id
-    ALLOW FILTERING
-    """
-
-    params = %{guild_id: guild_id}
-
-    with {:ok, %Xandra.Page{} = page} <- Xandra.execute(@conn, query, params) do
-      {:ok, Enum.to_list(page)}
-    end
-  end
-
   ## ========== MESSAGES ==========
 
-  def insert_message(%{
-        channel_id: channel_id,
-        guild_id: guild_id,
-        author_id: author_id,
-        content: content
-      }) do
+  def insert_message(
+        channel_id,
+        guild_id,
+        author_id,
+        content
+      ) do
     query = """
     INSERT INTO messages (
       channel_id, bucket, message_id, guild_id, author_id, content
@@ -240,17 +271,26 @@ defmodule DrocsidCore.DB do
       :channel_id, :bucket, :message_id, :guild_id, :author_id, :content
     )
     """
+    prepared = Xandra.prepare!(@conn, query)
     id = DrocsidCore.Snowflake.new()
-    params = %{
-      channel_id: channel_id,
-      bucket: 1,
-      message_id: id,
-      guild_id: guild_id,
-      author_id: author_id,
-      content: content
-    }
+    params = [
+      channel_id,
+      0,
+      id,
+      guild_id,
+      author_id,
+      content
+    ]
 
-    Xandra.execute(@conn, query, params)
+    case Xandra.execute(@conn, prepared, params) do
+      {:ok, %Xandra.Void{}} ->
+        id
+
+      {:error, error} ->
+        require Logger
+        Logger.error("insert_channel failed: #{inspect(error)}")
+        {:error, error}
+    end
   end
 
   def list_messages(channel_id) do
