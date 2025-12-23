@@ -16,7 +16,7 @@ export function useDrocsidApi() {
 			auth,
 
 			createUser: (name: string) => api.createUser(auth, { name }),
-			getUser: (userId: string) => api.getUser(auth, userId),
+			getCurrentUser: () => api.getCurrentUser(auth),
 			putUser: (userId: string, body: { name: string; avatarHash: string }) => api.putUser(auth, userId, body),
 			deleteUser: (userId: string) => api.deleteUser(auth, userId),
 
@@ -46,6 +46,8 @@ export function useDrocsidApi() {
 			getMessages: (channelId: string, offset = 0, count = 50) => api.getMessages(auth, channelId, { offset, count }),
 			createMessage: (channelId: string, content: string) => api.createMessage(auth, channelId, { content }),
 			deleteMessage: (channelId: string, messageId: string) => api.deleteMessage(auth, channelId, messageId),
+
+			uploadImage: (file: string, filename: string) => api.uploadImage(auth, { file, filename }),
 		};
 	}, [token, callerId]);
 }

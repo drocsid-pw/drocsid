@@ -76,12 +76,13 @@ export function mapGuildUserDto(dto: GuildUserDto): DrocsidGuildUser {
 
 export function mapMessageDto(dto: MessageDto, opts?: { timestamp?: string }): DrocsidMessage {
 	const author = dto.author ? mapGuildUserDto(dto.author) : { guildUserId: "", nick: "unknown", roles: { roles: [] } };
+	const timestamp = opts?.timestamp ?? str(dto.timestamp);
 
 	return {
 		messageId: str(dto.messageId),
 		author,
 		content: str(dto.content),
-		timestamp: opts?.timestamp ?? "",
+		timestamp,
 	};
 }
 
