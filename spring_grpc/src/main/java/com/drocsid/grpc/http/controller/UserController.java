@@ -37,6 +37,9 @@ public class UserController {
         try {
             return userService.getUser(authedUserId);
         }
+        catch (NoSuchFieldException e){
+            return userService.createUser(authedUserId, jwtAuthService.getName(authorization));
+        }
         catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
             return null;
