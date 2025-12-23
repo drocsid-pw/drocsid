@@ -33,6 +33,9 @@ public class UserService {
         // if (body == null || body.getName() == null || body.getName().trim().isEmpty()) {
         //     throw Status.INVALID_ARGUMENT.withDescription("name is required").asRuntimeException();
         // }
+        
+        System.out.println("Auth_ID: " + authedUserId);
+        System.out.println("Name: " + name);
 
         CreateUserRequest req = CreateUserRequest.newBuilder()
                 .setName(name)
