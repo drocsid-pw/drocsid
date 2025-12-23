@@ -13,11 +13,11 @@ import java.math.BigInteger;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "map")
+@Table(name = "mapping")
 public class UserCallerMapping {
 
     @Id
-    @Column(name = "id")
+    @Column(name = "map_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
