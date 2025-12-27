@@ -2,162 +2,128 @@ package com.drocsid.grpc.mock_classes;
 
 import com.drocsid.grpc.core_requests.channel.*;
 import com.drocsid.grpc.core_requests.guild.*;
-import com.drocsid.grpc.core_requests.guild.CoreCreateGuildRequest;
-import com.drocsid.grpc.core_requests.user.CoreUpdateUserRequest;
 import com.drocsid.grpc.proto.CreateUserRequest;
 import com.drocsid.grpc.proto.GuildUser;
 import org.springframework.stereotype.Component;
 import com.drocsid.grpc.proto.*;
 
-import java.math.BigInteger;
 import java.util.List;
 
 @Component
 public class CoreClient {
 
-    public Guild createGuild(CoreCreateGuildRequest request) { return Guild.newBuilder()
-            .setOwnerId("1")
-            .setIcon("1")
-            .setGuildId("1")
-            .setName("Guild1")
-            .addRoles(Role.newBuilder().setGuildRoleId("123").setRoleName("Admin").setPermissions("ALL").build())
-            .addRoles(Role.newBuilder().setGuildRoleId("456").setRoleName("Member").setPermissions("READ").build())
-            .build(); }
+    private final UserServiceGrpc.UserServiceBlockingStub userStub;
+    private final GuildServiceGrpc.GuildServiceBlockingStub guildStub;
+    private final ChannelServiceGrpc.ChannelServiceBlockingStub channelStub;
 
-    public Guild getGuild(CoreGetGuildRequest request) { return Guild.newBuilder()
-            .setOwnerId("1")
-            .setIcon("1")
-            .setGuildId("1")
-            .setName("Guild1")
-            .addRoles(Role.newBuilder().setGuildRoleId("123").setRoleName("Admin").setPermissions("ALL").build())
-            .addRoles(Role.newBuilder().setGuildRoleId("456").setRoleName("Member").setPermissions("READ").build())
-            .build(); }
-
-    public Guild updateGuild(CoreUpdateGuildRequest request) { return Guild.newBuilder()
-            .setOwnerId("1")
-            .setIcon("1")
-            .setGuildId("1")
-            .setName("Guild1")
-            .addRoles(Role.newBuilder().setGuildRoleId("123").setRoleName("Admin").setPermissions("ALL").build())
-            .addRoles(Role.newBuilder().setGuildRoleId("456").setRoleName("Member").setPermissions("READ").build())
-            .build(); }
-
-    public void deleteGuild(CoreDeleteGuildRequest request) {}
-
-    public List<Guild> getAllGuilds(BigInteger userId) {
-        return List.of(Guild.newBuilder()
-                .setOwnerId("1")
-                .setIcon("1")
-                .setGuildId("1")
-                .setName("Guild1")
-                .addRoles(Role.newBuilder().setGuildRoleId("123").setRoleName("Admin").setPermissions("ALL").build())
-                .addRoles(Role.newBuilder().setGuildRoleId("456").setRoleName("Member").setPermissions("READ").build())
-                .build());
+    public CoreClient(UserServiceGrpc.UserServiceBlockingStub userStub,
+                      GuildServiceGrpc.GuildServiceBlockingStub guildStub,
+                      ChannelServiceGrpc.ChannelServiceBlockingStub channelStub) {
+        this.userStub = userStub;
+        this.guildStub = guildStub;
+        this.channelStub = channelStub;
     }
 
-    public List<Channel> getAllChannels(CoreGetAllChannelsRequest request) {
-        return List.of(Channel.newBuilder().setChannelId("1").setGuildId("1").setName("Channel1").build());
+    public Guild createGuild(CreateGuildRequest request) {
+        return guildStub.createGuild(request);
     }
 
-    public Role getRole(CoreGetRoleRequest request) { return Role.newBuilder().setRoleName("role1").setPermissions("11111").setGuildRoleId("1").build(); }
-
-    public Role createRole(CoreCreateRoleRequest request) { return Role.newBuilder().setRoleName("role1").setPermissions("11111").setGuildRoleId("1").build(); }
-
-    public List<Role> getRoles(CoreGetRolesRequest request) { return List.of(Role.newBuilder().setRoleName("role1").setPermissions("11111").setGuildRoleId("1").build()); }
-
-    public Role updateRole(CoreUpdateRoleRequest request) { return Role.newBuilder().setRoleName("role1").setPermissions("11111").setGuildRoleId("1").build(); }
-
-    public Channel createChannel(CoreCreateChannelRequest request) { return Channel.newBuilder().setChannelId("1").setGuildId("1").setName("Channel1").build(); }
-
-    public GuildUser addUser(CoreAddUserRequest request) { return GuildUser.newBuilder()
-            .setGuildUserId("1")
-            .setNick("nick")
-            .setRoles(
-                    RoleList.newBuilder()
-                            .addRoles(Role.newBuilder()
-                                    .setGuildRoleId("1")
-                                    .setRoleName("role1")
-                                    .setPermissions("11111")
-                                    .build())
-                            .build()
-            )
-            .build();}
-
-    public GuildUser updateGuildUser(CoreUpdateGuildUserRequest request) { return GuildUser.newBuilder()
-            .setGuildUserId("1")
-            .setNick("nick")
-            .setRoles(
-                    RoleList.newBuilder()
-                            .addRoles(Role.newBuilder()
-                                    .setGuildRoleId("1")
-                                    .setRoleName("role1")
-                                    .setPermissions("11111")
-                                    .build())
-                            .build()
-            )
-            .build(); }
-
-    public GuildUser getGuildUser(CoreGetGuildUserRequest request) { return GuildUser.newBuilder()
-            .setGuildUserId("1")
-            .setNick("nick")
-            .setRoles(
-                    RoleList.newBuilder()
-                            .addRoles(Role.newBuilder()
-                                    .setGuildRoleId("1")
-                                    .setRoleName("role1")
-                                    .setPermissions("11111")
-                                    .build())
-                            .build()
-            )
-            .build(); }
-
-    public List<GuildUser> getGuildUsers(CoreGetGuildUsersRequest request) {
-        return List.of(GuildUser.newBuilder()
-                .setGuildUserId("1")
-                .setNick("nick")
-                .setRoles(
-                        RoleList.newBuilder()
-                                .addRoles(Role.newBuilder()
-                                        .setGuildRoleId("1")
-                                        .setRoleName("role1")
-                                        .setPermissions("11111")
-                                        .build())
-                                .build()
-                )
-                .build());
+    public Guild getGuild(GuildInfoReq request) {
+        return guildStub.getGuild(request);
     }
 
-    public void deleteGuildUser(CoreDeleteGuildUserRequest request) {}
+    public Guild updateGuild(UpdateGuildRequest request) {
+        return guildStub.updateGuild(request);
+    }
 
-    public Channel getChannel(CoreGetChannelRequest request) { return Channel.newBuilder().setChannelId("1").setGuildId("1").setName("Channel1").build(); }
+    public void deleteGuild(GuildInfoReq request) {
+        guildStub.deleteGuild(request);
+    }
 
-    public Channel updateChannel(CoreUpdateChannelRequest request) { return Channel.newBuilder().setChannelId("1").setGuildId("1").setName("Channel1").build(); }
+    public List<Guild> getAllGuilds(UserId userId) {
+        return guildStub.getAllGuilds(userId).getGuildsList();
+    }
+    public List<Channel> getAllChannels(GuildInfoReq request) {
+        return guildStub.getAllChannels(request).getChannelsList();
+    }
 
-    public void deleteChannel(CoreDeleteChannelRequest request) {}
+    public Role getRole(RoleReq request) {
+        return guildStub.getRole(request);
+    }
 
-    public List<Message> getMessages(CoreGetMessagesRequest request) { return List.of(); }
+    public Role createRole(CreateRoleReq request) {
+        return guildStub.createRole(request);
+    }
 
-    public Message createMessage(CoreCreateMessageRequest request) { return Message.newBuilder().setMessageId("1").setContent("message").setAuthor(GuildUser.newBuilder()
-            .setGuildUserId("1")
-            .setNick("nick")
-            .setRoles(
-                    RoleList.newBuilder()
-                            .addRoles(Role.newBuilder()
-                                    .setGuildRoleId("1")
-                                    .setRoleName("role1")
-                                    .setPermissions("11111")
-                                    .build())
-                            .build()
-            )
-            .build()).build(); }
+    public List<Role> getRoles(GuildInfoReq request) {
+        return guildStub.getRoles(request).getRolesList();
+    }
 
-    public void deleteMessage(CoreDeleteMessageRequest request) {}
+    public Role updateRole(UpdateRoleReq request) {
+        return guildStub.updateRole(request);
+    }
 
-    public User createUser(CreateUserRequest request) { return User.newBuilder().setId("1").setName("Bob").setAvatarHash("1234").build(); }
+    public Channel createChannel(CreateChannelRequest request) {
+        return guildStub.createChannel(request);
+    }
 
-    public User getUser(BigInteger id) { return User.newBuilder().setId("1").setName("Bob").setAvatarHash("1234").build(); }
+    public GuildUser addUser(AddUser request) {
+        return guildStub.addUser(request);
+    }
 
-    public User updateUser(CoreUpdateUserRequest request) { return User.newBuilder().setId("1").setName("Bob").setAvatarHash("1234").build(); }
+    public GuildUser updateGuildUser(UpdateUserReq request) {
+        return guildStub.updateUser(request);
+    }
 
-    public void deleteUser(BigInteger userId) {}
+    public GuildUser getGuildUser(GuildUserReq request) {
+        return guildStub.getUser(request);
+    }
+
+    public List<GuildUser> getGuildUsers(GuildInfoReq request) {
+        return guildStub.getUsers(request).getGuildUsersList();
+    }
+
+    public void deleteGuildUser(GuildUserReq request) {
+        guildStub.deleteUser(request);
+    }
+
+    public Channel getChannel(ChannelInfoReq request) {
+        return channelStub.getChannel(request);
+    }
+
+    public Channel updateChannel(UpdateChannelRequest request) {
+        return channelStub.updateChannel(request);
+    }
+
+    public void deleteChannel(ChannelInfoReq request) {
+        channelStub.deleteChannel(request);
+    }
+
+    public List<Message> getMessages(MessageBucketReq request) {
+        return channelStub.getMessages(request).getMessagesList();
+    }
+
+    public Message createMessage(CreateMessageReq request) {
+        return channelStub.createMessage(request);
+    }
+
+    public void deleteMessage(MessageReq request) {
+        channelStub.deleteMessage(request);
+    }
+
+    public User createUser(CreateUserRequest request) {
+        return userStub.createUser(request);
+    }
+
+    public User getUser(UserId userId) {
+        return userStub.getUser(userId);
+    }
+
+    public User updateUser(UpdateUserRequest request) {
+        return userStub.updateUser(request);
+    }
+
+    public void deleteUser(UserId userId) {
+        userStub.deleteUser(userId);
+    }
 }
