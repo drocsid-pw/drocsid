@@ -1,3 +1,4 @@
+// ./frontend/src/api/drocsidApi.ts
 import { requestJson } from "./http";
 
 export type Nullable<T> = T | null;
@@ -97,18 +98,32 @@ export type GuildUserBody = {
 	roles: RoleDto[] | RoleListDto | unknown;
 };
 
+const EMPTY_GUILD_LIST: GuildListDto = { guilds: [] };
+const EMPTY_CHANNEL_LIST: ChannelListDto = { channels: [] };
+const EMPTY_ROLE_LIST: RoleListDto = { roles: [] };
+const EMPTY_GUILD_USER_LIST: GuildUserListDto = { guildUsers: [] };
+const EMPTY_MESSAGE_LIST: MessageListDto = { messages: [] };
+
+function withCallerQuery(auth: ApiAuth, query?: Record<string, string | number | boolean | null | undefined>) {
+	return { ...(query ?? {}), caller_id: auth.callerId };
+}
+
+function withCallerBody(auth: ApiAuth, body?: Record<string, unknown>) {
+	return { ...(body ?? {}), caller_id: auth.callerId };
+}
+
 export async function createUser(auth: ApiAuth, body: { name: string }): Promise<UserDto> {
 	return requestJson<UserDto>({
 		method: "POST",
 		path: "/users",
 		token: auth.token,
-		body,
+		body: withCallerBody(auth, body),
 	});
 }
 
 /**
  * Backend: GET /api/users/get_user
- * User jest brany z Authorization headera (jwtAuthService.checkAuth).
+ * User jest brany z Authorization headera.
  */
 export async function getCurrentUser(auth: ApiAuth): Promise<UserDto> {
 	return requestJson<UserDto>({
@@ -123,11 +138,10 @@ export async function putUser(auth: ApiAuth, userId: string, body: { name: strin
 		method: "PUT",
 		path: `/users/${userId}`,
 		token: auth.token,
-		body: {
-			caller_id: auth.callerId,
+		body: withCallerBody(auth, {
 			name: body.name,
 			avatarHash: body.avatarHash,
-		},
+		}),
 	});
 }
 
@@ -136,6 +150,7 @@ export async function deleteUser(auth: ApiAuth, userId: string): Promise<Respons
 		method: "DELETE",
 		path: `/users/${userId}`,
 		token: auth.token,
+		query: withCallerQuery(auth),
 	});
 }
 
@@ -144,6 +159,8 @@ export async function getAllGuilds(auth: ApiAuth, userId: string): Promise<Guild
 		method: "GET",
 		path: `/users/${userId}/guilds`,
 		token: auth.token,
+		query: withCallerQuery(auth),
+		nullFallback: EMPTY_GUILD_LIST,
 	});
 }
 
@@ -152,10 +169,10 @@ export async function createGuild(auth: ApiAuth, body: { name: string; icon: str
 		method: "POST",
 		path: "/guilds",
 		token: auth.token,
-		body: {
+		body: withCallerBody(auth, {
 			name: body.name,
 			icon: body.icon,
-		},
+		}),
 	});
 }
 
@@ -164,6 +181,7 @@ export async function getGuild(auth: ApiAuth, guildId: string): Promise<GuildDto
 		method: "GET",
 		path: `/guilds/${guildId}`,
 		token: auth.token,
+		query: withCallerQuery(auth),
 	});
 }
 
@@ -172,9 +190,7 @@ export async function putGuild(auth: ApiAuth, guildId: string, guild: GuildBody)
 		method: "PUT",
 		path: `/guilds/${guildId}`,
 		token: auth.token,
-		body: {
-			guild,
-		},
+		body: withCallerBody(auth, { guild }),
 	});
 }
 
@@ -183,6 +199,7 @@ export async function deleteGuild(auth: ApiAuth, guildId: string): Promise<Respo
 		method: "DELETE",
 		path: `/guilds/${guildId}`,
 		token: auth.token,
+		query: withCallerQuery(auth),
 	});
 }
 
@@ -191,6 +208,8 @@ export async function getAllChannels(auth: ApiAuth, guildId: string): Promise<Ch
 		method: "GET",
 		path: `/guilds/${guildId}/channels`,
 		token: auth.token,
+		query: withCallerQuery(auth),
+		nullFallback: EMPTY_CHANNEL_LIST,
 	});
 }
 
@@ -199,9 +218,7 @@ export async function createChannel(auth: ApiAuth, guildId: string, body: { name
 		method: "POST",
 		path: `/guilds/${guildId}/channels`,
 		token: auth.token,
-		body: {
-			name: body.name,
-		},
+		body: withCallerBody(auth, { name: body.name }),
 	});
 }
 
@@ -210,6 +227,8 @@ export async function getRoles(auth: ApiAuth, guildId: string): Promise<RoleList
 		method: "GET",
 		path: `/guilds/${guildId}/roles`,
 		token: auth.token,
+		query: withCallerQuery(auth),
+		nullFallback: EMPTY_ROLE_LIST,
 	});
 }
 
@@ -218,6 +237,7 @@ export async function getRole(auth: ApiAuth, guildId: string, guildRoleId: strin
 		method: "GET",
 		path: `/guilds/${guildId}/roles/${guildRoleId}`,
 		token: auth.token,
+		query: withCallerQuery(auth),
 	});
 }
 
@@ -226,10 +246,10 @@ export async function createRole(auth: ApiAuth, guildId: string, body: { roleNam
 		method: "POST",
 		path: `/guilds/${guildId}/roles`,
 		token: auth.token,
-		body: {
+		body: withCallerBody(auth, {
 			roleName: body.roleName,
 			permissions: body.permissions,
-		},
+		}),
 	});
 }
 
@@ -238,12 +258,12 @@ export async function putRole(auth: ApiAuth, guildId: string, guildRoleId: strin
 		method: "PUT",
 		path: `/guilds/${guildId}/roles/${guildRoleId}`,
 		token: auth.token,
-		body: {
+		body: withCallerBody(auth, {
 			role: {
 				roleName: body.roleName,
 				permissions: body.permissions,
 			},
-		},
+		}),
 	});
 }
 
@@ -252,6 +272,7 @@ export async function addUserToGuild(auth: ApiAuth, guildId: string): Promise<Gu
 		method: "POST",
 		path: `/guilds/${guildId}/users`,
 		token: auth.token,
+		body: withCallerBody(auth),
 	});
 }
 
@@ -260,6 +281,8 @@ export async function getGuildUsers(auth: ApiAuth, guildId: string): Promise<Gui
 		method: "GET",
 		path: `/guilds/${guildId}/users`,
 		token: auth.token,
+		query: withCallerQuery(auth),
+		nullFallback: EMPTY_GUILD_USER_LIST,
 	});
 }
 
@@ -268,6 +291,7 @@ export async function getGuildUser(auth: ApiAuth, guildId: string, guildUserId: 
 		method: "GET",
 		path: `/guilds/${guildId}/users/${guildUserId}`,
 		token: auth.token,
+		query: withCallerQuery(auth),
 	});
 }
 
@@ -276,9 +300,7 @@ export async function putGuildUser(auth: ApiAuth, guildId: string, guildUserId: 
 		method: "PUT",
 		path: `/guilds/${guildId}/users/${guildUserId}`,
 		token: auth.token,
-		body: {
-			user,
-		},
+		body: withCallerBody(auth, { user }),
 	});
 }
 
@@ -287,6 +309,7 @@ export async function deleteGuildUser(auth: ApiAuth, guildId: string, guildUserI
 		method: "DELETE",
 		path: `/guilds/${guildId}/users/${guildUserId}`,
 		token: auth.token,
+		query: withCallerQuery(auth),
 	});
 }
 
@@ -295,6 +318,7 @@ export async function getChannel(auth: ApiAuth, channelId: string): Promise<Chan
 		method: "GET",
 		path: `/channels/${channelId}`,
 		token: auth.token,
+		query: withCallerQuery(auth),
 	});
 }
 
@@ -303,9 +327,7 @@ export async function putChannel(auth: ApiAuth, channelId: string, channel: PutC
 		method: "PUT",
 		path: `/channels/${channelId}`,
 		token: auth.token,
-		body: {
-			channel,
-		},
+		body: withCallerBody(auth, { channel }),
 	});
 }
 
@@ -314,6 +336,7 @@ export async function deleteChannel(auth: ApiAuth, channelId: string): Promise<R
 		method: "DELETE",
 		path: `/channels/${channelId}`,
 		token: auth.token,
+		query: withCallerQuery(auth),
 	});
 }
 
@@ -322,10 +345,11 @@ export async function getMessages(auth: ApiAuth, channelId: string, args: { offs
 		method: "GET",
 		path: `/channels/${channelId}/messages`,
 		token: auth.token,
-		query: {
+		query: withCallerQuery(auth, {
 			offset: args.offset,
 			count: args.count,
-		},
+		}),
+		nullFallback: EMPTY_MESSAGE_LIST,
 	});
 }
 
@@ -334,11 +358,9 @@ export async function createMessage(auth: ApiAuth, channelId: string, body: { co
 		method: "POST",
 		path: `/channels/${channelId}/messages`,
 		token: auth.token,
-		body: {
-			message: {
-				content: body.content,
-			},
-		},
+		body: withCallerBody(auth, {
+			message: { content: body.content },
+		}),
 	});
 }
 
@@ -347,6 +369,7 @@ export async function deleteMessage(auth: ApiAuth, channelId: string, messageId:
 		method: "DELETE",
 		path: `/channels/${channelId}/messages/${messageId}`,
 		token: auth.token,
+		query: withCallerQuery(auth),
 	});
 }
 
@@ -355,7 +378,7 @@ export async function uploadImage(auth: ApiAuth, body: { file: string; filename:
 		method: "POST",
 		path: "/media/uploadImage",
 		token: auth.token,
-		body,
+		body: withCallerBody(auth, body),
 	});
 }
 
