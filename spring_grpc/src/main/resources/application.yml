@@ -21,3 +21,7 @@ spring:
         show-sql: true
     main:
         banner-mode: "off"
+
+core:
+  host: ${CORE_HOST:localhost}
+  port: ${CORE_PORT:50051}
