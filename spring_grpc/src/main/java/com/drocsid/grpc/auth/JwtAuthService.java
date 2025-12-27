@@ -5,7 +5,6 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import io.grpc.Status;
-import jakarta.validation.constraints.DecimalMax;
 
 import io.grpc.StatusRuntimeException;
 import org.springframework.beans.factory.annotation.Value;
