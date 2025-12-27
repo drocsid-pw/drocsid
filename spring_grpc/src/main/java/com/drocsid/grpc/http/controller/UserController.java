@@ -54,7 +54,7 @@ public class UserController {
             @PathVariable String userId,
             @Valid @RequestBody PutUserBody body) {
 
-        String authedUserId = jwtAuthService.checkAuth(authorization);
+        String authedUserId = jwtAuthService.getUserId(authorization);
 
         try {
             return userService.updateUser(authedUserId, userId, body);
