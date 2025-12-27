@@ -1,16 +1,14 @@
 package com.drocsid.grpc.http.service;
 
-import com.drocsid.grpc.core_requests.user.CoreUpdateUserRequest;
 import com.drocsid.grpc.http.controller.UserController;
 import com.drocsid.grpc.http.dto.GuildListDto;
 import com.drocsid.grpc.http.dto.ResponseMessageDto;
 import com.drocsid.grpc.http.dto.UserDto;
 import com.drocsid.grpc.http.mapper.ProtoMapper;
+import com.drocsid.grpc.mappings.UserCallerMapping;
 import com.drocsid.grpc.mappings.UserCallerMappingRepository;
 import com.drocsid.grpc.mock_classes.CoreClient;
-import com.drocsid.grpc.proto.CreateUserRequest;
-import com.drocsid.grpc.proto.Guild;
-import com.drocsid.grpc.proto.User;
+import com.drocsid.grpc.proto.*;
 import io.grpc.Status;
 
 import org.springframework.stereotype.Service;
@@ -43,15 +41,23 @@ public class UserService {
 
         User user = coreClient.createUser(req);
 
+        UserCallerMapping mapping = new UserCallerMapping();
+        mapping.setTokenId(authedUserId);
+        mapping.setCallerId(new BigInteger(user.getId()));
+
+        repository.saveAndFlush(mapping);
+
+
         return ProtoMapper.toDto(user);
     }
 
     public UserDto getUser(String authedUserId) throws NoSuchFieldException {
-        BigInteger callerId = repository.findByTokenId(authedUserId)
+        String callerId = repository.findByTokenId(authedUserId)
                 .orElseThrow(() -> new NoSuchFieldException("Invalid token id."))
-                .getCallerId();
+                .getCallerId().toString();
 
-        User user = coreClient.getUser(callerId);
+        UserId userId = UserId.newBuilder().setCallerId(callerId).build();
+        User user = coreClient.getUser(userId);
         return ProtoMapper.toDto(user);
     }
 
@@ -68,11 +74,11 @@ public class UserService {
             throw Status.INVALID_ARGUMENT.withDescription("body is required").asRuntimeException();
         }
 
-        CoreUpdateUserRequest request = new CoreUpdateUserRequest(
-                callerId,
-                body.getName(),
-                body.getAvatarHash()
-        );
+        UpdateUserRequest request = UpdateUserRequest.newBuilder()
+                .setCallerId(String.valueOf(callerId))
+                .setName(body.getName())
+                .setAvatarHash(body.getAvatarHash())
+                .build();
 
         User user = coreClient.updateUser(request);
         return ProtoMapper.toDto(user);
@@ -87,11 +93,12 @@ public class UserService {
             throw Status.PERMISSION_DENIED.withDescription("User ID mismatch").asRuntimeException();
         }
 
-        coreClient.deleteUser(callerId);
+        UserId userIdToCore = UserId.newBuilder().setCallerId(String.valueOf(callerId)).build();
+        coreClient.deleteUser(userIdToCore);
         return new ResponseMessageDto("User deleted successfully.");
     }
 
-    public GuildListDto getAllGuilds(String authedUserId, String userId) throws Exception{
+    public GuildListDto getAllGuilds(String authedUserId, String userId) throws Exception {
         BigInteger callerId = repository.findByTokenId(authedUserId)
                 .orElseThrow(() -> new Exception("Invalid token id."))
                 .getCallerId();
@@ -100,7 +107,8 @@ public class UserService {
             throw Status.PERMISSION_DENIED.withDescription("User ID mismatch").asRuntimeException();
         }
 
-        List<Guild> guilds = coreClient.getAllGuilds(callerId);
+        UserId userIdForCore = UserId.newBuilder().setCallerId(String.valueOf(callerId)).build();
+        List<Guild> guilds = coreClient.getAllGuilds(userIdForCore);
         return ProtoMapper.toGuildListDto(guilds);
     }
 }

@@ -7,12 +7,9 @@ import com.drocsid.grpc.http.dto.MessageDto;
 import com.drocsid.grpc.http.dto.MessageListDto;
 import com.drocsid.grpc.http.dto.ResponseMessageDto;
 import com.drocsid.grpc.http.mapper.ProtoMapper;
-import com.drocsid.grpc.http.util.IdParser;
 import com.drocsid.grpc.mappings.UserCallerMappingRepository;
 import com.drocsid.grpc.mock_classes.CoreClient;
-import com.drocsid.grpc.proto.Channel;
-import com.drocsid.grpc.proto.Message;
-import com.drocsid.grpc.proto.RoleList;
+import com.drocsid.grpc.proto.*;
 import io.grpc.Status;
 import org.springframework.stereotype.Service;
 
@@ -37,12 +34,10 @@ public class ChannelService {
                 .orElseThrow(() -> new Exception("Invalid token id."))
                 .getCallerId();
 
-        CoreGetChannelRequest req = new CoreGetChannelRequest(
-                callerId,
-                IdParser.toBigInteger(channelId, "channelId")
-        );
+        ChannelInfoReq request = ChannelInfoReq.newBuilder().setCallerId(String.valueOf(callerId))
+                .setChannelId(channelId).build();
 
-        Channel channel = coreClient.getChannel(req);
+        Channel channel = coreClient.getChannel(request);
         return ProtoMapper.toDto(channel);
     }
 
@@ -63,12 +58,15 @@ public class ChannelService {
                 ch.getOverrides() != null ? mapRoleList(ch.getOverrides()) : RoleList.newBuilder().build()
         );
 
-        CoreUpdateChannelRequest req = new CoreUpdateChannelRequest(
-                callerId,
-                builder.build()
-        );
+        RoleList roleList = (ch.getOverrides() != null)
+                ? mapRoleList(ch.getOverrides())
+                : RoleList.newBuilder().build();
+        Channel updatedChannel = Channel.newBuilder().setChannelId(channelId).setName(ch.getName())
+                .setGuildId(ch.getGuildId()).setOverrides(roleList).build();
+        UpdateChannelRequest request = UpdateChannelRequest.newBuilder().setCallerId(String.valueOf(callerId))
+                .setChannel(updatedChannel).build();
 
-        Channel updated = coreClient.updateChannel(req);
+        Channel updated = coreClient.updateChannel(request);
         return ProtoMapper.toDto(updated);
     }
 
@@ -77,12 +75,10 @@ public class ChannelService {
                 .orElseThrow(() -> new Exception("Invalid token id."))
                 .getCallerId();
 
-        CoreDeleteChannelRequest req = new CoreDeleteChannelRequest(
-                callerId,
-                IdParser.toBigInteger(channelId, "channelId")
-        );
+        ChannelInfoReq request = ChannelInfoReq.newBuilder().setCallerId(String.valueOf(callerId))
+                .setChannelId(channelId).build();
 
-        coreClient.deleteChannel(req);
+        coreClient.deleteChannel(request);
         return new ResponseMessageDto("Channel deleted successfully.");
     }
 
@@ -98,14 +94,13 @@ public class ChannelService {
             throw Status.INVALID_ARGUMENT.withDescription("count must be > 0").asRuntimeException();
         }
 
-        CoreGetMessagesRequest req = new CoreGetMessagesRequest(
-                callerId,
-                IdParser.toBigInteger(channelId, "channelId"),
-                offset,
-                count
-        );
+        ChannelInfoReq channelReq = ChannelInfoReq.newBuilder().setCallerId(String.valueOf(callerId))
+            .setChannelId(channelId).build();
 
-        List<Message> messages = coreClient.getMessages(req);
+        MessageBucketReq request = MessageBucketReq.newBuilder().setReq(channelReq)
+                .setOffset(offset).setCount(count).build();
+
+        List<Message> messages = coreClient.getMessages(request);
         return ProtoMapper.toMessageListDto(messages);
     }
 
@@ -118,13 +113,16 @@ public class ChannelService {
             throw Status.INVALID_ARGUMENT.withDescription("message.content is required").asRuntimeException();
         }
 
-        CoreCreateMessageRequest req = new CoreCreateMessageRequest(
-                callerId,
-                IdParser.toBigInteger(channelId, "channelId"),
-                content
-        );
+        ChannelInfoReq channelReq = ChannelInfoReq.newBuilder().setCallerId(String.valueOf(callerId))
+                .setChannelId(channelId).build();
 
-        Message msg = coreClient.createMessage(req);
+        GeneralCreateMessageRequest messageReq = GeneralCreateMessageRequest.newBuilder().setContent(content)
+                .build();
+
+        CreateMessageReq request = CreateMessageReq.newBuilder().setReq(channelReq)
+                .setMessage(messageReq).build();
+
+        Message msg = coreClient.createMessage(request);
         return ProtoMapper.toDto(msg);
     }
 
@@ -133,13 +131,14 @@ public class ChannelService {
                 .orElseThrow(() -> new Exception("Invalid token id."))
                 .getCallerId();
 
-        CoreDeleteMessageRequest req = new CoreDeleteMessageRequest(
-                callerId,
-                IdParser.toBigInteger(channelId, "channelId"),
-                IdParser.toBigInteger(messageId, "messageId")
-        );
+        ChannelInfoReq channelReq = ChannelInfoReq.newBuilder().setCallerId(String.valueOf(callerId))
+                .setChannelId(channelId).build();
 
-        coreClient.deleteMessage(req);
+        GeneralMessageReq messageReq = GeneralMessageReq.newBuilder().setMessageId(messageId).build();
+
+        MessageReq request = MessageReq.newBuilder().setReq(channelReq).setMessageReq(messageReq).build();
+
+        coreClient.deleteMessage(request);
         return new ResponseMessageDto("Message deleted successfully.");
     }
 
