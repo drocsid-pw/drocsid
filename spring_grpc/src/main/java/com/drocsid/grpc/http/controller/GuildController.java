@@ -30,7 +30,7 @@ public class GuildController {
     public GuildDto createGuild(
         @RequestHeader(value = "Authorization") String authorization,
         @RequestBody CreateGuildBody body) {
-        String authedUserId = jwtAuthService.checkAuth(authorization);
+        String authedUserId = jwtAuthService.getUserId(authorization);
 
         try {
             return guildService.createGuild(authedUserId, body.getName(), body.getIcon());
@@ -46,7 +46,7 @@ public class GuildController {
             @RequestHeader("Authorization") String authorization,
             @PathVariable String guildId) {
 
-        String authedUserId = jwtAuthService.checkAuth(authorization);
+        String authedUserId = jwtAuthService.getUserId(authorization);
         try {
             return guildService.getGuild(authedUserId, guildId);
         }
@@ -62,7 +62,7 @@ public class GuildController {
             @PathVariable String guildId,
             @Valid @RequestBody PutGuildBody body) {
 
-        String authedUserId = jwtAuthService.checkAuth(authorization);
+        String authedUserId = jwtAuthService.getUserId(authorization);
 
         try {
             return guildService.updateGuild(authedUserId, guildId, body.getGuild());
@@ -78,7 +78,7 @@ public class GuildController {
             @RequestHeader("Authorization") String authorization,
             @PathVariable String guildId) {
 
-        String authedUserId = jwtAuthService.checkAuth(authorization);
+        String authedUserId = jwtAuthService.getUserId(authorization);
 
         try {
             return guildService.deleteGuild(authedUserId, guildId);
@@ -94,7 +94,7 @@ public class GuildController {
             @RequestHeader("Authorization") String authorization,
             @PathVariable String guildId) {
 
-        String authedUserId = jwtAuthService.checkAuth(authorization);
+        String authedUserId = jwtAuthService.getUserId(authorization);
 
         try {
             return guildService.getAllChannels(authedUserId, guildId);
@@ -111,7 +111,7 @@ public class GuildController {
             @PathVariable String guildId,
             @Valid @RequestBody CreateChannelBody body) {
 
-        String authedUserId = jwtAuthService.checkAuth(authorization);
+        String authedUserId = jwtAuthService.getUserId(authorization);
 
         try {
             return guildService.createChannel(authedUserId, guildId, body.getName());
@@ -127,7 +127,7 @@ public class GuildController {
             @RequestHeader("Authorization") String authorization,
             @PathVariable String guildId) {
 
-        String authedUserId = jwtAuthService.checkAuth(authorization);
+        String authedUserId = jwtAuthService.getUserId(authorization);
 
         try {
             return guildService.getRoles(authedUserId, guildId);
@@ -144,7 +144,7 @@ public class GuildController {
             @PathVariable String guildId,
             @PathVariable String guildRoleId) {
 
-        String authedUserId = jwtAuthService.checkAuth(authorization);
+        String authedUserId = jwtAuthService.getUserId(authorization);
         try {
             return guildService.getRole(authedUserId, guildId, guildRoleId);
         }
@@ -160,7 +160,7 @@ public class GuildController {
             @PathVariable String guildId,
             @Valid @RequestBody CreateRoleBody body) {
 
-        String authedUserId = jwtAuthService.checkAuth(authorization);
+        String authedUserId = jwtAuthService.getUserId(authorization);
 
         try {
             return guildService.createRole(authedUserId, guildId, body.getRoleName(), body.getPermissions());
@@ -178,7 +178,7 @@ public class GuildController {
             @PathVariable String guildRoleId,
             @Valid @RequestBody PutRoleBody body) {
 
-        String authedUserId = jwtAuthService.checkAuth(authorization);
+        String authedUserId = jwtAuthService.getUserId(authorization);
 
         try {
             return guildService.updateRole(authedUserId, guildId, guildRoleId, body.getRole());
@@ -199,7 +199,7 @@ public class GuildController {
             @RequestHeader("Authorization") String authorization,
             @PathVariable String guildId) {
 
-        String authedUserId = jwtAuthService.checkAuth(authorization);
+        String authedUserId = jwtAuthService.getUserId(authorization);
 
         try {
             return guildService.addUserToGuild(authedUserId, guildId);
@@ -215,7 +215,7 @@ public class GuildController {
             @RequestHeader("Authorization") String authorization,
             @PathVariable String guildId) {
 
-        String authedUserId = jwtAuthService.checkAuth(authorization);
+        String authedUserId = jwtAuthService.getUserId(authorization);
 
         try {
             return guildService.getGuildUsers(authedUserId, guildId);
@@ -232,7 +232,7 @@ public class GuildController {
             @PathVariable String guildId,
             @PathVariable String guildUserId) {
 
-        String authedUserId = jwtAuthService.checkAuth(authorization);
+        String authedUserId = jwtAuthService.getUserId(authorization);
 
         try {
             return guildService.getGuildUser(authedUserId, guildId, guildUserId);
@@ -250,7 +250,7 @@ public class GuildController {
             @PathVariable String guildUserId,
             @Valid @RequestBody PutGuildUserBody body) {
 
-        String authedUserId = jwtAuthService.checkAuth(authorization);
+        String authedUserId = jwtAuthService.getUserId(authorization);
 
         try {
             return guildService.updateGuildUser(authedUserId, guildId, guildUserId, body.getUser());
@@ -267,7 +267,7 @@ public class GuildController {
             @PathVariable String guildId,
             @PathVariable String guildUserId) {
 
-        String authedUserId = jwtAuthService.checkAuth(authorization);
+        String authedUserId = jwtAuthService.getUserId(authorization);
 
         try {
             return guildService.deleteGuildUser(authedUserId, guildId, guildUserId);
