@@ -22,12 +22,6 @@ public class UserController {
         this.jwtAuthService = jwtAuthService;
     }
 
-    // @PostMapping
-    // public UserDto createUser(@Valid @RequestBody CreateUserBody body) {
-
-    //     return userService.createUser(body);
-    // }
-
     @GetMapping("/get_user")
     public UserDto getUser(@RequestHeader("Authorization") String authorization) {
         
@@ -70,7 +64,7 @@ public class UserController {
             @RequestHeader("Authorization") String authorization,
             @PathVariable String userId) {
 
-        String authedUserId = jwtAuthService.checkAuth(authorization);
+        String authedUserId = jwtAuthService.getUserId(authorization);
 
         try {
             return userService.deleteUser(authedUserId, userId);
@@ -86,7 +80,7 @@ public class UserController {
             @RequestHeader("Authorization") String authorization,
             @PathVariable String userId) {
 
-        String authedUserId = jwtAuthService.checkAuth(authorization);
+        String authedUserId = jwtAuthService.getUserId(authorization);
 
         try {
             return userService.getAllGuilds(authedUserId, userId);
@@ -95,11 +89,6 @@ public class UserController {
             System.out.println("Error: " + e.getMessage());
             return null;
         }
-    }
-
-    @Data
-    public static class CreateUserBody {
-        private String name;
     }
 
     @Data
