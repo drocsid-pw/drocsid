@@ -10,12 +10,11 @@ export function useDrocsidApi() {
 			return null;
 		}
 
-		const auth: api.ApiAuth = { token, callerId };
+		const auth: api.ApiAuth = { token };
 
 		return {
 			auth,
 
-			createUser: (name: string) => api.createUser(auth, { name }),
 			getCurrentUser: () => api.getCurrentUser(auth),
 			putUser: (userId: string, body: { name: string; avatarHash: string }) => api.putUser(auth, userId, body),
 			deleteUser: (userId: string) => api.deleteUser(auth, userId),

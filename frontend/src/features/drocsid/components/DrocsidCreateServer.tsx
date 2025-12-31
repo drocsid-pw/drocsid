@@ -89,12 +89,6 @@ function emptyPermissionsPreview(record: PermissionsRecord): boolean {
 }
 
 export function DrocsidCreateServer(props: DrocsidCreateServerProps) {
-	/**
-	 * Create Server flow:
-	 * - creates a guild (name + icon)
-	 * - creates initial roles
-	 * - ensures general channel exists
-	 */
 	const { onCancel, onCreated } = props;
 
 	const api = useDrocsidApi();
@@ -221,6 +215,10 @@ export function DrocsidCreateServer(props: DrocsidCreateServerProps) {
 			if (!guildId) {
 				throw new Error("Backend did not return guildId");
 			}
+
+			try {
+				await api.addUserToGuild(guildId);
+			} catch {}
 
 			const roleCreates = buildRoleCreates(roles);
 			await Promise.all(roleCreates.map((r) => api.createRole(guildId, r)));
