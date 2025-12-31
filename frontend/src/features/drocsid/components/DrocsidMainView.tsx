@@ -19,6 +19,7 @@ import {
 	mapRoleDto,
 	mapUserDto,
 } from "../mappers";
+import { useInviteAutoOpen } from "./useInviteAutoOpen";
 
 type DrocsidViewMode = "chat" | "userSettings" | "serverSettings" | "createServer";
 type DrocsidSideMode = "servers" | "friends";
@@ -63,10 +64,6 @@ function ensureSelectedId(items: { id: string }[], currentId: string | null): st
 	return items[0]?.id ?? null;
 }
 
-/**
- * Merges guild summaries from backend with previous state to preserve heavy fields
- * (e.g. channel messages) while updating lightweight metadata (name/icon/owner/roles).
- */
 function mergeGuildSummaries(prev: DrocsidGuild[], next: DrocsidGuild[]): DrocsidGuild[] {
 	const byId = new Map(prev.map((g) => [g.guildId, g]));
 
@@ -100,9 +97,6 @@ function getErrorText(err: unknown): string {
 type CancelableJob = (args: { isCancelled: () => boolean }) => Promise<void>;
 
 function runCancelableEffect(job: CancelableJob) {
-	/**
-	 * Runs an async job inside a React effect and prevents state updates after unmount.
-	 */
 	let cancelled = false;
 
 	void job({
@@ -133,6 +127,8 @@ export function DrocsidMainView() {
 
 	const [isSending, setIsSending] = useState(false);
 
+	const [hydratedGuildIds, setHydratedGuildIds] = useState<Set<string>>(() => new Set());
+
 	const friends = EMPTY_FRIENDS;
 	const activeFriendId: string | null = null;
 
@@ -150,46 +146,16 @@ export function DrocsidMainView() {
 	}, [callerId, payload?.name]);
 
 	const ensureUser = useCallback(async () => {
-		/**
-		 * Ensures the current user exists in backend:
-		 * - tries to fetch current user
-		 * - if NOT_FOUND, creates it and retries
-		 */
 		if (!api || !callerId) {
 			return null;
 		}
 
-		try {
-			const dto = await api.getCurrentUser();
-			return mapUserDto(dto, { id: callerId, name: payload?.name ?? undefined });
-		} catch (e) {
-			if (!isDrocsidApiError(e) || e.code !== "NOT_FOUND") {
-				throw e;
-			}
-
-			const name = (payload?.name ?? "drocsid user").trim() || "drocsid user";
-			await api.createUser(name);
-
-			try {
-				const dto = await api.getCurrentUser();
-				return mapUserDto(dto, { id: callerId, name: payload?.name ?? undefined });
-			} catch {
-				return {
-					id: callerId,
-					name,
-					avatarHash: "",
-					avatarLetter: avatarLetterFromName(name),
-				};
-			}
-		}
+		const dto = await api.getCurrentUser();
+		return mapUserDto(dto, { id: callerId, name: payload?.name ?? undefined });
 	}, [api, callerId, payload?.name]);
 
 	const reloadGuilds = useCallback(
 		async (selectGuildId?: string | null) => {
-			/**
-			 * Fetches guild list for current user and updates state.
-			 * Optionally keeps / selects a specific guildId.
-			 */
 			if (!api || !callerId) {
 				return;
 			}
@@ -300,6 +266,12 @@ export function DrocsidMainView() {
 						};
 					})
 				);
+
+				setHydratedGuildIds((prev) => {
+					const next = new Set(prev);
+					next.add(guildId);
+					return next;
+				});
 			} catch (e) {
 				if (isCancelled()) {
 					return;
@@ -355,9 +327,6 @@ export function DrocsidMainView() {
 
 	const handleSendChannelMessage = useCallback(
 		async (content: string) => {
-			/**
-			 * Sends a message to the current channel and appends it locally on success.
-			 */
 			if (!api) {
 				return;
 			}
@@ -400,6 +369,30 @@ export function DrocsidMainView() {
 		},
 		[api, activeGuildId, activeChId]
 	);
+
+	const guildsLoaded = !isBooting && !bootError;
+	const channelsLoaded = !!activeServer?.guildId && hydratedGuildIds.has(activeServer.guildId);
+
+	useInviteAutoOpen({
+		guildsLoaded,
+		channelsLoaded,
+		channels: channels.map((c) => ({ id: c.channelId })),
+		reloadGuilds: async (guildId) => {
+			await reloadGuilds(guildId);
+		},
+		setActiveChannelId: (channelId) => {
+			setActiveChannelId(channelId);
+		},
+		onOpenServersMode: () => {
+			setSideMode("servers");
+			setViewMode("chat");
+		},
+		joinGuildById: async (guildId) => {
+			if (!api) return;
+			await api.addUserToGuild(guildId);
+		},
+	});
+
 
 	if (isBooting) {
 		return (

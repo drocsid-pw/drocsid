@@ -74,7 +74,6 @@ export type ImageDto = {
 
 export type ApiAuth = {
 	token: string;
-	callerId: string;
 };
 
 export type GuildBody = {
@@ -103,25 +102,20 @@ const EMPTY_ROLE_LIST: RoleListDto = { roles: [] };
 const EMPTY_GUILD_USER_LIST: GuildUserListDto = { guildUsers: [] };
 const EMPTY_MESSAGE_LIST: MessageListDto = { messages: [] };
 
-function withCallerQuery(auth: ApiAuth, query?: Query): Query {
-	return { ...(query ?? {}), caller_id: auth.callerId };
-}
-
 function authedRequest<T>(
 	auth: ApiAuth,
 	args: { method: "GET" | "POST" | "PUT" | "DELETE"; path: string; query?: Query; body?: unknown; nullFallback?: T }
 ): Promise<T> {
 	/**
 	 * Wrapper for requestJson:
-	 * - always adds auth.token to json
-	 * - always appends caller_id in querystring
+	 * - always sends Authorization header
 	 * - allows setting nullFallback for listing endpoints
 	 */
 	return requestJson<T>({
 		method: args.method,
 		path: args.path,
 		token: auth.token,
-		query: withCallerQuery(auth, args.query),
+		query: args.query,
 		body: args.body,
 		nullFallback: args.nullFallback,
 	});
@@ -144,10 +138,6 @@ async function authedDelete<T>(auth: ApiAuth, path: string, args?: { query?: Que
 }
 
 /// USERS
-export async function createUser(auth: ApiAuth, body: { name: string }): Promise<UserDto> {
-	return authedPost<UserDto>(auth, "/users", { body });
-}
-
 export async function getCurrentUser(auth: ApiAuth): Promise<UserDto> {
 	return authedGet<UserDto>(auth, "/users/get_user");
 }
@@ -223,7 +213,7 @@ export async function createRole(auth: ApiAuth, guildId: string, body: { roleNam
 
 export async function putRole(auth: ApiAuth, guildId: string, guildRoleId: string, body: { roleName: string; permissions: string }): Promise<RoleDto> {
 	return authedPut<RoleDto>(auth, `/guilds/${guildId}/roles/${guildRoleId}`, {
-		body: { role: { roleName: body.roleName, permissions: body.permissions } },
+		body: { role: { guildRoleId, roleName: body.roleName, permissions: body.permissions } },
 	});
 }
 

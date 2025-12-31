@@ -3,7 +3,7 @@ import { parsePermissions, serializePermissions } from "./types";
 
 export type PermissionFlag = DrocsidPermission;
 
-export const BACKEND_PERMISSIONS_SEPARATOR = "|";
+export const BACKEND_PERMISSIONS_SEPARATOR = ",";
 
 export const PERMISSION_FLAGS = [
 	"MANAGE_GUILD_USERS",
@@ -46,7 +46,6 @@ export function permissionsStringToRecord(raw: string | undefined): PermissionsR
 export function recordToPermissionsString(record: PermissionsRecord, separator = BACKEND_PERMISSIONS_SEPARATOR): string {
 	/**
 	 * Serializes PermissionsRecord into a string for transport/storage.
-	 * Default separator matches backend transport convention.
 	 */
 	const list = recordToPermissionsList(record);
 	return serializePermissions(list, separator);
