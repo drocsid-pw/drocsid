@@ -1,6 +1,7 @@
 import type { ChannelDto, GuildDto, GuildUserDto, MessageDto, RoleDto, RoleListDto, UserDto } from "../../api/drocsidApi";
 import type { DrocsidChannel, DrocsidGuild, DrocsidGuildUser, DrocsidMessage, DrocsidRole, DrocsidRoleList, DrocsidUser } from "./types";
 import { parsePermissions, serializePermissions } from "./types";
+import { BACKEND_PERMISSIONS_SEPARATOR } from "./permissions";
 
 function str(value: string | null | undefined): string {
 	return typeof value === "string" ? value : "";
@@ -107,7 +108,7 @@ export function toApiRoleDto(role: DrocsidRole): RoleDto {
 	 * Backend expects permissions as a string; we prefer permissionsRaw if available to preserve formatting,
 	 * otherwise we serialize the typed array.
 	 */
-	const permissions = role.permissionsRaw.length > 0 ? role.permissionsRaw : serializePermissions(role.permissions, "|");
+	const permissions = role.permissionsRaw.length > 0 ? role.permissionsRaw : serializePermissions(role.permissions, BACKEND_PERMISSIONS_SEPARATOR);
 
 	return {
 		guildRoleId: role.guildRoleId,

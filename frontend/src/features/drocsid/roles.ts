@@ -1,6 +1,6 @@
 import type { DrocsidPermission, DrocsidRole } from "./types";
 import { serializePermissions } from "./types";
-import { permissionsStringToRecord, recordToPermissionsString, type PermissionsRecord } from "./permissions";
+import { permissionsStringToRecord, recordToPermissionsString, type PermissionsRecord, BACKEND_PERMISSIONS_SEPARATOR } from "./permissions";
 
 export type RoleForm = {
 	guildRoleId: string;
@@ -52,7 +52,7 @@ export function roleFormToDrocsidRole(form: RoleForm): DrocsidRole {
 	 * Converts RoleForm back into DrocsidRole (frontend domain shape):
 	 * - trims roleName
 	 * - keeps permissions as typed array
-	 * - also generates permissionsRaw for backend-compatibility / transport
+	 * - generates permissionsRaw for backend-compatibility / transport
 	 */
 	const permissions = recordToPermissionsArray(form.permissions);
 
@@ -60,7 +60,7 @@ export function roleFormToDrocsidRole(form: RoleForm): DrocsidRole {
 		guildRoleId: form.guildRoleId,
 		roleName: form.roleName.trim(),
 		permissions,
-		permissionsRaw: serializePermissions(permissions, ","),
+		permissionsRaw: serializePermissions(permissions, BACKEND_PERMISSIONS_SEPARATOR),
 		system: form.system,
 	};
 }
@@ -68,7 +68,6 @@ export function roleFormToDrocsidRole(form: RoleForm): DrocsidRole {
 export function roleFormToBackendPermissionsString(form: RoleForm): string {
 	/**
 	 * Serializes RoleForm permissions into the backend transport format (string).
-	 * Use this when building API DTOs, if your backend still expects a string.
 	 */
-	return recordToPermissionsString(form.permissions);
+	return recordToPermissionsString(form.permissions, BACKEND_PERMISSIONS_SEPARATOR);
 }

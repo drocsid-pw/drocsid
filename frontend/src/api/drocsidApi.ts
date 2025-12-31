@@ -1,4 +1,4 @@
-import { requestJson } from "./http";
+import { requestJson, type Query } from "./http";
 
 export type Nullable<T> = T | null;
 
@@ -103,14 +103,14 @@ const EMPTY_ROLE_LIST: RoleListDto = { roles: [] };
 const EMPTY_GUILD_USER_LIST: GuildUserListDto = { guildUsers: [] };
 const EMPTY_MESSAGE_LIST: MessageListDto = { messages: [] };
 
-type QueryValue = string | number | boolean | null | undefined;
-type Query = Record<string, QueryValue>;
-
 function withCallerQuery(auth: ApiAuth, query?: Query): Query {
 	return { ...(query ?? {}), caller_id: auth.callerId };
 }
 
-function authedRequest<T>(auth: ApiAuth, args: { method: "GET" | "POST" | "PUT" | "DELETE"; path: string; query?: Query; body?: unknown; nullFallback?: T }): Promise<T> {
+function authedRequest<T>(
+	auth: ApiAuth,
+	args: { method: "GET" | "POST" | "PUT" | "DELETE"; path: string; query?: Query; body?: unknown; nullFallback?: T }
+): Promise<T> {
 	/**
 	 * Wrapper for requestJson:
 	 * - always adds auth.token to json

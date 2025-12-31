@@ -43,25 +43,26 @@ function removeTokenFromStorage(): void {
 	}
 }
 
-function base64UrlToBase64(input: string): string {
-	return input.replace(/-/g, "+").replace(/_/g, "/");
-}
-
-function decodeBase64(input: string): string {
-	const normalized = base64UrlToBase64(input);
-	const padLen = (4 - (normalized.length % 4)) % 4;
-	const padded = normalized + "=".repeat(padLen);
-	return atob(padded);
-}
-
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null;
+}
+
+function decodeBase64UrlUtf8(input: string): string {
+	const base64 = input.replace(/-/g, "+").replace(/_/g, "/");
+	const padLen = (4 - (base64.length % 4)) % 4;
+	const padded = base64 + "=".repeat(padLen);
+
+	const binary = atob(padded);
+	const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+	return new TextDecoder().decode(bytes);
 }
 
 export function decodeGoogleIdTokenPayload(token: string): GoogleIdTokenPayload | null {
 	/**
 	 * Extracts a minimal Google ID token payload from a JWT string.
 	 * This is a best-effort decoder meant for UI usage only (no signature verification).
+	 *
+	 * Uses UTF-8 safe decoding (atob alone can break for non-ascii names).
 	 */
 	const parts = token.split(".");
 	if (parts.length < 2) {
@@ -69,7 +70,7 @@ export function decodeGoogleIdTokenPayload(token: string): GoogleIdTokenPayload 
 	}
 
 	try {
-		const json = decodeBase64(parts[1]);
+		const json = decodeBase64UrlUtf8(parts[1]);
 		const raw = JSON.parse(json) as unknown;
 
 		if (!isRecord(raw)) {

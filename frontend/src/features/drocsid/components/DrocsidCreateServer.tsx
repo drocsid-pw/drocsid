@@ -92,9 +92,8 @@ export function DrocsidCreateServer(props: DrocsidCreateServerProps) {
 	/**
 	 * Create Server flow:
 	 * - creates a guild (name + icon)
-	 * - adds current user to the guild
 	 * - creates initial roles
-	 * - ensures "general" channel exists
+	 * - ensures general channel exists
 	 */
 	const { onCancel, onCreated } = props;
 
@@ -222,8 +221,6 @@ export function DrocsidCreateServer(props: DrocsidCreateServerProps) {
 			if (!guildId) {
 				throw new Error("Backend did not return guildId");
 			}
-
-			await api.addUserToGuild(guildId);
 
 			const roleCreates = buildRoleCreates(roles);
 			await Promise.all(roleCreates.map((r) => api.createRole(guildId, r)));

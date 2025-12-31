@@ -1,3 +1,419 @@
+==== ./frontend\endpoints.md ====
+# Drocsid REST API (spring_grpc)
+
+Wersja: na podstawie `spring_grpc/src/main/java/com/drocsid/grpc/http/controller/*`
+
+## Auth
+
+- Wszystkie endpointy (poza `/api/hello`) wymagają nagłówka:
+  - `Authorization: Bearer <google_id_token>` (albo token bez prefixu, backend i tak obcina `Bearer `)
+- Query param `caller_id` widoczny w frontendzie NIE jest używany przez controllery (jest ignorowany).
+- Backend mapuje: token subject -> `mapping.token_id` -> `mapping.caller_id` (BigInteger) i dopiero to leci do core przez gRPC.
+
+---
+
+## Guilds
+
+### POST `/api/guilds`
+Tworzy serwer (guild).
+
+Body:
+```json
+{ "name": "My guild", "icon": "" }
+````
+
+Response: `GuildDto`
+
+```json
+{ "guildId": "...", "name": "...", "icon": "", "ownerId": "...", "roles": [] }
+```
+
+---
+
+### GET `/api/guilds/{guildId}`
+
+Pobiera serwer.
+
+Response: `GuildDto`
+
+---
+
+### PUT `/api/guilds/{guildId}`
+
+Aktualizuje serwer (name/icon/ownerId/roles w payloadzie, ale w praktyce role zwykle osobno endpointami ról).
+
+Body:
+
+```json
+{
+  "guild": {
+    "guildId": "145...",
+    "name": "ns6",
+    "icon": "",
+    "ownerId": "145...",
+    "roles": [
+      { "guildRoleId": "1", "roleName": "@everyone", "permissions": "..." }
+    ]
+  }
+}
+```
+
+Response: `GuildDto`
+
+---
+
+### DELETE `/api/guilds/{guildId}`
+
+Usuwa serwer.
+
+Response: `ResponseMessageDto`
+
+```json
+{ "text": "Guild deleted successfully." }
+```
+
+---
+
+## Guild Channels (lista i tworzenie)
+
+### GET `/api/guilds/{guildId}/channels`
+
+Lista kanałów w guildzie.
+
+Response: `ChannelListDto`
+
+```json
+{ "channels": [ { "channelId": "...", "name": "general", "guildId": "...", "overrides": { "roles": [] } } ] }
+```
+
+---
+
+### POST `/api/guilds/{guildId}/channels`
+
+Tworzy kanał w guildzie. To jest poprawny endpoint do “Add channel”.
+
+Body:
+
+```json
+{ "name": "qweqwe" }
+```
+
+Response: `ChannelDto` (z PRAWDZIWYM `channelId` generowanym w core)
+
+```json
+{ "channelId": "145...", "name": "qweqwe", "guildId": "145...", "overrides": { "roles": [] } }
+```
+
+**Ważne:** Front powinien po tym podmienić `tmp-*` na realne `channelId`.
+
+---
+
+## Roles (w ramach guilda)
+
+### GET `/api/guilds/{guildId}/roles`
+
+Lista ról.
+
+Response: `RoleListDto`
+
+```json
+{ "roles": [ { "guildRoleId": "...", "roleName": "...", "permissions": "..." } ] }
+```
+
+---
+
+### GET `/api/guilds/{guildId}/roles/{guildRoleId}`
+
+Pobiera jedną rolę.
+
+Response: `RoleDto`
+
+---
+
+### POST `/api/guilds/{guildId}/roles`
+
+Tworzy rolę.
+
+Body:
+
+```json
+{ "roleName": "moderator", "permissions": "READ_MESSAGES,SEND_MESSAGES" }
+```
+
+Response: `RoleDto`
+
+---
+
+### PUT `/api/guilds/{guildId}/roles/{guildRoleId}`
+
+Aktualizuje rolę.
+
+Body:
+
+```json
+{ "role": { "guildRoleId": "...", "roleName": "mod", "permissions": "..." } }
+```
+
+Response: `RoleDto`
+
+---
+
+### DELETE `/api/guilds/{guildId}/roles/{guildRoleId}`
+
+Niezaimplementowane (zwraca UNIMPLEMENTED).
+
+---
+
+## Guild Users (members)
+
+### POST `/api/guilds/{guildId}/users`
+
+Dodaje aktualnie zalogowanego usera do guilda.
+
+Response: `GuildUserDto`
+
+---
+
+### GET `/api/guilds/{guildId}/users`
+
+Lista guild userów.
+
+Response: `GuildUserListDto`
+
+```json
+{ "guildUsers": [ { "guildUserId": "...", "nick": "...", "roles": { "roles": [] } } ] }
+```
+
+---
+
+### GET `/api/guilds/{guildId}/users/{guildUserId}`
+
+Pobiera guild usera.
+
+Response: `GuildUserDto`
+
+---
+
+### PUT `/api/guilds/{guildId}/users/{guildUserId}`
+
+Aktualizuje guild usera (nick + roles).
+
+Body:
+
+```json
+{
+  "user": {
+    "guildUserId": "145...",
+    "nick": "Rafal",
+    "roles": { "roles": [ { "guildRoleId": "...", "roleName": "...", "permissions": "..." } ] }
+  }
+}
+```
+
+Uwaga: backend akceptuje też `roles` jako tablicę albo `{ "roles": [ ... ] }`.
+
+Response: `GuildUserDto`
+
+---
+
+### DELETE `/api/guilds/{guildId}/users/{guildUserId}`
+
+Usuwa guild usera.
+
+Response: `ResponseMessageDto`
+
+---
+
+## Channels (operacje na konkretnym kanale)
+
+### GET `/api/channels/{channelId}`
+
+Pobiera kanał.
+
+Response: `ChannelDto`
+
+---
+
+### PUT `/api/channels/{channelId}`
+
+Aktualizuje kanał (nazwa + overrides).
+To NIE jest endpoint do tworzenia.
+
+Body:
+
+```json
+{
+  "channel": {
+    "name": "general",
+    "guildId": "145...",
+    "overrides": {
+      "roles": [
+        { "guildRoleId": "...", "roleName": "...", "permissions": "..." }
+      ]
+    }
+  }
+}
+```
+
+Response: `ChannelDto`
+
+---
+
+### DELETE `/api/channels/{channelId}`
+
+Usuwa kanał.
+
+Response: `ResponseMessageDto`
+
+---
+
+## Channel Messages
+
+### GET `/api/channels/{channelId}/messages?offset=0&count=50`
+
+Pobiera wiadomości (paginacja offset/count).
+
+Response: `MessageListDto`
+
+```json
+{ "messages": [ { "messageId": "...", "author": { ... }, "content": "..." } ] }
+```
+
+---
+
+### POST `/api/channels/{channelId}/messages`
+
+Tworzy wiadomość.
+
+Body:
+
+```json
+{ "message": { "content": "hello" } }
+```
+
+Response: `MessageDto`
+
+---
+
+### DELETE `/api/channels/{channelId}/messages/{messageId}`
+
+Usuwa wiadomość.
+
+Response: `ResponseMessageDto`
+
+---
+
+## Users (global)
+
+### GET `/api/users/get_user`
+
+Zwraca usera dla aktualnego tokena; jeśli nie istnieje w core, backend go tworzy.
+
+Response: `UserDto`
+
+```json
+{ "id": "...", "name": "...", "avatarHash": null }
+```
+
+---
+
+### GET `/api/users/{userId}/guilds`
+
+Zwraca listę guildów usera.
+Uwaga: `userId` w path musi być równy authedUserId (token subject), inaczej FORBIDDEN.
+
+Response: `GuildListDto`
+
+---
+
+### PUT `/api/users/{userId}`
+
+Aktualizuje usera (name/avatarHash).
+Uwaga: `userId` w path musi być równy authedUserId (token subject), inaczej FORBIDDEN.
+
+Body:
+
+```json
+{ "name": "Rafal", "avatarHash": "..." }
+```
+
+Response: `UserDto`
+
+---
+
+### DELETE `/api/users/{userId}`
+
+Usuwa usera (jak wyżej: path userId musi matchować token subject).
+
+Response: `ResponseMessageDto`
+
+---
+
+## Media
+
+### POST `/api/media/uploadImage`
+
+Upload obrazka przez mediaproxy (Base64 w polu `file`).
+
+Body:
+
+```json
+{ "file": "<base64>", "filename": "avatar.png" }
+```
+
+Response: `ImageDto`
+
+```json
+{ "message": "...", "url": "..." }
+```
+
+---
+
+## Misc
+
+### POST `/api/hello`
+
+Demo endpoint (bez auth).
+
+Body:
+
+```json
+{ "name": "World" }
+```
+
+Response:
+
+```json
+{ "message": "Hello World" }
+```
+
+
+==== ./frontend\eslint.config.js ====
+import js from '@eslint/js'
+import globals from 'globals'
+import reactHooks from 'eslint-plugin-react-hooks'
+import reactRefresh from 'eslint-plugin-react-refresh'
+import tseslint from 'typescript-eslint'
+import { defineConfig, globalIgnores } from 'eslint/config'
+
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      js.configs.recommended,
+      tseslint.configs.recommended,
+      reactHooks.configs['recommended-latest'],
+      reactRefresh.configs.vite,
+    ],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.browser,
+    },
+  },
+])
+
+
 ==== ./frontend\index.html ====
 <!DOCTYPE html>
 <html lang="pl">
@@ -52,6 +468,23 @@
 	"optionalDependencies": {
 		"@rollup/rollup-linux-x64-gnu": "*"
 	}
+}
+
+
+==== ./frontend\postcss.config.js ====
+export default {
+	plugins: {
+		"@tailwindcss/postcss": {},
+	},
+};
+
+
+==== ./frontend\tailwind.config.js ====
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: ["./index.html", "./src/**/*.{ts,tsx}"],
+  theme: { extend: {} },
+  plugins: [],
 }
 
 
@@ -288,7 +721,7 @@ createRoot(document.getElementById("root")!).render(<App />);
 
 
 ==== ./frontend\src\api\drocsidApi.ts ====
-import { requestJson } from "./http";
+import { requestJson, type Query } from "./http";
 
 export type Nullable<T> = T | null;
 
@@ -393,14 +826,14 @@ const EMPTY_ROLE_LIST: RoleListDto = { roles: [] };
 const EMPTY_GUILD_USER_LIST: GuildUserListDto = { guildUsers: [] };
 const EMPTY_MESSAGE_LIST: MessageListDto = { messages: [] };
 
-type QueryValue = string | number | boolean | null | undefined;
-type Query = Record<string, QueryValue>;
-
 function withCallerQuery(auth: ApiAuth, query?: Query): Query {
 	return { ...(query ?? {}), caller_id: auth.callerId };
 }
 
-function authedRequest<T>(auth: ApiAuth, args: { method: "GET" | "POST" | "PUT" | "DELETE"; path: string; query?: Query; body?: unknown; nullFallback?: T }): Promise<T> {
+function authedRequest<T>(
+	auth: ApiAuth,
+	args: { method: "GET" | "POST" | "PUT" | "DELETE"; path: string; query?: Query; body?: unknown; nullFallback?: T }
+): Promise<T> {
 	/**
 	 * Wrapper for requestJson:
 	 * - always adds auth.token to json
@@ -899,25 +1332,26 @@ function removeTokenFromStorage(): void {
 	}
 }
 
-function base64UrlToBase64(input: string): string {
-	return input.replace(/-/g, "+").replace(/_/g, "/");
-}
-
-function decodeBase64(input: string): string {
-	const normalized = base64UrlToBase64(input);
-	const padLen = (4 - (normalized.length % 4)) % 4;
-	const padded = normalized + "=".repeat(padLen);
-	return atob(padded);
-}
-
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null;
+}
+
+function decodeBase64UrlUtf8(input: string): string {
+	const base64 = input.replace(/-/g, "+").replace(/_/g, "/");
+	const padLen = (4 - (base64.length % 4)) % 4;
+	const padded = base64 + "=".repeat(padLen);
+
+	const binary = atob(padded);
+	const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+	return new TextDecoder().decode(bytes);
 }
 
 export function decodeGoogleIdTokenPayload(token: string): GoogleIdTokenPayload | null {
 	/**
 	 * Extracts a minimal Google ID token payload from a JWT string.
 	 * This is a best-effort decoder meant for UI usage only (no signature verification).
+	 *
+	 * Uses UTF-8 safe decoding (atob alone can break for non-ascii names).
 	 */
 	const parts = token.split(".");
 	if (parts.length < 2) {
@@ -925,7 +1359,7 @@ export function decodeGoogleIdTokenPayload(token: string): GoogleIdTokenPayload 
 	}
 
 	try {
-		const json = decodeBase64(parts[1]);
+		const json = decodeBase64UrlUtf8(parts[1]);
 		const raw = JSON.parse(json) as unknown;
 
 		if (!isRecord(raw)) {
@@ -1005,6 +1439,7 @@ export function useAuth(): AuthContextValue {
 import type { ChannelDto, GuildDto, GuildUserDto, MessageDto, RoleDto, RoleListDto, UserDto } from "../../api/drocsidApi";
 import type { DrocsidChannel, DrocsidGuild, DrocsidGuildUser, DrocsidMessage, DrocsidRole, DrocsidRoleList, DrocsidUser } from "./types";
 import { parsePermissions, serializePermissions } from "./types";
+import { BACKEND_PERMISSIONS_SEPARATOR } from "./permissions";
 
 function str(value: string | null | undefined): string {
 	return typeof value === "string" ? value : "";
@@ -1111,7 +1546,7 @@ export function toApiRoleDto(role: DrocsidRole): RoleDto {
 	 * Backend expects permissions as a string; we prefer permissionsRaw if available to preserve formatting,
 	 * otherwise we serialize the typed array.
 	 */
-	const permissions = role.permissionsRaw.length > 0 ? role.permissionsRaw : serializePermissions(role.permissions, "|");
+	const permissions = role.permissionsRaw.length > 0 ? role.permissionsRaw : serializePermissions(role.permissions, BACKEND_PERMISSIONS_SEPARATOR);
 
 	return {
 		guildRoleId: role.guildRoleId,
@@ -1130,6 +1565,8 @@ import type { DrocsidPermission } from "./types";
 import { parsePermissions, serializePermissions } from "./types";
 
 export type PermissionFlag = DrocsidPermission;
+
+export const BACKEND_PERMISSIONS_SEPARATOR = "|";
 
 export const PERMISSION_FLAGS = [
 	"MANAGE_GUILD_USERS",
@@ -1156,7 +1593,7 @@ export function emptyPermissionsRecord(): PermissionsRecord {
 export function permissionsStringToRecord(raw: string | undefined): PermissionsRecord {
 	/**
 	 * Converts backend permissions string into PermissionsRecord for UI.
-	 * Delegates parsing rules to parsePermissions to keep behavior consistent across the app.
+	 * Parsing rules are delegated to parsePermissions to keep behavior consistent across the app.
 	 */
 	const base = emptyPermissionsRecord();
 
@@ -1169,16 +1606,16 @@ export function permissionsStringToRecord(raw: string | undefined): PermissionsR
 	return base;
 }
 
-export function recordToPermissionsString(record: PermissionsRecord, separator = ","): string {
+export function recordToPermissionsString(record: PermissionsRecord, separator = BACKEND_PERMISSIONS_SEPARATOR): string {
 	/**
 	 * Serializes PermissionsRecord into a string for transport/storage.
-	 * Separator can be adjusted to match backend expectations.
+	 * Default separator matches backend transport convention.
 	 */
 	const list = recordToPermissionsList(record);
 	return serializePermissions(list, separator);
 }
 
-export function togglePermissionString(raw: string, flag: PermissionFlag, separator = ","): string {
+export function togglePermissionString(raw: string, flag: PermissionFlag, separator = BACKEND_PERMISSIONS_SEPARATOR): string {
 	/**
 	 * Toggles a single permission inside a raw permissions string and returns a normalized string.
 	 */
@@ -1215,7 +1652,7 @@ export function permissionsListToRecord(raw: DrocsidPermission[] | string | unde
 ==== ./frontend\src\features\drocsid\roles.ts ====
 import type { DrocsidPermission, DrocsidRole } from "./types";
 import { serializePermissions } from "./types";
-import { permissionsStringToRecord, recordToPermissionsString, type PermissionsRecord } from "./permissions";
+import { permissionsStringToRecord, recordToPermissionsString, type PermissionsRecord, BACKEND_PERMISSIONS_SEPARATOR } from "./permissions";
 
 export type RoleForm = {
 	guildRoleId: string;
@@ -1267,7 +1704,7 @@ export function roleFormToDrocsidRole(form: RoleForm): DrocsidRole {
 	 * Converts RoleForm back into DrocsidRole (frontend domain shape):
 	 * - trims roleName
 	 * - keeps permissions as typed array
-	 * - also generates permissionsRaw for backend-compatibility / transport
+	 * - generates permissionsRaw for backend-compatibility / transport
 	 */
 	const permissions = recordToPermissionsArray(form.permissions);
 
@@ -1275,7 +1712,7 @@ export function roleFormToDrocsidRole(form: RoleForm): DrocsidRole {
 		guildRoleId: form.guildRoleId,
 		roleName: form.roleName.trim(),
 		permissions,
-		permissionsRaw: serializePermissions(permissions, ","),
+		permissionsRaw: serializePermissions(permissions, BACKEND_PERMISSIONS_SEPARATOR),
 		system: form.system,
 	};
 }
@@ -1283,9 +1720,8 @@ export function roleFormToDrocsidRole(form: RoleForm): DrocsidRole {
 export function roleFormToBackendPermissionsString(form: RoleForm): string {
 	/**
 	 * Serializes RoleForm permissions into the backend transport format (string).
-	 * Use this when building API DTOs, if your backend still expects a string.
 	 */
-	return recordToPermissionsString(form.permissions);
+	return recordToPermissionsString(form.permissions, BACKEND_PERMISSIONS_SEPARATOR);
 }
 
 
@@ -2643,9 +3079,8 @@ export function DrocsidCreateServer(props: DrocsidCreateServerProps) {
 	/**
 	 * Create Server flow:
 	 * - creates a guild (name + icon)
-	 * - adds current user to the guild
 	 * - creates initial roles
-	 * - ensures "general" channel exists
+	 * - ensures general channel exists
 	 */
 	const { onCancel, onCreated } = props;
 
@@ -2773,8 +3208,6 @@ export function DrocsidCreateServer(props: DrocsidCreateServerProps) {
 			if (!guildId) {
 				throw new Error("Backend did not return guildId");
 			}
-
-			await api.addUserToGuild(guildId);
 
 			const roleCreates = buildRoleCreates(roles);
 			await Promise.all(roleCreates.map((r) => api.createRole(guildId, r)));
@@ -3630,6 +4063,7 @@ type DrocsidServerSettingsProps = {
 	callerId: string;
 	initialChannelId?: string | null;
 	onSaved: (nextServer: DrocsidGuild) => void;
+	onDeleted?: (guildId: string) => void;
 };
 
 type ActiveSection = "general" | "roles" | "channels" | "members";
@@ -3753,6 +4187,39 @@ function validateUniqueRoleNames(forms: RoleForm[]): string | null {
 	return null;
 }
 
+function makeTempId(prefix: string): string {
+	const cryptoAny = globalThis as unknown as { crypto?: { randomUUID?: () => string } };
+	const uuid = cryptoAny.crypto?.randomUUID?.();
+	if (uuid) {
+		return `${prefix}${uuid}`;
+	}
+	return `${prefix}${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function createDraftChannel(guildId: string, roleSnapshot: DrocsidRole[], name: string): DrocsidChannel {
+	const channelId = makeTempId("tmp-");
+
+	const overridesRoles: DrocsidRole[] = roleSnapshot.map((r) => {
+		const raw = r.permissionsRaw ?? "";
+		const rec = permissionsListToRecord(raw);
+		return {
+			guildRoleId: r.guildRoleId,
+			roleName: r.roleName,
+			system: r.system,
+			permissions: recordToPermissionsList(rec),
+			permissionsRaw: recordToPermissionsString(rec),
+		};
+	});
+
+	return {
+		channelId,
+		name,
+		overrides: { roles: overridesRoles },
+		messages: [],
+		...( { guildId } as unknown as Record<string, unknown> ),
+	} as DrocsidChannel;
+}
+
 export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 	/**
 	 * Server settings editor:
@@ -3760,8 +4227,11 @@ export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 	 * - edits roles (name + permissions)
 	 * - edits channels (name + per-role permission overrides)
 	 * - edits members (nick + role assignment)
+	 * Plus:
+	 * - add channel (draft + persist on save)
+	 * - delete server (calls API + notifies parent via onDeleted)
 	 */
-	const { server, onSaved, initialChannelId } = props;
+	const { server, onSaved, initialChannelId, onDeleted } = props;
 
 	const api = useDrocsidApi();
 	const { isDark } = useDrocsidTheme();
@@ -3776,6 +4246,7 @@ export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 			navIdle: isDark ? "hover:bg-white/10 text-slate-200" : "hover:bg-slate-100 text-slate-700",
 			buttonPrimary: isDark ? "bg-slate-100 text-slate-900 hover:bg-white" : "bg-slate-900 text-white hover:bg-slate-800",
 			buttonGhost: isDark ? "border-[#212124] text-slate-200 hover:bg-white/10" : "border-slate-200 text-slate-700 hover:bg-slate-50",
+			buttonDanger: isDark ? "bg-red-500/20 text-red-200 hover:bg-red-500/30 border-red-500/30" : "bg-red-50 text-red-700 hover:bg-red-100 border-red-200",
 			border: isDark ? "border-[#212124]" : "border-slate-200",
 			tableHead: isDark ? "bg-white/5" : "bg-slate-50",
 			tableRowHover: isDark ? "hover:bg-white/5" : "hover:bg-slate-50",
@@ -3820,9 +4291,14 @@ export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 	const [usersDraft, setUsersDraft] = useState<DrocsidGuildUser[]>(() => (server?.users ?? []).map(cloneUser));
 
 	const [isSaving, setIsSaving] = useState(false);
+	const [isDeleting, setIsDeleting] = useState(false);
 	const [saveError, setSaveError] = useState<string | null>(null);
 
 	const [memberFilter, setMemberFilter] = useState("");
+
+	const [isAddingChannel, setIsAddingChannel] = useState(false);
+	const [newChannelName, setNewChannelName] = useState("");
+	const [channelAddError, setChannelAddError] = useState<string | null>(null);
 
 	useEffect(() => {
 		if (!server) {
@@ -3843,6 +4319,10 @@ export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 		const nextChannelId = initialChannelId ?? server.channels[0]?.channelId ?? "";
 		setSelectedChannelId(nextChannelId);
 		setMemberFilter("");
+
+		setIsAddingChannel(false);
+		setNewChannelName("");
+		setChannelAddError(null);
 	}, [server?.guildId, initialChannelId]);
 
 	useEffect(() => {
@@ -4044,6 +4524,81 @@ export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 		setSelectedChannelId(initialChannelId ?? server.channels[0]?.channelId ?? "");
 		setMemberFilter("");
 		setSaveError(null);
+
+		setIsAddingChannel(false);
+		setNewChannelName("");
+		setChannelAddError(null);
+	};
+
+	const startAddChannel = () => {
+		setChannelAddError(null);
+		setIsAddingChannel(true);
+		setNewChannelName("");
+	};
+
+	const cancelAddChannel = () => {
+		setChannelAddError(null);
+		setIsAddingChannel(false);
+		setNewChannelName("");
+	};
+
+	const confirmAddChannel = () => {
+		const name = newChannelName.trim();
+		if (!name) {
+			setChannelAddError("Channel name is required.");
+			return;
+		}
+
+		const key = normalizeName(name);
+		const taken = channelsDraft.some((c) => normalizeName(c.name) === key);
+		if (taken) {
+			setChannelAddError(`Channel "${name}" already exists.`);
+			return;
+		}
+
+		const draft = ensureFullOverridesForChannel(createDraftChannel(server.guildId, roleSnapshot, name), roleSnapshot);
+
+		setChannelsDraft((current) => [...current, draft]);
+		setSelectedChannelId(draft.channelId);
+
+		setIsAddingChannel(false);
+		setNewChannelName("");
+		setChannelAddError(null);
+	};
+
+	const handleDeleteServer = async () => {
+		setSaveError(null);
+
+		if (!api) {
+			setSaveError("Missing API (auth). Please sign in again.");
+			return;
+		}
+
+		const ok = window.confirm(`Delete server "${server.name}"? This cannot be undone.`);
+		if (!ok) {
+			return;
+		}
+
+		const apiAny = api as unknown as { deleteGuild?: (guildId: string) => Promise<void> };
+
+		if (typeof apiAny.deleteGuild !== "function") {
+			setSaveError("API missing deleteGuild(guildId). Add it to useDrocsidApi to enable deleting servers.");
+			return;
+		}
+
+		setIsDeleting(true);
+		try {
+			await apiAny.deleteGuild(server.guildId);
+			if (onDeleted) {
+				onDeleted(server.guildId);
+			} else {
+				setSaveError("Server deleted. Close this panel and refresh the list.");
+			}
+		} catch (e) {
+			setSaveError(getErrorText(e));
+		} finally {
+			setIsDeleting(false);
+		}
 	};
 
 	const handleSaveAll = async (event: React.FormEvent) => {
@@ -4093,21 +4648,37 @@ export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 				)
 			);
 
-			await Promise.all(
-				nextChannels.map((ch) =>
-					api.putChannel(ch.channelId, {
-						name: ch.name.trim(),
-						guildId: server.guildId,
-						overrides: {
-							roles: (ch.overrides?.roles ?? []).map((r) => ({
-								guildRoleId: r.guildRoleId,
-								roleName: r.roleName,
-								permissions: r.permissionsRaw ?? "",
-							})),
-						},
-					})
-				)
-			);
+			const apiAny = api as unknown as {
+				postChannel?: ((guildId: string, payload: unknown) => Promise<unknown>) | ((payload: unknown) => Promise<unknown>);
+			};
+
+			const upsertChannel = async (ch: DrocsidChannel) => {
+				const payload = {
+					name: (ch.name ?? "").trim(),
+					guildId: server.guildId,
+					overrides: {
+						roles: (ch.overrides?.roles ?? []).map((r) => ({
+							guildRoleId: r.guildRoleId,
+							roleName: r.roleName,
+							permissions: r.permissionsRaw ?? "",
+						})),
+					},
+				};
+
+				const isNew = (ch.channelId ?? "").startsWith("tmp-");
+				if (isNew && typeof apiAny.postChannel === "function") {
+					if (apiAny.postChannel.length >= 2) {
+						await (apiAny.postChannel as (guildId: string, payload: unknown) => Promise<unknown>)(server.guildId, payload);
+						return;
+					}
+					await (apiAny.postChannel as (payload: unknown) => Promise<unknown>)(payload);
+					return;
+				}
+
+				await api.putChannel(ch.channelId, payload);
+			};
+
+			await Promise.all(nextChannels.map(upsertChannel));
 
 			await Promise.all(
 				nextUsers.map((u) =>
@@ -4174,6 +4745,23 @@ export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 							placeholder="✨"
 						/>
 					</label>
+				</div>
+
+				<div className={`rounded-xl border p-4 ${ui.border}`}>
+					<div className="flex items-start justify-between gap-4">
+						<div>
+							<div className="text-sm font-semibold">Danger zone</div>
+							<div className={`text-xs mt-1 ${ui.muted}`}>Permanent actions. Be careful.</div>
+						</div>
+
+						<button
+							type="button"
+							onClick={handleDeleteServer}
+							disabled={isSaving || isDeleting}
+							className={`px-4 py-2 text-sm rounded-lg border transition disabled:opacity-60 ${ui.buttonDanger}`}>
+							{isDeleting ? "Deleting..." : "Delete server"}
+						</button>
+					</div>
 				</div>
 			</div>
 		);
@@ -4262,10 +4850,37 @@ export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 
 		return (
 			<div className="space-y-6">
-				<div>
-					<h3 className="text-sm font-semibold">Channels</h3>
-					<p className={`text-xs mt-1 ${ui.muted}`}>Edit channel name and per-role overrides.</p>
+				<div className="flex items-start justify-between gap-3">
+					<div>
+						<h3 className="text-sm font-semibold">Channels</h3>
+						<p className={`text-xs mt-1 ${ui.muted}`}>Edit channel name and per-role overrides.</p>
+					</div>
+
+					<div className="flex items-center gap-2">
+						{!isAddingChannel ? (
+							<button type="button" className={`px-3 py-2 text-sm rounded-lg border transition ${ui.buttonGhost}`} onClick={startAddChannel} disabled={isSaving || isDeleting}>
+								Add channel
+							</button>
+						) : (
+							<div className="flex items-center gap-2">
+								<input
+									value={newChannelName}
+									onChange={(e) => setNewChannelName(e.target.value)}
+									placeholder="new-channel"
+									className={`w-56 px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 ${ui.input}`}
+								/>
+								<button type="button" className={`px-3 py-2 text-sm rounded-lg border transition ${ui.buttonGhost}`} onClick={confirmAddChannel} disabled={isSaving || isDeleting}>
+									Create
+								</button>
+								<button type="button" className={`px-3 py-2 text-sm rounded-lg border transition ${ui.buttonGhost}`} onClick={cancelAddChannel} disabled={isSaving || isDeleting}>
+									Cancel
+								</button>
+							</div>
+						)}
+					</div>
 				</div>
+
+				{channelAddError && <div className="text-xs text-red-400">{channelAddError}</div>}
 
 				<label className="flex flex-col gap-1 text-sm">
 					<span className={`font-medium ${ui.label}`}>Channel</span>
@@ -4481,14 +5096,14 @@ export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 							type="button"
 							className={`px-4 py-2 text-sm rounded-lg border transition ${ui.buttonGhost}`}
 							onClick={resetAll}
-							disabled={isSaving}>
+							disabled={isSaving || isDeleting}>
 							Reset
 						</button>
 
 						<button
 							type="submit"
 							className={`px-4 py-2 text-sm rounded-lg transition ${ui.buttonPrimary} disabled:opacity-60`}
-							disabled={isSaving || !isDirty}>
+							disabled={isSaving || isDeleting || !isDirty}>
 							{isSaving ? "Saving..." : "Save changes"}
 						</button>
 					</div>
@@ -4905,141 +5520,6 @@ export function DrocsidUserSettings(props: DrocsidUserSettingsProps) {
 		</section>
 	);
 }
-
-
-==== ./frontend\src\features\drocsid\data\mockData.ts ====
-import type { DrocsidFriend, DrocsidGuild, DrocsidGuildUser, DrocsidMessage, DrocsidRole, DrocsidUser } from "../types";
-
-export const currentUser: DrocsidUser = {
-	id: "user-1",
-	name: "Rafał",
-	avatarLetter: "R",
-	avatarHash: "hash-user-1",
-};
-
-function role(guildRoleId: string, roleName: string, permissions: string, system?: boolean): DrocsidRole {
-	return { guildRoleId, roleName, permissions, system };
-}
-
-function user(guildUserId: string, nick: string, roles: DrocsidRole[]): DrocsidGuildUser {
-	return {
-		guildUserId,
-		nick,
-		roles: { roles },
-	};
-}
-
-function msg(messageId: string, author: DrocsidGuildUser, timestamp: string, content: string): DrocsidMessage {
-	return { messageId, author, timestamp, content };
-}
-
-const server1Roles: DrocsidRole[] = [
-	role("server-1-role-owner", "@owner", "MANAGE_GUILD_USERS|MANAGE_CHANNEL|ADMIN_DELETE_MESSAGES|MANAGE_GUILD|READ|WRITE", true),
-	role("server-1-role-everyone", "@everyone", "READ|WRITE", true),
-	role("server-1-role-admin", "Admin", "MANAGE_GUILD_USERS|MANAGE_CHANNEL|ADMIN_DELETE_MESSAGES|MANAGE_GUILD|READ|WRITE"),
-	role("server-1-role-moderator", "Moderator", "MANAGE_GUILD_USERS|MANAGE_CHANNEL|ADMIN_DELETE_MESSAGES|READ|WRITE"),
-];
-
-const server1UserRafal = user("server-1-user-1", "Rafał", [server1Roles[0], server1Roles[2], server1Roles[1]]);
-const server1UserKuba = user("server-1-user-2", "Kuba", [server1Roles[3], server1Roles[1]]);
-const server1UserMiron = user("server-1-user-3", "Miron", [server1Roles[1]]);
-
-const server2Roles: DrocsidRole[] = [
-	role("server-2-role-owner", "@owner", "MANAGE_GUILD_USERS|MANAGE_CHANNEL|ADMIN_DELETE_MESSAGES|MANAGE_GUILD|READ|WRITE", true),
-	role("server-2-role-everyone", "@everyone", "READ|WRITE", true),
-	role("server-2-role-builder", "Builder", "MANAGE_CHANNEL|READ|WRITE"),
-];
-
-const server2UserRafal = user("server-2-user-1", "Rafał", [server2Roles[0], server2Roles[2], server2Roles[1]]);
-const server2UserAnia = user("server-2-user-2", "Ania", [server2Roles[1]]);
-
-export const mockServers: DrocsidGuild[] = [
-	{
-		guildId: "server-1",
-		name: "drocsid / server-1",
-		icon: "🏡",
-		ownerId: "user-1",
-		roles: server1Roles,
-		users: [server1UserRafal, server1UserKuba, server1UserMiron],
-		channels: [
-			{
-				channelId: "11",
-				name: "general",
-				guildId: "server-1",
-				overrides: { roles: [] },
-				messages: [
-					msg("m1", server1UserRafal, "09:12", "Siemano, oceniajcie design"),
-					msg("m2", user("server-1-user-4", "Twój stary", []), "09:13", "Ej, zajebisty drocsid"),
-					msg("m3", server1UserMiron, "09:15", "No i git. Kuba, rób elixira"),
-				],
-			},
-			{
-				channelId: "12",
-				name: "dev",
-				guildId: "server-1",
-				overrides: { roles: [] },
-				messages: [msg("m4", server1UserKuba, "10:01", "Dodałem upload plików, przetestujcie"), msg("m5", server1UserRafal, "10:05", "Front podpięty pod nowy endpoint")],
-			},
-			{
-				channelId: "13",
-				name: "design",
-				guildId: "server-1",
-				overrides: { roles: [] },
-				messages: [msg("m6", server1UserRafal, "11:20", "Nowy layout sidebaru wrzucony")],
-			},
-			{
-				channelId: "14",
-				name: "random",
-				guildId: "server-1",
-				overrides: { roles: [] },
-				messages: [msg("m7", user("server-1-user-4", "Twój stary", []), "12:00", "Miał być side project, a znowu wychodzi produkt")],
-			},
-		],
-	},
-	{
-		guildId: "server-2",
-		name: "side-projecty",
-		icon: "🧪",
-		ownerId: "user-2",
-		roles: server2Roles,
-		users: [server2UserRafal, server2UserAnia],
-		channels: [
-			{
-				channelId: "21",
-				name: "ideas",
-				guildId: "server-2",
-				overrides: { roles: [] },
-				messages: [msg("m8", server2UserRafal, "14:10", "Zróbmy mini SaaS do boardów kanban jak w Discordzie")],
-			},
-			{
-				channelId: "22",
-				name: "build-in-public",
-				guildId: "server-2",
-				overrides: { roles: [] },
-				messages: [msg("m9", server2UserRafal, "14:30", "Dzień 1: działa logowanie Google i layout discorda")],
-			},
-		],
-	},
-];
-
-export const mockFriends: DrocsidFriend[] = [
-	{ id: "friend-1", name: "Kuba", avatarLetter: "K", status: "online" },
-	{ id: "friend-2", name: "Miron", avatarLetter: "M", status: "online" },
-	{ id: "friend-3", name: "Twój stary", avatarLetter: "T", status: "idle" },
-	{ id: "friend-4", name: "Ania", avatarLetter: "A", status: "dnd" },
-	{ id: "friend-5", name: "Piotr", avatarLetter: "P", status: "offline" },
-];
-
-export const mockFriendMessages: Record<string, DrocsidMessage[]> = {
-	"friend-1": [
-		{ messageId: "dm1", author: { guildUserId: "dm-kuba", nick: "Kuba", roles: { roles: [] } }, timestamp: "09:00", content: "Zróbmy jeszcze voice chat kiedyś" },
-		{ messageId: "dm2", author: { guildUserId: "dm-rafal", nick: "Rafał", roles: { roles: [] } }, timestamp: "09:02", content: "Najpierw tekst, potem reszta" },
-	],
-	"friend-2": [{ messageId: "dm3", author: { guildUserId: "dm-miron", nick: "Miron", roles: { roles: [] } }, timestamp: "10:15", content: "Elixir backend jeszcze nie działa???" }],
-	"friend-3": [{ messageId: "dm4", author: { guildUserId: "dm-tata", nick: "Twój stary", roles: { roles: [] } }, timestamp: "11:11", content: "No i co z tym side projectem" }],
-	"friend-4": [{ messageId: "dm5", author: { guildUserId: "dm-ania", nick: "Ania", roles: { roles: [] } }, timestamp: "12:34", content: "Fajny ten layout pod discorda" }],
-	"friend-5": [{ messageId: "dm6", author: { guildUserId: "dm-piotr", nick: "Piotr", roles: { roles: [] } }, timestamp: "13:37", content: "Jak coś, to testuję ten drocsid" }],
-};
 
 
 ==== ./frontend\src\pages\DrocsidApp.tsx ====
