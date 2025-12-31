@@ -13,7 +13,6 @@ venv
 .idea/
 spring_grpc/target
 skrypt.py
-skrypt.py
 output.txt
 output_proto.txt
 output_frontend.txt
