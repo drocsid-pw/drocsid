@@ -1,4 +1,3 @@
-// ./frontend/src/api/http.ts
 export type ApiErrorBody = {
 	code: string;
 	message: string;
@@ -29,21 +28,32 @@ export function isDrocsidApiError(error: unknown): error is DrocsidApiError {
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 
+export type QueryValue = string | number | boolean | null | undefined;
+export type Query = Record<string, QueryValue>;
+
 export type RequestJsonOptions<T = unknown> = {
 	method?: "GET" | "POST" | "PUT" | "DELETE";
 	path: string;
 	token?: string | null;
-	query?: Record<string, string | number | boolean | null | undefined>;
+	query?: Query;
 	body?: unknown;
 
 	/**
-	 * Jeśli backend zwróci literalne JSON null albo puste body (200 + Content-Length: 0),
-	 * to zamiast wywalać błąd zwrócimy fallback (idealne pod endpointy listujące).
+	 * If the backend returns literal JSON `null` or an empty body (200 + Content-Length: 0),
+	 * return `nullFallback` instead of throwing (useful for listing endpoints).
 	 */
 	nullFallback?: T;
 };
 
-function buildUrl(path: string, query?: RequestJsonOptions["query"]): URL {
+type ParsedJsonBody = { ok: true; data: unknown; text: string; isEmpty: boolean } | { ok: false; text: string };
+
+function buildUrl(path: string, query?: Query): URL {
+	/**
+	 * Builds a full URL from API_BASE_URL and path:
+	 * - supports absolute base URLs or relative bases like "/api"
+	 * - normalizes trailing/leading slashes
+	 * - appends query params while skipping null/undefined values
+	 */
 	const base = API_BASE_URL.replace(/\/$/, "");
 	const p = path.startsWith("/") ? path : `/${path}`;
 	const full = `${base}${p}`;
@@ -83,14 +93,17 @@ function asApiErrorResponse(value: unknown): ApiErrorResponse | null {
 	return { error: { code, message, details } };
 }
 
-type ParsedJsonBody = { ok: true; data: unknown; text: string; isEmpty: boolean } | { ok: false; text: string };
-
 function snippet(text: string, max = 600): string {
 	const t = text.trim();
 	return t.length <= max ? t : `${t.slice(0, max)}…`;
 }
 
 async function parseJsonBody(res: Response): Promise<ParsedJsonBody> {
+	/**
+	 * Safely reads and parses the response body as JSON:
+	 * - if the body is empty/whitespace, it is treated as empty
+	 * - if JSON parsing fails, returns the raw text for diagnostics
+	 */
 	const text = await res.text();
 	if (!text.trim()) {
 		return { ok: true, data: undefined, text, isEmpty: true };
@@ -103,7 +116,35 @@ async function parseJsonBody(res: Response): Promise<ParsedJsonBody> {
 	}
 }
 
+function makeInternalError(args: { status: number; message: string; url: string; responseText?: string }): DrocsidApiError {
+	const details: Record<string, unknown> = { url: args.url };
+
+	if (args.responseText) {
+		details.responseText = snippet(args.responseText);
+	}
+
+	return new DrocsidApiError({
+		status: args.status,
+		code: "INTERNAL",
+		message: args.message,
+		details,
+	});
+}
+
+function allowEmptyBody(args: { method: string; status: number }): boolean {
+	return args.status === 204 || args.method === "DELETE";
+}
+
 export async function requestJson<T>(opts: RequestJsonOptions<T>): Promise<T> {
+	/**
+	 * A fetch wrapper that enforces a consistent API contract:
+	 * - builds URL from API_BASE_URL + path + query (skips null/undefined query values)
+	 * - when opts.token is provided, sends it as Authorization: Bearer <token>
+	 * - JSON-serializes request body and sets Content-Type: application/json
+	 * - for non-2xx responses, tries to map payload shape: { error: { code, message, details } }
+	 * - supports `nullFallback` for listing endpoints (backend returns null or empty body)
+	 * - allows empty body for DELETE and 204 responses and returns `undefined`
+	 */
 	const method = opts.method ?? "GET";
 	const url = buildUrl(opts.path, opts.query);
 
@@ -144,14 +185,11 @@ export async function requestJson<T>(opts: RequestJsonOptions<T>): Promise<T> {
 	const parsed = await parseJsonBody(res);
 
 	if (!parsed.ok) {
-		throw new DrocsidApiError({
+		throw makeInternalError({
 			status: res.status,
-			code: "INTERNAL",
 			message: "Invalid JSON response",
-			details: {
-				url: url.toString(),
-				responseText: snippet(parsed.text),
-			},
+			url: url.toString(),
+			responseText: parsed.text,
 		});
 	}
 
@@ -160,16 +198,14 @@ export async function requestJson<T>(opts: RequestJsonOptions<T>): Promise<T> {
 			return opts.nullFallback;
 		}
 
-		const allowEmpty = method === "DELETE";
-		if (allowEmpty) {
+		if (allowEmptyBody({ method, status: res.status })) {
 			return undefined as T;
 		}
 
-		throw new DrocsidApiError({
+		throw makeInternalError({
 			status: res.status,
-			code: "INTERNAL",
 			message: "Empty JSON response",
-			details: { url: url.toString() },
+			url: url.toString(),
 		});
 	}
 
@@ -177,11 +213,11 @@ export async function requestJson<T>(opts: RequestJsonOptions<T>): Promise<T> {
 		if (opts.nullFallback !== undefined) {
 			return opts.nullFallback;
 		}
-		throw new DrocsidApiError({
+
+		throw makeInternalError({
 			status: res.status,
-			code: "INTERNAL",
 			message: "Invalid JSON response",
-			details: { url: url.toString() },
+			url: url.toString(),
 		});
 	}
 

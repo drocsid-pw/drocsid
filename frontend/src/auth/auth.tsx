@@ -20,6 +20,29 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+function safeGetStorage(): Storage | null {
+	return typeof window === "undefined" ? null : window.localStorage;
+}
+
+function readTokenFromStorage(): string | null {
+	const storage = safeGetStorage();
+	return storage ? storage.getItem(GOOGLE_ID_TOKEN_STORAGE_KEY) : null;
+}
+
+function writeTokenToStorage(token: string): void {
+	const storage = safeGetStorage();
+	if (storage) {
+		storage.setItem(GOOGLE_ID_TOKEN_STORAGE_KEY, token);
+	}
+}
+
+function removeTokenFromStorage(): void {
+	const storage = safeGetStorage();
+	if (storage) {
+		storage.removeItem(GOOGLE_ID_TOKEN_STORAGE_KEY);
+	}
+}
+
 function base64UrlToBase64(input: string): string {
 	return input.replace(/-/g, "+").replace(/_/g, "/");
 }
@@ -31,7 +54,15 @@ function decodeBase64(input: string): string {
 	return atob(padded);
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === "object" && value !== null;
+}
+
 export function decodeGoogleIdTokenPayload(token: string): GoogleIdTokenPayload | null {
+	/**
+	 * Extracts a minimal Google ID token payload from a JWT string.
+	 * This is a best-effort decoder meant for UI usage only (no signature verification).
+	 */
 	const parts = token.split(".");
 	if (parts.length < 2) {
 		return null;
@@ -39,7 +70,11 @@ export function decodeGoogleIdTokenPayload(token: string): GoogleIdTokenPayload 
 
 	try {
 		const json = decodeBase64(parts[1]);
-		const raw = JSON.parse(json) as Record<string, unknown>;
+		const raw = JSON.parse(json) as unknown;
+
+		if (!isRecord(raw)) {
+			return null;
+		}
 
 		const sub = typeof raw.sub === "string" ? raw.sub : null;
 		if (!sub) {
@@ -58,35 +93,29 @@ export function decodeGoogleIdTokenPayload(token: string): GoogleIdTokenPayload 
 }
 
 export function AuthProvider(props: { children: React.ReactNode }) {
+	/**
+	 * Provides authentication state derived from a Google ID token:
+	 * - persists token in localStorage
+	 * - decodes payload (best-effort) to expose callerId (payload.sub) and basic profile fields
+	 * - exposes setToken/clearToken helpers
+	 */
 	const { children } = props;
 
-	const [token, setTokenState] = useState<string | null>(() => {
-		if (typeof window === "undefined") {
-			return null;
-		}
-		return window.localStorage.getItem(GOOGLE_ID_TOKEN_STORAGE_KEY);
-	});
+	const [token, setTokenState] = useState<string | null>(() => readTokenFromStorage());
 
 	const payload = useMemo(() => {
-		if (!token) {
-			return null;
-		}
-		return decodeGoogleIdTokenPayload(token);
+		return token ? decodeGoogleIdTokenPayload(token) : null;
 	}, [token]);
 
 	const callerId = payload?.sub ?? null;
 
 	const setToken = useCallback((next: string) => {
-		if (typeof window !== "undefined") {
-			window.localStorage.setItem(GOOGLE_ID_TOKEN_STORAGE_KEY, next);
-		}
+		writeTokenToStorage(next);
 		setTokenState(next);
 	}, []);
 
 	const clearToken = useCallback(() => {
-		if (typeof window !== "undefined") {
-			window.localStorage.removeItem(GOOGLE_ID_TOKEN_STORAGE_KEY);
-		}
+		removeTokenFromStorage();
 		setTokenState(null);
 	}, []);
 
@@ -95,7 +124,7 @@ export function AuthProvider(props: { children: React.ReactNode }) {
 			token,
 			callerId,
 			payload,
-			isAuthenticated: !!token && !!callerId,
+			isAuthenticated: Boolean(token && callerId),
 			setToken,
 			clearToken,
 		};
@@ -104,7 +133,10 @@ export function AuthProvider(props: { children: React.ReactNode }) {
 	return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-export function useAuth() {
+export function useAuth(): AuthContextValue {
+	/**
+	 * Reads AuthContext value. Must be used under <AuthProvider />.
+	 */
 	const ctx = useContext(AuthContext);
 	if (!ctx) {
 		throw new Error("useAuth must be used inside AuthProvider");

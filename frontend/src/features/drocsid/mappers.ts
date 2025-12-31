@@ -1,5 +1,6 @@
 import type { ChannelDto, GuildDto, GuildUserDto, MessageDto, RoleDto, RoleListDto, UserDto } from "../../api/drocsidApi";
 import type { DrocsidChannel, DrocsidGuild, DrocsidGuildUser, DrocsidMessage, DrocsidRole, DrocsidRoleList, DrocsidUser } from "./types";
+import { parsePermissions, serializePermissions } from "./types";
 
 function str(value: string | null | undefined): string {
 	return typeof value === "string" ? value : "";
@@ -11,9 +12,7 @@ function isSystemRoleName(roleName: string): boolean {
 
 export function avatarLetterFromName(name: string): string {
 	const trimmed = (name ?? "").trim();
-	if (!trimmed) {
-		return "?";
-	}
+	if (!trimmed) return "?";
 	return trimmed[0]?.toUpperCase() ?? "?";
 }
 
@@ -30,11 +29,20 @@ export function mapUserDto(dto: UserDto, fallback?: { id?: string; name?: string
 }
 
 export function mapRoleDto(dto: RoleDto): DrocsidRole {
+	/**
+	 * Maps backend role DTO to frontend role model.
+	 * Keeps backend compatibility by storing the original permissions string (permissionsRaw),
+	 * while also providing a typed permissions array for UI logic.
+	 */
 	const roleName = str(dto.roleName);
+	const permissionsRaw = str(dto.permissions);
+	const permissions = parsePermissions(permissionsRaw);
+
 	return {
 		guildRoleId: str(dto.guildRoleId),
 		roleName,
-		permissions: str(dto.permissions),
+		permissions,
+		permissionsRaw,
 		system: isSystemRoleName(roleName) ? true : undefined,
 	};
 }
@@ -67,15 +75,22 @@ export function mapGuildDto(dto: GuildDto): DrocsidGuild {
 }
 
 export function mapGuildUserDto(dto: GuildUserDto): DrocsidGuildUser {
+	const roles = mapRoleListDto(dto.roles);
+	const roleIds = roles.roles.map((r) => r.guildRoleId).filter((id) => id.length > 0);
+
 	return {
 		guildUserId: str(dto.guildUserId),
 		nick: str(dto.nick),
-		roles: mapRoleListDto(dto.roles),
+		roles,
+		roleIds,
 	};
 }
 
 export function mapMessageDto(dto: MessageDto, opts?: { timestamp?: string }): DrocsidMessage {
-	const author = dto.author ? mapGuildUserDto(dto.author) : { guildUserId: "", nick: "unknown", roles: { roles: [] } };
+	const author = dto.author
+		? mapGuildUserDto(dto.author)
+		: { guildUserId: "", nick: "unknown", roles: { roles: [] }, roleIds: [] };
+
 	const timestamp = opts?.timestamp ?? str(dto.timestamp);
 
 	return {
@@ -87,10 +102,17 @@ export function mapMessageDto(dto: MessageDto, opts?: { timestamp?: string }): D
 }
 
 export function toApiRoleDto(role: DrocsidRole): RoleDto {
+	/**
+	 * Maps frontend role model back to API DTO.
+	 * Backend expects permissions as a string; we prefer permissionsRaw if available to preserve formatting,
+	 * otherwise we serialize the typed array.
+	 */
+	const permissions = role.permissionsRaw.length > 0 ? role.permissionsRaw : serializePermissions(role.permissions, "|");
+
 	return {
 		guildRoleId: role.guildRoleId,
 		roleName: role.roleName,
-		permissions: role.permissions,
+		permissions,
 	};
 }
 
