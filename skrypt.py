@@ -15,8 +15,8 @@ def save_files_content_to_txt(root_folder, output_file, ignore_dirs=None):
                 # if file.endswith(('.py', '.env', '.example', '.txt', '.md', '.log')):
                 # if file.endswith(('.proto')):
                 # if file.endswith(('.py', '.txt', '.md', '.php', '.json', '.yaml', '.yml', '.cfg', '.ini', '.js', '.css', '.html', '.tpl')):
-                # if file.endswith(('.py', '.txt', '.md', '.json', '.js', '.ts', '.tsx', '.html', '.css', '.proto')):
-                if file.endswith(('.py', '.json', '.ts', '.tsx', '.html', '.css')):
+                if file.endswith(('.py', '.txt', '.md', '.json', '.js', '.ts', '.tsx', '.html', '.css', '.proto')):
+                # if file.endswith(('.py', '.json', '.ts', '.tsx', '.html', '.css')):
                 # if file.endswith(('.java', '.proto', '.yml', 'Dockerfile', '.xml')):
                     file_path = os.path.join(root, file)
                     try:

@@ -12,6 +12,7 @@ type DrocsidServerSettingsProps = {
 	callerId: string;
 	initialChannelId?: string | null;
 	onSaved: (nextServer: DrocsidGuild) => void;
+	onDeleted?: (guildId: string) => void;
 };
 
 type ActiveSection = "general" | "roles" | "channels" | "members";
@@ -135,6 +136,39 @@ function validateUniqueRoleNames(forms: RoleForm[]): string | null {
 	return null;
 }
 
+function makeTempId(prefix: string): string {
+	const cryptoAny = globalThis as unknown as { crypto?: { randomUUID?: () => string } };
+	const uuid = cryptoAny.crypto?.randomUUID?.();
+	if (uuid) {
+		return `${prefix}${uuid}`;
+	}
+	return `${prefix}${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function createDraftChannel(guildId: string, roleSnapshot: DrocsidRole[], name: string): DrocsidChannel {
+	const channelId = makeTempId("tmp-");
+
+	const overridesRoles: DrocsidRole[] = roleSnapshot.map((r) => {
+		const raw = r.permissionsRaw ?? "";
+		const rec = permissionsListToRecord(raw);
+		return {
+			guildRoleId: r.guildRoleId,
+			roleName: r.roleName,
+			system: r.system,
+			permissions: recordToPermissionsList(rec),
+			permissionsRaw: recordToPermissionsString(rec),
+		};
+	});
+
+	return {
+		channelId,
+		name,
+		overrides: { roles: overridesRoles },
+		messages: [],
+		...( { guildId } as unknown as Record<string, unknown> ),
+	} as DrocsidChannel;
+}
+
 export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 	/**
 	 * Server settings editor:
@@ -142,8 +176,11 @@ export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 	 * - edits roles (name + permissions)
 	 * - edits channels (name + per-role permission overrides)
 	 * - edits members (nick + role assignment)
+	 * Plus:
+	 * - add channel (draft + persist on save)
+	 * - delete server (calls API + notifies parent via onDeleted)
 	 */
-	const { server, onSaved, initialChannelId } = props;
+	const { server, onSaved, initialChannelId, onDeleted } = props;
 
 	const api = useDrocsidApi();
 	const { isDark } = useDrocsidTheme();
@@ -158,6 +195,7 @@ export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 			navIdle: isDark ? "hover:bg-white/10 text-slate-200" : "hover:bg-slate-100 text-slate-700",
 			buttonPrimary: isDark ? "bg-slate-100 text-slate-900 hover:bg-white" : "bg-slate-900 text-white hover:bg-slate-800",
 			buttonGhost: isDark ? "border-[#212124] text-slate-200 hover:bg-white/10" : "border-slate-200 text-slate-700 hover:bg-slate-50",
+			buttonDanger: isDark ? "bg-red-500/20 text-red-200 hover:bg-red-500/30 border-red-500/30" : "bg-red-50 text-red-700 hover:bg-red-100 border-red-200",
 			border: isDark ? "border-[#212124]" : "border-slate-200",
 			tableHead: isDark ? "bg-white/5" : "bg-slate-50",
 			tableRowHover: isDark ? "hover:bg-white/5" : "hover:bg-slate-50",
@@ -202,9 +240,14 @@ export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 	const [usersDraft, setUsersDraft] = useState<DrocsidGuildUser[]>(() => (server?.users ?? []).map(cloneUser));
 
 	const [isSaving, setIsSaving] = useState(false);
+	const [isDeleting, setIsDeleting] = useState(false);
 	const [saveError, setSaveError] = useState<string | null>(null);
 
 	const [memberFilter, setMemberFilter] = useState("");
+
+	const [isAddingChannel, setIsAddingChannel] = useState(false);
+	const [newChannelName, setNewChannelName] = useState("");
+	const [channelAddError, setChannelAddError] = useState<string | null>(null);
 
 	useEffect(() => {
 		if (!server) {
@@ -225,6 +268,10 @@ export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 		const nextChannelId = initialChannelId ?? server.channels[0]?.channelId ?? "";
 		setSelectedChannelId(nextChannelId);
 		setMemberFilter("");
+
+		setIsAddingChannel(false);
+		setNewChannelName("");
+		setChannelAddError(null);
 	}, [server?.guildId, initialChannelId]);
 
 	useEffect(() => {
@@ -426,6 +473,81 @@ export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 		setSelectedChannelId(initialChannelId ?? server.channels[0]?.channelId ?? "");
 		setMemberFilter("");
 		setSaveError(null);
+
+		setIsAddingChannel(false);
+		setNewChannelName("");
+		setChannelAddError(null);
+	};
+
+	const startAddChannel = () => {
+		setChannelAddError(null);
+		setIsAddingChannel(true);
+		setNewChannelName("");
+	};
+
+	const cancelAddChannel = () => {
+		setChannelAddError(null);
+		setIsAddingChannel(false);
+		setNewChannelName("");
+	};
+
+	const confirmAddChannel = () => {
+		const name = newChannelName.trim();
+		if (!name) {
+			setChannelAddError("Channel name is required.");
+			return;
+		}
+
+		const key = normalizeName(name);
+		const taken = channelsDraft.some((c) => normalizeName(c.name) === key);
+		if (taken) {
+			setChannelAddError(`Channel "${name}" already exists.`);
+			return;
+		}
+
+		const draft = ensureFullOverridesForChannel(createDraftChannel(server.guildId, roleSnapshot, name), roleSnapshot);
+
+		setChannelsDraft((current) => [...current, draft]);
+		setSelectedChannelId(draft.channelId);
+
+		setIsAddingChannel(false);
+		setNewChannelName("");
+		setChannelAddError(null);
+	};
+
+	const handleDeleteServer = async () => {
+		setSaveError(null);
+
+		if (!api) {
+			setSaveError("Missing API (auth). Please sign in again.");
+			return;
+		}
+
+		const ok = window.confirm(`Delete server "${server.name}"? This cannot be undone.`);
+		if (!ok) {
+			return;
+		}
+
+		const apiAny = api as unknown as { deleteGuild?: (guildId: string) => Promise<void> };
+
+		if (typeof apiAny.deleteGuild !== "function") {
+			setSaveError("API missing deleteGuild(guildId). Add it to useDrocsidApi to enable deleting servers.");
+			return;
+		}
+
+		setIsDeleting(true);
+		try {
+			await apiAny.deleteGuild(server.guildId);
+			if (onDeleted) {
+				onDeleted(server.guildId);
+			} else {
+				setSaveError("Server deleted. Close this panel and refresh the list.");
+			}
+		} catch (e) {
+			setSaveError(getErrorText(e));
+		} finally {
+			setIsDeleting(false);
+		}
 	};
 
 	const handleSaveAll = async (event: React.FormEvent) => {
@@ -475,21 +597,37 @@ export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 				)
 			);
 
-			await Promise.all(
-				nextChannels.map((ch) =>
-					api.putChannel(ch.channelId, {
-						name: ch.name.trim(),
-						guildId: server.guildId,
-						overrides: {
-							roles: (ch.overrides?.roles ?? []).map((r) => ({
-								guildRoleId: r.guildRoleId,
-								roleName: r.roleName,
-								permissions: r.permissionsRaw ?? "",
-							})),
-						},
-					})
-				)
-			);
+			const apiAny = api as unknown as {
+				postChannel?: ((guildId: string, payload: unknown) => Promise<unknown>) | ((payload: unknown) => Promise<unknown>);
+			};
+
+			const upsertChannel = async (ch: DrocsidChannel) => {
+				const payload = {
+					name: (ch.name ?? "").trim(),
+					guildId: server.guildId,
+					overrides: {
+						roles: (ch.overrides?.roles ?? []).map((r) => ({
+							guildRoleId: r.guildRoleId,
+							roleName: r.roleName,
+							permissions: r.permissionsRaw ?? "",
+						})),
+					},
+				};
+
+				const isNew = (ch.channelId ?? "").startsWith("tmp-");
+				if (isNew && typeof apiAny.postChannel === "function") {
+					if (apiAny.postChannel.length >= 2) {
+						await (apiAny.postChannel as (guildId: string, payload: unknown) => Promise<unknown>)(server.guildId, payload);
+						return;
+					}
+					await (apiAny.postChannel as (payload: unknown) => Promise<unknown>)(payload);
+					return;
+				}
+
+				await api.putChannel(ch.channelId, payload);
+			};
+
+			await Promise.all(nextChannels.map(upsertChannel));
 
 			await Promise.all(
 				nextUsers.map((u) =>
@@ -556,6 +694,23 @@ export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 							placeholder="✨"
 						/>
 					</label>
+				</div>
+
+				<div className={`rounded-xl border p-4 ${ui.border}`}>
+					<div className="flex items-start justify-between gap-4">
+						<div>
+							<div className="text-sm font-semibold">Danger zone</div>
+							<div className={`text-xs mt-1 ${ui.muted}`}>Permanent actions. Be careful.</div>
+						</div>
+
+						<button
+							type="button"
+							onClick={handleDeleteServer}
+							disabled={isSaving || isDeleting}
+							className={`px-4 py-2 text-sm rounded-lg border transition disabled:opacity-60 ${ui.buttonDanger}`}>
+							{isDeleting ? "Deleting..." : "Delete server"}
+						</button>
+					</div>
 				</div>
 			</div>
 		);
@@ -644,10 +799,37 @@ export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 
 		return (
 			<div className="space-y-6">
-				<div>
-					<h3 className="text-sm font-semibold">Channels</h3>
-					<p className={`text-xs mt-1 ${ui.muted}`}>Edit channel name and per-role overrides.</p>
+				<div className="flex items-start justify-between gap-3">
+					<div>
+						<h3 className="text-sm font-semibold">Channels</h3>
+						<p className={`text-xs mt-1 ${ui.muted}`}>Edit channel name and per-role overrides.</p>
+					</div>
+
+					<div className="flex items-center gap-2">
+						{!isAddingChannel ? (
+							<button type="button" className={`px-3 py-2 text-sm rounded-lg border transition ${ui.buttonGhost}`} onClick={startAddChannel} disabled={isSaving || isDeleting}>
+								Add channel
+							</button>
+						) : (
+							<div className="flex items-center gap-2">
+								<input
+									value={newChannelName}
+									onChange={(e) => setNewChannelName(e.target.value)}
+									placeholder="new-channel"
+									className={`w-56 px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 ${ui.input}`}
+								/>
+								<button type="button" className={`px-3 py-2 text-sm rounded-lg border transition ${ui.buttonGhost}`} onClick={confirmAddChannel} disabled={isSaving || isDeleting}>
+									Create
+								</button>
+								<button type="button" className={`px-3 py-2 text-sm rounded-lg border transition ${ui.buttonGhost}`} onClick={cancelAddChannel} disabled={isSaving || isDeleting}>
+									Cancel
+								</button>
+							</div>
+						)}
+					</div>
 				</div>
+
+				{channelAddError && <div className="text-xs text-red-400">{channelAddError}</div>}
 
 				<label className="flex flex-col gap-1 text-sm">
 					<span className={`font-medium ${ui.label}`}>Channel</span>
@@ -863,14 +1045,14 @@ export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 							type="button"
 							className={`px-4 py-2 text-sm rounded-lg border transition ${ui.buttonGhost}`}
 							onClick={resetAll}
-							disabled={isSaving}>
+							disabled={isSaving || isDeleting}>
 							Reset
 						</button>
 
 						<button
 							type="submit"
 							className={`px-4 py-2 text-sm rounded-lg transition ${ui.buttonPrimary} disabled:opacity-60`}
-							disabled={isSaving || !isDirty}>
+							disabled={isSaving || isDeleting || !isDirty}>
 							{isSaving ? "Saving..." : "Save changes"}
 						</button>
 					</div>
