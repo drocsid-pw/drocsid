@@ -3,6 +3,14 @@ defmodule DrocsidCore.DB do
 
   @conn :drocsid_cassandra
 
+  defmodule AuthorDTO do
+    defstruct [:guild_user_id, :nick]
+  end
+
+  defmodule MessageDTO do
+    defstruct [:message_id, :content, :author]
+  end
+
 
   ## ========= GUSERS ==========
 
@@ -37,6 +45,27 @@ defmodule DrocsidCore.DB do
     FROM guild_users
     WHERE guild_id = ?
       AND guild_user_id = ?
+    ALLOW FILTERING
+    """
+
+    prepared = Xandra.prepare!(@conn, query)
+    params = [guild_id, user_id]
+
+    with {:ok, %Xandra.Page{} = page} <- Xandra.execute(@conn, prepared, params) do
+      case Enum.to_list(page) do
+        [row] -> {:ok, row}
+        [] -> :not_found
+      end
+    end
+  end
+
+
+  def get_guild_user_by_uid(guild_id, user_id) do
+    query = """
+    SELECT guild_user_id, guild_id, user_id, nick
+    FROM guild_users
+    WHERE guild_id = ?
+      AND user_id = ?
     ALLOW FILTERING
     """
 
@@ -293,23 +322,64 @@ defmodule DrocsidCore.DB do
     end
   end
 
-  def list_messages(channel_id, offset, limit) do
+  def list_messages(channel_id, offset, limit) when offset >= 0 and limit > 0 do
     query = """
     SELECT channel_id, bucket, message_id, guild_id, author_id, content
     FROM messages
-    WHERE channel_id = :channel_id
+    WHERE channel_id = ?
     ORDER BY message_id DESC
-    LIMIT :limit
-    OFFSET :offset
+    LIMIT ?
     """
+
     prepared = Xandra.prepare!(@conn, query)
-    params = [channel_id, offset, limit]
 
-    with Xandra.execute(@conn, prepared, params) do
-      {:ok, %Xandra.Page{} = page} -> {:ok, Enum.to_list(page)}
+    fetch_size = limit + offset
+    params = [channel_id, fetch_size]
 
+    with {:ok, %Xandra.Page{} = page} <- Xandra.execute(@conn, prepared, params) do
+      rows =
+        page
+        |> Enum.to_list()
+        |> Enum.drop(offset)
+
+      keys =
+        rows
+        |> Enum.map(&{&1.guild_id, &1.author_id})
+        |> Enum.uniq()
+
+      author_cache =
+        Enum.reduce(keys, %{}, fn {guild_id, user_id}, acc ->
+          author =
+            case get_guild_user_by_uid(guild_id, user_id) do
+              {:ok, gu} ->
+                %AuthorDTO{guild_user_id: gu.guild_user_id, nick: gu.nick}
+
+              :not_found ->
+                %AuthorDTO{guild_user_id: nil, nick: nil}
+
+              {:error, err} ->
+                Logger.error(
+                  "get_guild_user_by_uid failed for guild_id=#{inspect(guild_id)} user_id=#{inspect(user_id)}: #{inspect(err)}"
+                )
+
+                %AuthorDTO{guild_user_id: nil, nick: nil}
+            end
+
+          Map.put(acc, {guild_id, user_id}, author)
+        end)
+
+      result =
+        Enum.map(rows, fn row ->
+          %MessageDTO{
+            message_id: row.message_id,
+            content: row.content,
+            author: Map.get(author_cache, {row.guild_id, row.author_id})
+          }
+        end)
+
+      {:ok, result}
+    else
       {:error, error} ->
-        require Logger
         Logger.error("list_messages failed: #{inspect(error)}")
         {:error, error}
     end

@@ -62,7 +62,30 @@ defmodule DrocsidCore.ChannelServer do
         {:ok, i} -> i
         _ -> raise GRPC.RPCError, status: :invalid_argument, message: "channel id incorrect"
       end
-    %Dmessage.MessageList{}
+   with {:ok, message_dtos } <- GuildProcess.list_messages(gid, cid, chid, count, offset) do
+      messages = Enum.map(message_dtos, fn dto ->
+        author = if dto.author do
+          %GuildUser.GuildUser{
+            guild_user_id: to_string(dto.author.guild_user_id || ""),
+            nick: dto.author.nick || ""
+          }
+        else
+          nil
+        end
+
+        %Dmessage.Message{
+          message_id: to_string(dto.message_id),
+          author: author,
+          content: dto.content || ""
+        }
+      end)
+
+      %Dmessage.MessageList{messages: messages}
+   else
+    _ -> raise GRPC.RPCError,
+        status: :invalid_argument,
+        message: "Invalid something"
+   end
   end
 
   def create_message(%{req: %{caller_id: caller_id, channel_id: channel_id}, message: %{content: content}}, _stream) do

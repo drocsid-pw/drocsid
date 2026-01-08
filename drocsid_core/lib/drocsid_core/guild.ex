@@ -39,11 +39,11 @@ defmodule DrocsidCore.GuildProcess do
   end
 
   def send_message(guild_id, caller_id, channel_id, text) do
-    call(guild_id, {:send_message, caller_id, channel_id, text})
+    call(guild_id, {:send_message, channel_id, caller_id, text})
   end
 
-  def list_messages(guild_id, channel_id, opts \\ []) do
-    call(guild_id, {:list_messages, channel_id, opts})
+  def list_messages(guild_id, caller_id, channel_id, limit, offset) do
+    call(guild_id, {:list_messages, caller_id, channel_id, limit, offset})
   end
 
   ## ========== GenServer start/link ==========
@@ -170,9 +170,17 @@ defmodule DrocsidCore.GuildProcess do
     end
   end
 
-  def handle_call({:list_messages, channel_id, opts}, _from, %{guild_id: guild_id} = state) do
-    reply = DB.list_messages(channel_id, opts)
-    {:reply, reply, state}
+  def handle_call({:list_messages, caller_id, channel_id, limit, offset}, _from, %{guild_id: guild_id} = state) do
+    try do
+      {:ok, message_list} = DB.list_messages(channel_id, offset, limit)
+
+      {:reply, {:ok, message_list}, state}
+    rescue
+      e ->
+        require Logger
+        Logger.error("list_messages failed: #{Exception.message(e)}")
+        {:reply, {:error, :db_error}, state}
+    end
   end
 
   def handle_call({:send_message, channel_id, caller_id, text}, _from, %{guild_id: guild_id} = state) do
