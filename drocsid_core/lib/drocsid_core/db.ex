@@ -293,17 +293,25 @@ defmodule DrocsidCore.DB do
     end
   end
 
-  def list_messages(channel_id) do
+  def list_messages(channel_id, offset, limit) do
     query = """
     SELECT channel_id, bucket, message_id, guild_id, author_id, content
     FROM messages
     WHERE channel_id = :channel_id
+    ORDER BY message_id DESC
+    LIMIT :limit
+    OFFSET :offset
     """
+    prepared = Xandra.prepare!(@conn, query)
+    params = [channel_id, offset, limit]
 
-    params = %{channel_id: channel_id}
+    with Xandra.execute(@conn, prepared, params) do
+      {:ok, %Xandra.Page{} = page} -> {:ok, Enum.to_list(page)}
 
-    with {:ok, %Xandra.Page{} = page} <- Xandra.execute(@conn, query, params) do
-      {:ok, Enum.to_list(page)}
+      {:error, error} ->
+        require Logger
+        Logger.error("list_messages failed: #{inspect(error)}")
+        {:error, error}
     end
   end
 
