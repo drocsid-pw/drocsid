@@ -10,8 +10,24 @@ defmodule DrocsidCore.GuildProcess do
     GenServer.call(via(guild_id), request)
   end
 
+  def get_guild(guild_id, caller_id) do
+    call(guild_id, {:get_guild, caller_id})
+  end
+
+  def get_user(guild_id, user_id, caller_id) do
+    call(guild_id, {:get_user, user_id, caller_id})
+  end
+
+  def get_users(guild_id, caller_id) do
+    call(guild_id, {:get_users, caller_id})
+  end
+
+  def get_channel(guild_id, channel_id, caller_id) do
+    call(guild_id, {:get_channel, channel_id, caller_id})
+  end
+
   def get_channels(guild_id, caller_id) do
-    call(guild_id, :get_channels)
+    call(guild_id, {:get_channels, caller_id})
   end
 
   def add_channel(guild_id, caller_id, name) do
@@ -22,8 +38,12 @@ defmodule DrocsidCore.GuildProcess do
     call(guild_id, {:add_guild_user, caller_id})
   end
 
-  def list_messages(guild_id, channel_id, opts \\ []) do
-    call(guild_id, {:list_messages, channel_id, opts})
+  def send_message(guild_id, caller_id, channel_id, text) do
+    call(guild_id, {:send_message, channel_id, caller_id, text})
+  end
+
+  def list_messages(guild_id, caller_id, channel_id, limit, offset) do
+    call(guild_id, {:list_messages, caller_id, channel_id, limit, offset})
   end
 
   ## ========== GenServer start/link ==========
@@ -60,12 +80,72 @@ defmodule DrocsidCore.GuildProcess do
   end
 
   @impl true
-  def handle_call(:get_channels, _from, %{guild_id: guild_id} = state) do
-    reply = DB.get_channels_for_guild(guild_id)
-    {:reply, reply, state}
+  def handle_call({:get_channels, caller_id}, _from, %{guild_id: guild_id} = state) do
+    try do
+      {:ok, rows } = DrocsidCore.DB.get_channels_for_guild(guild_id)
+      channels =
+        rows
+        |> Enum.map(fn %{name: name, channel_id: channel_id} ->
+          %{
+            name: name,
+            channel_id: Integer.to_string(channel_id),
+            guild_id: Integer.to_string(guild_id)
+          }
+        end)
+      {:reply, {:ok, channels}, state}
+    rescue
+      e ->
+        require Logger
+        Logger.error("get_channels failed: #{Exception.message(e)}")
+        {:reply, {:error, :db_error}, state}
+    end
   end
 
-   def handle_call({:add_channel, caller_id, name}, _from, %{guild_id: guild_id} = state) do
+  def handle_call({:get_channel, channel_id, caller_id}, _from, %{guild_id: guild_id} = state) do
+    try do
+      {:ok, %{name: name} } = DrocsidCore.DB.get_channel(guild_id, channel_id)
+      {:reply, {:ok, name}, state}
+    rescue
+      e ->
+        require Logger
+        Logger.error("get_channel failed: #{Exception.message(e)}")
+        {:reply, {:error, :db_error}, state}
+    end
+  end
+
+  def handle_call({:get_users, caller_id}, _from, %{guild_id: guild_id} = state) do
+    try do
+      {:ok, rows } = DrocsidCore.DB.get_users_for_guild(guild_id)
+      users =
+        rows
+        |> Enum.map(fn %{nick: nick, guild_user_id: guild_user_id} ->
+          %{
+            nick: nick,
+            guild_user_id: Integer.to_string(guild_user_id)
+          }
+        end)
+      {:reply, {:ok, users}, state}
+    rescue
+      e ->
+        require Logger
+        Logger.error("get_users failed: #{Exception.message(e)}")
+        {:reply, {:error, :db_error}, state}
+    end
+  end
+
+  def handle_call({:get_user, user_id, caller_id}, _from, %{guild_id: guild_id} = state) do
+    try do
+      {:ok, %{nick: nick} } = DrocsidCore.DB.get_guild_user(guild_id, user_id)
+      {:reply, {:ok, nick}, state}
+    rescue
+      e ->
+        require Logger
+        Logger.error("get_user failed: #{Exception.message(e)}")
+        {:reply, {:error, :db_error}, state}
+    end
+  end
+
+  def handle_call({:add_channel, caller_id, name}, _from, %{guild_id: guild_id} = state) do
     try do
       id = DrocsidCore.DB.insert_channel(guild_id, name)
       {:reply, {:ok, id}, state}
@@ -90,13 +170,43 @@ defmodule DrocsidCore.GuildProcess do
     end
   end
 
-  def handle_call({:list_messages, channel_id, opts}, _from, %{guild_id: _guild_id} = state) do
-    # guild_id masz w state, ale do zapytania wystarczy channel_id/bucket
-    reply = DB.list_messages(channel_id, opts)
-    {:reply, reply, state}
+  def handle_call({:list_messages, caller_id, channel_id, limit, offset}, _from, %{guild_id: guild_id} = state) do
+    try do
+      {:ok, message_list} = DB.list_messages(channel_id, offset, limit)
+
+      {:reply, {:ok, message_list}, state}
+    rescue
+      e ->
+        require Logger
+        Logger.error("list_messages failed: #{Exception.message(e)}")
+        {:reply, {:error, :db_error}, state}
+    end
   end
 
-  # fallback, gdybyś dodał inne typy wiadomości
+  def handle_call({:send_message, channel_id, caller_id, text}, _from, %{guild_id: guild_id} = state) do
+    try do
+      id = DrocsidCore.DB.insert_message(channel_id, guild_id, caller_id, text)
+      {:reply, {:ok, id}, state}
+    rescue
+      e ->
+        require Logger
+        Logger.error("send_message failed: #{Exception.message(e)}")
+        {:reply, {:error, :db_error}, state}
+    end
+  end
+
+  def handle_call({:get_guild, caller_id}, _from, %{guild_id: guild_id} = state) do
+    try do
+      {:ok, %{name: name, owner_id: owner_id}} = DrocsidCore.DB.get_guild(guild_id)
+      {:reply, {:ok, name, owner_id}, state}
+    rescue
+      e ->
+        require Logger
+        Logger.error("get_guild failed: #{Exception.message(e)}")
+        {:reply, {:error, :db_error}, state}
+    end
+  end
+
   def handle_call(other, _from, state) do
     {:reply, {:error, {:unknown_request, other}}, state}
   end
