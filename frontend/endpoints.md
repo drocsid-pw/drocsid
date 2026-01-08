@@ -1,438 +1,387 @@
-# Drocsid REST API – endpoints
+# Drocsid REST API (spring_grpc)
 
-## 0) Konwencje
+Wersja: na podstawie `spring_grpc/src/main/java/com/drocsid/grpc/http/controller/*`
 
-### 0.1 Base URL
+## Auth
 
-`/api`
+- Wszystkie endpointy (poza `/api/hello`) wymagają nagłówka:
+  - `Authorization: Bearer <google_id_token>` (albo token bez prefixu, backend i tak obcina `Bearer `)
+- Query param `caller_id` widoczny w frontendzie NIE jest używany przez controllery (jest ignorowany).
+- Backend mapuje: token subject -> `mapping.token_id` -> `mapping.caller_id` (BigInteger) i dopiero to leci do core przez gRPC.
 
-### 0.2 Auth – Google token w headerze
+---
 
-Każdy request (poza ewentualnymi publicznymi healthcheckami) musi zawierać Google ID token:
+## Guilds
 
--   `Authorization: Bearer <google_id_token>`
+### POST `/api/guilds`
+Tworzy serwer (guild).
 
-Backend:
+Body:
+```json
+{ "name": "My guild", "icon": "" }
+````
 
--   weryfikuje token po stronie serwera (signature / exp / aud / iss),
--   mapuje token → zewnętrzna tożsamość,
--   a `caller_id` traktuje jako wewnętrzny identyfikator do logiki uprawnień (nie jest “authem”).
-
-### 0.3 caller_id
-
--   **GET**: `caller_id` w query: `?caller_id=4356534634563456`
--   **DELETE**: `caller_id` w query: `?caller_id=4356534634563456`
--   **POST / PUT**: `caller_id` w JSON body
-
-### 0.4 Naming
-
--   JSON **camelCase** dla całej reszty: `guildId`, `channelId`, `guildRoleId`, `avatarHash`, `ownerId`, `messageId`
--   wyjątek: **`caller_id`** (snake_case)
-
-### 0.5 PUT = update (pełny payload)
-
-Update’y robimy przez `PUT` i **zawsze wysyłamy pełny payload**.
-
--   backend traktuje payload jako “source of truth”
--   brak reguł typu “brak pola = nie zmieniaj”
--   `Content-Type: application/json`
-
-### 0.6 Standard błędu
+Response: `GuildDto`
 
 ```json
-{
-	"error": {
-		"code": "FORBIDDEN",
-		"message": "Brak uprawnień",
-		"details": {}
-	}
-}
-```
-
-### 0.7 common.ResponseMessage
-
-```json
-{ "text": "ok" }
+{ "guildId": "...", "name": "...", "icon": "", "ownerId": "...", "roles": [] }
 ```
 
 ---
 
-## 1) UserService
+### GET `/api/guilds/{guildId}`
 
-### 1.1 CreateUser
+Pobiera serwer.
 
--   `POST /api/users`
--   body:
-
-```json
-{ "name": "Rafał" }
-```
-
--   response (`user.User`):
-
-```json
-{ "id": "21341243", "name": "Rafał", "avatarHash": "234523452345" }
-```
-
-### 1.2 GetUser
-
--   `GET /api/users/{userId}?caller_id=4356534634563456`
--   response: `user.User`
-
-### 1.3 PutUser
-
--   `PUT /api/users/{userId}`
--   body (partial):
-
-```json
-{ "caller_id": "23452345", "name": "Rafał", "avatarHash": "23452345" }
-```
-
--   response: `user.User`
-
-### 1.4 DeleteUser
-
--   `DELETE /api/users/{userId}?caller_id=4356534634563456`
--   response: `common.ResponseMessage`
+Response: `GuildDto`
 
 ---
 
-## 2) GuildService
+### PUT `/api/guilds/{guildId}`
 
-### 2.1 CreateGuild
+Aktualizuje serwer (name/icon/ownerId/roles w payloadzie, ale w praktyce role zwykle osobno endpointami ról).
 
--   `POST /api/guilds`
--   body:
-
-```json
-{ "caller_id": "23452345", "name": "Nowy serwer", "icon": "✨" }
-```
-
--   response: `guild.Guild`
-
-### 2.2 GetGuild
-
--   `GET /api/guilds/{guildId}?caller_id=4356534634563456`
--   response: `guild.Guild`
-
-### 2.3 PutGuild
-
--   `PUT /api/guilds/{guildId}`
--   body (partial):
+Body:
 
 ```json
 {
-	"caller_id": "4356534634563456",
-	"guild": { "name": "drocsid / 23452534", "icon": "🏡" }
+  "guild": {
+    "guildId": "145...",
+    "name": "ns6",
+    "icon": "",
+    "ownerId": "145...",
+    "roles": [
+      { "guildRoleId": "1", "roleName": "@everyone", "permissions": "..." }
+    ]
+  }
 }
 ```
 
--   response: `guild.Guild`
+Response: `GuildDto`
 
-### 2.4 DeleteGuild
+---
 
--   `DELETE /api/guilds/{guildId}?caller_id=4356534634563456`
--   response: `common.ResponseMessage`
+### DELETE `/api/guilds/{guildId}`
 
-### 2.5 GetAllGuilds (dla usera)
+Usuwa serwer.
 
--   `GET /api/users/{userId}/guilds?caller_id=4356534634563456`
--   response: `guild.GuildList`
+Response: `ResponseMessageDto`
 
 ```json
-{
-	"guilds": [{ "guildId": "34566", "name": "drocsid / 23452534", "icon": "🏡", "ownerId": "4356534634563456" }]
-}
-```
-
-### 2.6 GetAllChannels (w guildzie)
-
--   `GET /api/guilds/{guildId}/channels?caller_id=4356534634563456`
--   response: `channel.ChannelList`
-
-```json
-{
-	"channels": [{ "channelId": "11", "name": "general", "guildId": "23452534", "overrides": { "roles": [] } }]
-}
+{ "text": "Guild deleted successfully." }
 ```
 
 ---
 
-## 2.7 Role management
+## Guild Channels (lista i tworzenie)
 
-### 2.7.1 GetRole
+### GET `/api/guilds/{guildId}/channels`
 
--   `GET /api/guilds/{guildId}/roles/{guildRoleId}?caller_id=4356534634563456`
--   response: `role.Role`
+Lista kanałów w guildzie.
 
-### 2.7.2 CreateRole
-
--   `POST /api/guilds/{guildId}/roles`
--   body:
+Response: `ChannelListDto`
 
 ```json
-{
-	"caller_id": "4356534634563456",
-	"roleName": "Moderator",
-	"permissions": "READ|WRITE|ADMIN_DELETE_MESSAGES"
-}
-```
-
--   response: `role.Role`
-
-### 2.7.3 GetRoles
-
--   `GET /api/guilds/{guildId}/roles?caller_id=4356534634563456`
--   response: `role.RoleList`
-
-```json
-{
-	"roles": [{ "guildRoleId": "2345235", "roleName": "Admin", "permissions": "READ|WRITE" }]
-}
-```
-
-### 2.7.4 PutRole
-
--   `PUT /api/guilds/{guildId}/roles/{guildRoleId}`
--   body (partial):
-
-```json
-{
-	"caller_id": "4356534634563456",
-	"role": { "roleName": "Admin", "permissions": "MANAGE_GUILD_USERS|READ|WRITE" }
-}
-```
-
--   response: `role.Role`
-
-### 2.7.5 DeleteRole (opcjonalnie)
-
--   `DELETE /api/guilds/{guildId}/roles/{guildRoleId}?caller_id=4356534634563456`
--   response: `common.ResponseMessage`
-
----
-
-## 2.8 Channels w guildzie
-
-### 2.8.1 CreateChannel
-
--   `POST /api/guilds/{guildId}/channels`
--   body:
-
-```json
-{ "caller_id": "4356534634563456", "name": "general" }
-```
-
--   response: `channel.Channel`
-
----
-
-## 2.9 Guild user management
-
-### 2.9.1 AddUser (dodaj caller’a do guildy)
-
--   `POST /api/guilds/{guildId}/users`
--   body:
-
-```json
-{ "caller_id": "4356534634563456" }
-```
-
--   response: `guild_user.GuildUser`
-
-### 2.9.2 GetUser (w guildzie)
-
--   `GET /api/guilds/{guildId}/users/{guildUserId}?caller_id=4356534634563456`
--   response: `guild_user.GuildUser`
-
-### 2.9.3 GetUsers (lista usersów w guildzie)
-
--   `GET /api/guilds/{guildId}/users?caller_id=4356534634563456`
--   response: `guild_user.GuildUserList`
-
-```json
-{
-	"guildUsers": [
-		{
-			"guildUserId": "54674567",
-			"nick": "Rafał",
-			"roles": {
-				"roles": [{ "guildRoleId": "2345235", "roleName": "Admin", "permissions": "READ|WRITE" }]
-			}
-		}
-	]
-}
-```
-
-### 2.9.4 PutGuildUser (nick + role assignment)
-
--   `PUT /api/guilds/{guildId}/users/{guildUserId}`
--   body (partial):
-
-```json
-{
-	"caller_id": "4356534634563456",
-	"user": {
-		"guildUserId": "54674567",
-		"nick": "Kuba",
-		"roles": [{ "guildRoleId": "23452534-role-moderator", "roleName": "Moderator", "permissions": "READ|WRITE" }]
-	}
-}
-```
-
--   response: `guild_user.GuildUser`
-
-> Uwaga: trzymamy 1:1 z proto (`roles` jako lista list). Jeśli proto kiedyś uprościcie, w REST najlepiej przejść na `roleIds: string[]`.
-
-### 2.9.5 DeleteGuildUser
-
--   `DELETE /api/guilds/{guildId}/users/{guildUserId}?caller_id=4356534634563456`
--   response: `common.ResponseMessage`
-
----
-
-## 3) ChannelService
-
-### 3.1 GetChannel
-
--   `GET /api/channels/{channelId}?caller_id=4356534634563456`
--   response: `channel.Channel`
-
-### 3.2 PutChannel (name + overrides)
-
--   `PUT /api/channels/{channelId}`
--   body (partial):
-
-```json
-{
-	"caller_id": "4356534634563456",
-	"channel": {
-		"name": "general",
-		"overrides": {
-			"roles": [{ "guildRoleId": "2345235", "roleName": "Admin", "permissions": "READ|WRITE|MANAGE_CHANNEL" }]
-		}
-	}
-}
-```
-
--   response: `channel.Channel`
-
-### 3.3 DeleteChannel
-
--   `DELETE /api/channels/{channelId}?caller_id=4356534634563456`
--   response: `common.ResponseMessage`
-
----
-
-## 3.4 Messages
-
-### 3.4.1 GetMessages (offset/count)
-
--   `GET /api/channels/{channelId}/messages?caller_id=4356534634563456&offset=0&count=50`
--   response: `dmessage.MessageList`
-
-```json
-{
-	"messages": [
-		{
-			"messageId": "m1",
-			"author": { "guildUserId": "54674567", "nick": "Rafał", "roles": { "roles": [] } },
-			"content": "Siemano",
-			"timestamp": "2025-12-20T12:34:56.000Z"
-		}
-	]
-}
-```
-
-### 3.4.2 CreateMessage
-
--   `POST /api/channels/{channelId}/messages`
--   body:
-
-```json
-{
-	"caller_id": "4356534634563456",
-	"message": { "content": "hejka" }
-}
-```
-
--   response: `dmessage.Message`
-
-> W REST upraszczamy request vs proto (`{ req, message }` → `{ caller_id, message }`) i trzymamy camelCase.
-
-### 3.4.3 DeleteMessage
-
--   `DELETE /api/channels/{channelId}/messages/{messageId}?caller_id=4356534634563456`
--   response: `common.ResponseMessage`
-
----
-
-## 4) Greeter (opcjonalnie / healthcheck)
-
-### 4.1 SayHello
-
--   `POST /api/hello`
--   body:
-
-```json
-{ "name": "Rafał" }
-```
-
--   response:
-
-```json
-{ "message": "Hello Rafał" }
+{ "channels": [ { "channelId": "...", "name": "general", "guildId": "...", "overrides": { "roles": [] } } ] }
 ```
 
 ---
 
-## 5) Zbiorcza lista (metoda + endpoint)
+### POST `/api/guilds/{guildId}/channels`
 
-### Users
+Tworzy kanał w guildzie. To jest poprawny endpoint do “Add channel”.
 
--   `POST /api/users`
--   `GET /api/users/{userId}?caller_id=...`
--   `PUT /api/users/{userId}`
--   `DELETE /api/users/{userId}?caller_id=...`
+Body:
 
-### Guilds
+```json
+{ "name": "qweqwe" }
+```
 
--   `POST /api/guilds`
--   `GET /api/guilds/{guildId}?caller_id=...`
--   `PUT /api/guilds/{guildId}`
--   `DELETE /api/guilds/{guildId}?caller_id=...`
--   `GET /api/users/{userId}/guilds?caller_id=...`
--   `GET /api/guilds/{guildId}/channels?caller_id=...`
+Response: `ChannelDto` (z PRAWDZIWYM `channelId` generowanym w core)
 
-### Roles
+```json
+{ "channelId": "145...", "name": "qweqwe", "guildId": "145...", "overrides": { "roles": [] } }
+```
 
--   `GET /api/guilds/{guildId}/roles?caller_id=...`
--   `GET /api/guilds/{guildId}/roles/{guildRoleId}?caller_id=...`
--   `POST /api/guilds/{guildId}/roles`
--   `PUT /api/guilds/{guildId}/roles/{guildRoleId}`
--   `DELETE /api/guilds/{guildId}/roles/{guildRoleId}?caller_id=...` (opcjonalnie)
+**Ważne:** Front powinien po tym podmienić `tmp-*` na realne `channelId`.
 
-### Channels
+---
 
--   `POST /api/guilds/{guildId}/channels`
--   `GET /api/channels/{channelId}?caller_id=...`
--   `PUT /api/channels/{channelId}`
--   `DELETE /api/channels/{channelId}?caller_id=...`
+## Roles (w ramach guilda)
 
-### Messages
+### GET `/api/guilds/{guildId}/roles`
 
--   `GET /api/channels/{channelId}/messages?caller_id=...&offset=...&count=...`
--   `POST /api/channels/{channelId}/messages`
--   `DELETE /api/channels/{channelId}/messages/{messageId}?caller_id=...`
+Lista ról.
 
-### Guild users
+Response: `RoleListDto`
 
--   `POST /api/guilds/{guildId}/users`
--   `GET /api/guilds/{guildId}/users?caller_id=...`
--   `GET /api/guilds/{guildId}/users/{guildUserId}?caller_id=...`
--   `PUT /api/guilds/{guildId}/users/{guildUserId}`
--   `DELETE /api/guilds/{guildId}/users/{guildUserId}?caller_id=...`
+```json
+{ "roles": [ { "guildRoleId": "...", "roleName": "...", "permissions": "..." } ] }
+```
 
-### Misc
+---
 
--   `POST /api/hello`
+### GET `/api/guilds/{guildId}/roles/{guildRoleId}`
+
+Pobiera jedną rolę.
+
+Response: `RoleDto`
+
+---
+
+### POST `/api/guilds/{guildId}/roles`
+
+Tworzy rolę.
+
+Body:
+
+```json
+{ "roleName": "moderator", "permissions": "READ_MESSAGES,SEND_MESSAGES" }
+```
+
+Response: `RoleDto`
+
+---
+
+### PUT `/api/guilds/{guildId}/roles/{guildRoleId}`
+
+Aktualizuje rolę.
+
+Body:
+
+```json
+{ "role": { "guildRoleId": "...", "roleName": "mod", "permissions": "..." } }
+```
+
+Response: `RoleDto`
+
+---
+
+### DELETE `/api/guilds/{guildId}/roles/{guildRoleId}`
+
+Niezaimplementowane (zwraca UNIMPLEMENTED).
+
+---
+
+## Guild Users (members)
+
+### POST `/api/guilds/{guildId}/users`
+
+Dodaje aktualnie zalogowanego usera do guilda.
+
+Response: `GuildUserDto`
+
+---
+
+### GET `/api/guilds/{guildId}/users`
+
+Lista guild userów.
+
+Response: `GuildUserListDto`
+
+```json
+{ "guildUsers": [ { "guildUserId": "...", "nick": "...", "roles": { "roles": [] } } ] }
+```
+
+---
+
+### GET `/api/guilds/{guildId}/users/{guildUserId}`
+
+Pobiera guild usera.
+
+Response: `GuildUserDto`
+
+---
+
+### PUT `/api/guilds/{guildId}/users/{guildUserId}`
+
+Aktualizuje guild usera (nick + roles).
+
+Body:
+
+```json
+{
+  "user": {
+    "guildUserId": "145...",
+    "nick": "Rafal",
+    "roles": { "roles": [ { "guildRoleId": "...", "roleName": "...", "permissions": "..." } ] }
+  }
+}
+```
+
+Uwaga: backend akceptuje też `roles` jako tablicę albo `{ "roles": [ ... ] }`.
+
+Response: `GuildUserDto`
+
+---
+
+### DELETE `/api/guilds/{guildId}/users/{guildUserId}`
+
+Usuwa guild usera.
+
+Response: `ResponseMessageDto`
+
+---
+
+## Channels (operacje na konkretnym kanale)
+
+### GET `/api/channels/{channelId}`
+
+Pobiera kanał.
+
+Response: `ChannelDto`
+
+---
+
+### PUT `/api/channels/{channelId}`
+
+Aktualizuje kanał (nazwa + overrides).
+To NIE jest endpoint do tworzenia.
+
+Body:
+
+```json
+{
+  "channel": {
+    "name": "general",
+    "guildId": "145...",
+    "overrides": {
+      "roles": [
+        { "guildRoleId": "...", "roleName": "...", "permissions": "..." }
+      ]
+    }
+  }
+}
+```
+
+Response: `ChannelDto`
+
+---
+
+### DELETE `/api/channels/{channelId}`
+
+Usuwa kanał.
+
+Response: `ResponseMessageDto`
+
+---
+
+## Channel Messages
+
+### GET `/api/channels/{channelId}/messages?offset=0&count=50`
+
+Pobiera wiadomości (paginacja offset/count).
+
+Response: `MessageListDto`
+
+```json
+{ "messages": [ { "messageId": "...", "author": { ... }, "content": "..." } ] }
+```
+
+---
+
+### POST `/api/channels/{channelId}/messages`
+
+Tworzy wiadomość.
+
+Body:
+
+```json
+{ "message": { "content": "hello" } }
+```
+
+Response: `MessageDto`
+
+---
+
+### DELETE `/api/channels/{channelId}/messages/{messageId}`
+
+Usuwa wiadomość.
+
+Response: `ResponseMessageDto`
+
+---
+
+## Users (global)
+
+### GET `/api/users/get_user`
+
+Zwraca usera dla aktualnego tokena; jeśli nie istnieje w core, backend go tworzy.
+
+Response: `UserDto`
+
+```json
+{ "id": "...", "name": "...", "avatarHash": null }
+```
+
+---
+
+### GET `/api/users/{userId}/guilds`
+
+Zwraca listę guildów usera.
+Uwaga: `userId` w path musi być równy authedUserId (token subject), inaczej FORBIDDEN.
+
+Response: `GuildListDto`
+
+---
+
+### PUT `/api/users/{userId}`
+
+Aktualizuje usera (name/avatarHash).
+Uwaga: `userId` w path musi być równy authedUserId (token subject), inaczej FORBIDDEN.
+
+Body:
+
+```json
+{ "name": "Rafal", "avatarHash": "..." }
+```
+
+Response: `UserDto`
+
+---
+
+### DELETE `/api/users/{userId}`
+
+Usuwa usera (jak wyżej: path userId musi matchować token subject).
+
+Response: `ResponseMessageDto`
+
+---
+
+## Media
+
+### POST `/api/media/uploadImage`
+
+Upload obrazka przez mediaproxy (Base64 w polu `file`).
+
+Body:
+
+```json
+{ "file": "<base64>", "filename": "avatar.png" }
+```
+
+Response: `ImageDto`
+
+```json
+{ "message": "...", "url": "..." }
+```
+
+---
+
+## Misc
+
+### POST `/api/hello`
+
+Demo endpoint (bez auth).
+
+Body:
+
+```json
+{ "name": "World" }
+```
+
+Response:
+
+```json
+{ "message": "Hello World" }
+```

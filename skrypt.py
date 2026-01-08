@@ -15,8 +15,9 @@ def save_files_content_to_txt(root_folder, output_file, ignore_dirs=None):
                 # if file.endswith(('.py', '.env', '.example', '.txt', '.md', '.log')):
                 # if file.endswith(('.proto')):
                 # if file.endswith(('.py', '.txt', '.md', '.php', '.json', '.yaml', '.yml', '.cfg', '.ini', '.js', '.css', '.html', '.tpl')):
-                # if file.endswith(('.py', '.txt', '.md', '.json', '.js', '.ts', '.tsx', '.html', '.css', '.proto')):
-                if file.endswith(('.java', '.proto', '.yml', 'Dockerfile', '.xml')):
+                if file.endswith(('.py', '.txt', '.md', '.json', '.js', '.ts', '.tsx', '.html', '.css', '.proto')):
+                # if file.endswith(('.py', '.json', '.ts', '.tsx', '.html', '.css')):
+                # if file.endswith(('.java', '.proto', '.yml', 'Dockerfile', '.xml')):
                     file_path = os.path.join(root, file)
                     try:
                         with open(file_path, 'r', encoding='utf-8') as infile:
@@ -27,8 +28,8 @@ def save_files_content_to_txt(root_folder, output_file, ignore_dirs=None):
                         print(f"Nie udało się odczytać pliku {file_path}: {e}")
 
 if __name__ == "__main__":
-    # input_folder = "./frontend"
-    input_folder = "./spring_grpc/src/main"
+    input_folder = "./frontend"
+    # input_folder = "./spring_grpc/src/main"
     output_file = "output.txt"
     ignore_list = ['venv', '__pycache__', 'build', 'node_modules', 'target']
 

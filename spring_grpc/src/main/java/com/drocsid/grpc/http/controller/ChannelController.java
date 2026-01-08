@@ -30,7 +30,7 @@ public class ChannelController {
     public ChannelDto getChannel(
         @RequestHeader(value = "Authorization") String authorization,
         @PathVariable String channelId) {
-        String authedUserId = jwtAuthService.checkAuth(authorization);
+        String authedUserId = jwtAuthService.getUserId(authorization);
 
         try {
             return channelService.getChannel(channelId, authedUserId);
@@ -47,7 +47,7 @@ public class ChannelController {
             @PathVariable String channelId,
             @Valid @RequestBody PutChannelBody body) {
 
-        String authedUserId = jwtAuthService.checkAuth(authorization);
+        String authedUserId = jwtAuthService.getUserId(authorization);
 
         ChannelBody ch = body.getChannel();
 
@@ -64,7 +64,7 @@ public class ChannelController {
     public ResponseMessageDto deleteChannel(
         @RequestHeader(value = "Authorization") String authorization,
         @PathVariable String channelId) {
-        String authedUserId = jwtAuthService.checkAuth(authorization);
+        String authedUserId = jwtAuthService.getUserId(authorization);
 
         try {
             return channelService.deleteChannel(authedUserId, channelId);
@@ -81,7 +81,7 @@ public class ChannelController {
         @PathVariable String channelId,
         @RequestParam(value = "offset", defaultValue = "0") int offset,
         @RequestParam(value = "count", defaultValue = "50") int count) {
-        String authedUserId = jwtAuthService.checkAuth(authorization);
+        String authedUserId = jwtAuthService.getUserId(authorization);
 
         try {
             return channelService.getMessages(authedUserId, channelId, offset, count);
@@ -98,7 +98,7 @@ public class ChannelController {
             @PathVariable String channelId,
             @Valid @RequestBody CreateMessageBody body) {
 
-        String authedUserId = jwtAuthService.checkAuth(authorization);
+        String authedUserId = jwtAuthService.getUserId(authorization);
         String content = body.getMessage().getContent();
 
         try {
@@ -116,7 +116,7 @@ public class ChannelController {
             @PathVariable String channelId,
             @PathVariable String messageId) {
 
-        String authedUserId = jwtAuthService.checkAuth(authorization);
+        String authedUserId = jwtAuthService.getUserId(authorization);
 
         try {
             return channelService.deleteMessage(authedUserId, channelId, messageId);

@@ -22,20 +22,19 @@ public class UserController {
         this.jwtAuthService = jwtAuthService;
     }
 
-    @PostMapping
-    public UserDto createUser(@Valid @RequestBody CreateUserBody body) {
-
-        return userService.createUser(body);
-    }
-
     @GetMapping("/get_user")
-    public UserDto getUser(
-            @RequestHeader("Authorization") String authorization) {
-
-        String authedUserId = jwtAuthService.checkAuth(authorization);
+    public UserDto getUser(@RequestHeader("Authorization") String authorization) {
+        
+        System.out.println("/get_user");
+        String authedUserId = jwtAuthService.getUserId(authorization);
+        System.out.println("/get_user");
 
         try {
             return userService.getUser(authedUserId);
+        }
+        catch (NoSuchFieldException e){
+            System.out.println("Creating new User");
+            return userService.createUser(authedUserId, jwtAuthService.getName(authorization));
         }
         catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
@@ -49,7 +48,7 @@ public class UserController {
             @PathVariable String userId,
             @Valid @RequestBody PutUserBody body) {
 
-        String authedUserId = jwtAuthService.checkAuth(authorization);
+        String authedUserId = jwtAuthService.getUserId(authorization);
 
         try {
             return userService.updateUser(authedUserId, userId, body);
@@ -65,7 +64,7 @@ public class UserController {
             @RequestHeader("Authorization") String authorization,
             @PathVariable String userId) {
 
-        String authedUserId = jwtAuthService.checkAuth(authorization);
+        String authedUserId = jwtAuthService.getUserId(authorization);
 
         try {
             return userService.deleteUser(authedUserId, userId);
@@ -81,7 +80,7 @@ public class UserController {
             @RequestHeader("Authorization") String authorization,
             @PathVariable String userId) {
 
-        String authedUserId = jwtAuthService.checkAuth(authorization);
+        String authedUserId = jwtAuthService.getUserId(authorization);
 
         try {
             return userService.getAllGuilds(authedUserId, userId);
@@ -90,11 +89,6 @@ public class UserController {
             System.out.println("Error: " + e.getMessage());
             return null;
         }
-    }
-
-    @Data
-    public static class CreateUserBody {
-        private String name;
     }
 
     @Data

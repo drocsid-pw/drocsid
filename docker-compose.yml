@@ -28,8 +28,11 @@ services:
       DB_NAME: token_id_caller_id_mapping
       DB_USER: root
       DB_PASSWORD: example
+      CORE_HOST: core
+      CORE_PORT: 50051
     depends_on:
       - mysql
+      - core
 
   cassandra:
     image: cassandra:4.1

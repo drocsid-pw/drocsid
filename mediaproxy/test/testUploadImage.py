@@ -15,8 +15,8 @@ sas_token = Path(SAS_FILE).read_text().strip()
 
 payload = {
     "file": file_b64,
-    "filename": Path(FILE_PATH).stem,
-    "sasToken": sas_token
+    "filename": Path(FILE_PATH).stem
+    # "sasToken": sas_token
 }
 
 response = requests.post(

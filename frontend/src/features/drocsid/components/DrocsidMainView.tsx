@@ -10,7 +10,16 @@ import { useDrocsidTheme } from "../theme-provider";
 import { useAuth } from "../../../auth/auth";
 import { useDrocsidApi } from "../../../api/useDrocsidApi";
 import { isDrocsidApiError } from "../../../api/http";
-import { avatarLetterFromName, mapChannelDto, mapGuildDto, mapGuildUserDto, mapMessageDto, mapRoleDto, mapUserDto } from "../mappers";
+import {
+	avatarLetterFromName,
+	mapChannelDto,
+	mapGuildDto,
+	mapGuildUserDto,
+	mapMessageDto,
+	mapRoleDto,
+	mapUserDto,
+} from "../mappers";
+import { useInviteAutoOpen } from "./useInviteAutoOpen";
 
 type DrocsidViewMode = "chat" | "userSettings" | "serverSettings" | "createServer";
 type DrocsidSideMode = "servers" | "friends";
@@ -21,17 +30,49 @@ const DROCSID_LAYOUT = {
 	mainWidth: "74vw",
 };
 
+const EMPTY_FRIENDS: DrocsidFriend[] = [];
+
 function replaceServer(servers: DrocsidGuild[], next: DrocsidGuild) {
 	return servers.map((s) => (s.guildId === next.guildId ? next : s));
 }
 
+function dedupeById<T>(items: T[], getId: (item: T) => string): T[] {
+	const byId = new Map<string, T>();
+	for (const item of items) {
+		byId.set(getId(item), item);
+	}
+	return [...byId.values()];
+}
+
+function findByIdOrFirst<T>(items: T[], id: string | null, getId: (item: T) => string): T | null {
+	if (items.length === 0) {
+		return null;
+	}
+	if (!id) {
+		return items[0] ?? null;
+	}
+	return items.find((x) => getId(x) === id) ?? items[0] ?? null;
+}
+
+function ensureSelectedId(items: { id: string }[], currentId: string | null): string | null {
+	if (items.length === 0) {
+		return null;
+	}
+	if (currentId && items.some((x) => x.id === currentId)) {
+		return currentId;
+	}
+	return items[0]?.id ?? null;
+}
+
 function mergeGuildSummaries(prev: DrocsidGuild[], next: DrocsidGuild[]): DrocsidGuild[] {
 	const byId = new Map(prev.map((g) => [g.guildId, g]));
+
 	return next.map((g) => {
 		const existing = byId.get(g.guildId);
 		if (!existing) {
 			return g;
 		}
+
 		return {
 			...existing,
 			guildId: g.guildId,
@@ -53,6 +94,20 @@ function getErrorText(err: unknown): string {
 	return "Nieznany błąd";
 }
 
+type CancelableJob = (args: { isCancelled: () => boolean }) => Promise<void>;
+
+function runCancelableEffect(job: CancelableJob) {
+	let cancelled = false;
+
+	void job({
+		isCancelled: () => cancelled,
+	});
+
+	return () => {
+		cancelled = true;
+	};
+}
+
 export function DrocsidMainView() {
 	const { theme } = useDrocsidTheme();
 	const api = useDrocsidApi();
@@ -72,7 +127,9 @@ export function DrocsidMainView() {
 
 	const [isSending, setIsSending] = useState(false);
 
-	const friends: DrocsidFriend[] = [];
+	const [hydratedGuildIds, setHydratedGuildIds] = useState<Set<string>>(() => new Set());
+
+	const friends = EMPTY_FRIENDS;
 	const activeFriendId: string | null = null;
 
 	const fallbackUser: DrocsidUser | null = useMemo(() => {
@@ -93,29 +150,8 @@ export function DrocsidMainView() {
 			return null;
 		}
 
-		try {
-			const dto = await api.getUser(callerId);
-			return mapUserDto(dto, { id: callerId, name: payload?.name ?? undefined });
-		} catch (e) {
-			if (!isDrocsidApiError(e) || e.code !== "NOT_FOUND") {
-				throw e;
-			}
-
-			const name = (payload?.name ?? "drocsid user").trim() || "drocsid user";
-			await api.createUser(name);
-
-			try {
-				const dto = await api.getUser(callerId);
-				return mapUserDto(dto, { id: callerId, name: payload?.name ?? undefined });
-			} catch {
-				return {
-					id: callerId,
-					name,
-					avatarHash: "",
-					avatarLetter: avatarLetterFromName(name),
-				};
-			}
-		}
+		const dto = await api.getCurrentUser();
+		return mapUserDto(dto, { id: callerId, name: payload?.name ?? undefined });
 	}, [api, callerId, payload?.name]);
 
 	const reloadGuilds = useCallback(
@@ -125,16 +161,13 @@ export function DrocsidMainView() {
 			}
 
 			const list = await api.getAllGuilds(callerId);
-			const guilds = (list.guilds ?? []).map(mapGuildDto);
+			const guilds = dedupeById((list.guilds ?? []).map(mapGuildDto), (g) => g.guildId);
 
 			setServers((prev) => mergeGuildSummaries(prev, guilds));
 
-			const nextActive = selectGuildId ?? activeServerId;
-			if (nextActive && guilds.some((g) => g.guildId === nextActive)) {
-				setActiveServerId(nextActive);
-			} else {
-				setActiveServerId(guilds[0]?.guildId ?? null);
-			}
+			const preferredId = selectGuildId ?? activeServerId;
+			const nextId = guilds.some((g) => g.guildId === preferredId) ? preferredId ?? null : guilds[0]?.guildId ?? null;
+			setActiveServerId(nextId);
 		},
 		[api, callerId, activeServerId]
 	);
@@ -146,61 +179,64 @@ export function DrocsidMainView() {
 			return;
 		}
 
-		let cancelled = false;
-
-		(async () => {
+		return runCancelableEffect(async ({ isCancelled }) => {
 			try {
 				setIsBooting(true);
 				setBootError(null);
 
 				const [user] = await Promise.all([ensureUser(), reloadGuilds(null)]);
 
-				if (cancelled) {
+				if (isCancelled()) {
 					return;
 				}
 
 				setCurrentUser(user ?? fallbackUser);
 			} catch (e) {
-				if (cancelled) {
+				if (isCancelled()) {
 					return;
 				}
 				setBootError(getErrorText(e));
 			} finally {
-				if (!cancelled) {
+				if (!isCancelled()) {
 					setIsBooting(false);
 				}
 			}
-		})();
-
-		return () => {
-			cancelled = true;
-		};
+		});
 	}, [api, callerId, ensureUser, reloadGuilds, fallbackUser]);
 
-	const activeServer = useMemo<DrocsidGuild | null>(() => {
-		if (servers.length === 0) {
-			return null;
-		}
-		if (!activeServerId) {
-			return servers[0] ?? null;
-		}
-		return servers.find((s) => s.guildId === activeServerId) ?? servers[0] ?? null;
+	const activeServer = useMemo(() => {
+		return findByIdOrFirst(servers, activeServerId, (s) => s.guildId);
 	}, [servers, activeServerId]);
+
+	const channels = useMemo<DrocsidChannel[]>(() => activeServer?.channels ?? [], [activeServer?.channels]);
+
+	useEffect(() => {
+		const items = channels.map((c) => ({ id: c.channelId }));
+		const nextId = ensureSelectedId(items, activeChannelId);
+		setActiveChannelId(nextId);
+	}, [activeServer?.guildId, channels, activeChannelId]);
+
+	const activeChannel = useMemo(() => {
+		return findByIdOrFirst(channels, activeChannelId, (c) => c.channelId);
+	}, [channels, activeChannelId]);
 
 	useEffect(() => {
 		if (!api || !activeServer?.guildId) {
 			return;
 		}
 
-		let cancelled = false;
+		return runCancelableEffect(async ({ isCancelled }) => {
+			const guildId = activeServer.guildId;
 
-		(async () => {
 			try {
-				const guildId = activeServer.guildId;
+				const [guildDto, rolesDto, channelsDto, usersDto] = await Promise.all([
+					api.getGuild(guildId),
+					api.getRoles(guildId),
+					api.getAllChannels(guildId),
+					api.getGuildUsers(guildId),
+				]);
 
-				const [guildDto, rolesDto, channelsDto, usersDto] = await Promise.all([api.getGuild(guildId), api.getRoles(guildId), api.getAllChannels(guildId), api.getGuildUsers(guildId)]);
-
-				if (cancelled) {
+				if (isCancelled()) {
 					return;
 				}
 
@@ -214,6 +250,7 @@ export function DrocsidMainView() {
 
 						const base = mapGuildDto(guildDto);
 						const prevChannelsById = new Map((g.channels ?? []).map((c) => [c.channelId, c]));
+
 						const nextChannels = (channelsDto.channels ?? []).map((c) => {
 							const mapped = mapChannelDto(c);
 							const existing = prevChannelsById.get(mapped.channelId);
@@ -229,56 +266,34 @@ export function DrocsidMainView() {
 						};
 					})
 				);
+
+				setHydratedGuildIds((prev) => {
+					const next = new Set(prev);
+					next.add(guildId);
+					return next;
+				});
 			} catch (e) {
+				if (isCancelled()) {
+					return;
+				}
 				setBootError(getErrorText(e));
 			}
-		})();
-
-		return () => {
-			cancelled = true;
-		};
+		});
 	}, [api, activeServer?.guildId]);
-
-	const channels = useMemo<DrocsidChannel[]>(() => activeServer?.channels ?? [], [activeServer]);
-
-	useEffect(() => {
-		if (!activeServer) {
-			setActiveChannelId(null);
-			return;
-		}
-
-		if (channels.length === 0) {
-			setActiveChannelId(null);
-			return;
-		}
-
-		const exists = activeChannelId ? channels.some((c) => c.channelId === activeChannelId) : false;
-		if (!exists) {
-			setActiveChannelId(channels[0]?.channelId ?? null);
-		}
-	}, [activeServer?.guildId, channels, activeChannelId, activeServer]);
-
-	const activeChannel = useMemo<DrocsidChannel | null>(() => {
-		if (!activeServer || channels.length === 0) {
-			return null;
-		}
-		if (!activeChannelId) {
-			return channels[0] ?? null;
-		}
-		return channels.find((c) => c.channelId === activeChannelId) ?? channels[0] ?? null;
-	}, [activeServer, channels, activeChannelId]);
 
 	useEffect(() => {
 		if (!api || !activeChannelId || !activeServer?.guildId) {
 			return;
 		}
 
-		let cancelled = false;
+		return runCancelableEffect(async ({ isCancelled }) => {
+			const guildId = activeServer.guildId;
+			const channelId = activeChannelId;
 
-		(async () => {
 			try {
-				const list = await api.getMessages(activeChannelId, 0, 50);
-				if (cancelled) {
+				const list = await api.getMessages(channelId, 0, 50);
+
+				if (isCancelled()) {
 					return;
 				}
 
@@ -286,31 +301,37 @@ export function DrocsidMainView() {
 
 				setServers((prev) =>
 					prev.map((g) => {
-						if (g.guildId !== activeServer.guildId) {
+						if (g.guildId !== guildId) {
 							return g;
 						}
 
 						return {
 							...g,
-							channels: (g.channels ?? []).map((ch) => (ch.channelId === activeChannelId ? { ...ch, messages: mapped } : ch)),
+							channels: (g.channels ?? []).map((ch) => (ch.channelId === channelId ? { ...ch, messages: mapped } : ch)),
 						};
 					})
 				);
 			} catch (e) {
+				if (isCancelled()) {
+					return;
+				}
 				setBootError(getErrorText(e));
 			}
-		})();
-
-		return () => {
-			cancelled = true;
-		};
+		});
 	}, [api, activeChannelId, activeServer?.guildId]);
 
-	const serverMessages = useMemo(() => activeChannel?.messages ?? [], [activeChannel]);
+	const serverMessages = useMemo(() => activeChannel?.messages ?? [], [activeChannel?.messages]);
+
+	const activeGuildId = activeServer?.guildId ?? null;
+	const activeChId = activeChannel?.channelId ?? null;
 
 	const handleSendChannelMessage = useCallback(
 		async (content: string) => {
-			if (!api || !activeServer?.guildId || !activeChannel?.channelId) {
+			if (!api) {
+				return;
+			}
+
+			if (!activeGuildId || !activeChId) {
 				return;
 			}
 
@@ -322,20 +343,19 @@ export function DrocsidMainView() {
 			setIsSending(true);
 
 			try {
-				const dto = await api.createMessage(activeChannel.channelId, trimmed);
-				const timestamp = new Date().toISOString();
-				const msg = mapMessageDto(dto, { timestamp });
+				const dto = await api.createMessage(activeChId, trimmed);
+				const msg = mapMessageDto(dto, { timestamp: dto.timestamp ?? new Date().toISOString() });
 
 				setServers((prev) =>
 					prev.map((g) => {
-						if (g.guildId !== activeServer.guildId) {
+						if (g.guildId !== activeGuildId) {
 							return g;
 						}
 
 						return {
 							...g,
 							channels: g.channels.map((ch) => {
-								if (ch.channelId !== activeChannel.channelId) {
+								if (ch.channelId !== activeChId) {
 									return ch;
 								}
 								return { ...ch, messages: [...(ch.messages ?? []), msg] };
@@ -347,8 +367,32 @@ export function DrocsidMainView() {
 				setIsSending(false);
 			}
 		},
-		[api, activeServer?.guildId, activeChannel?.channelId]
+		[api, activeGuildId, activeChId]
 	);
+
+	const guildsLoaded = !isBooting && !bootError;
+	const channelsLoaded = !!activeServer?.guildId && hydratedGuildIds.has(activeServer.guildId);
+
+	useInviteAutoOpen({
+		guildsLoaded,
+		channelsLoaded,
+		channels: channels.map((c) => ({ id: c.channelId })),
+		reloadGuilds: async (guildId) => {
+			await reloadGuilds(guildId);
+		},
+		setActiveChannelId: (channelId) => {
+			setActiveChannelId(channelId);
+		},
+		onOpenServersMode: () => {
+			setSideMode("servers");
+			setViewMode("chat");
+		},
+		joinGuildById: async (guildId) => {
+			if (!api) return;
+			await api.addUserToGuild(guildId);
+		},
+	});
+
 
 	if (isBooting) {
 		return (
@@ -425,7 +469,15 @@ export function DrocsidMainView() {
 	} else if (sideMode === "friends") {
 		mainContent = <DrocsidChatView title="Prywatne wiadomości" messages={[]} isDm sendDisabledReason="Brak endpointów do DM w backendzie." />;
 	} else {
-		mainContent = <DrocsidChatView title={activeChannel ? activeChannel.name : "brak-kanału"} messages={serverMessages} isDm={false} onSendMessage={handleSendChannelMessage} isSending={isSending} />;
+		mainContent = (
+			<DrocsidChatView
+				title={activeChannel ? activeChannel.name : "brak-kanału"}
+				messages={serverMessages}
+				isDm={false}
+				onSendMessage={handleSendChannelMessage}
+				isSending={isSending}
+			/>
+		);
 	}
 
 	return (
