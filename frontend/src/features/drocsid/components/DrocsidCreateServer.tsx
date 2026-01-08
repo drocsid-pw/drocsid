@@ -217,7 +217,7 @@ export function DrocsidCreateServer(props: DrocsidCreateServerProps) {
 			}
 
 			try {
-				await api.addUserToGuild(guildId);
+				// await api.addUserToGuild(guildId);
 			} catch {}
 
 			const roleCreates = buildRoleCreates(roles);
