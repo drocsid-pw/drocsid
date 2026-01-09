@@ -297,7 +297,7 @@ export function DrocsidMainView() {
 					return;
 				}
 
-				const mapped = (list.messages ?? []).map((m) => mapMessageDto(m));
+				const mapped = (list.messages ?? []).map((m) => mapMessageDto(m)).reverse();
 
 				setServers((prev) =>
 					prev.map((g) => {
