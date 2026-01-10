@@ -10,15 +10,7 @@ import { useDrocsidTheme } from "../theme-provider";
 import { useAuth } from "../../../auth/auth";
 import { useDrocsidApi } from "../../../api/useDrocsidApi";
 import { isDrocsidApiError } from "../../../api/http";
-import {
-	avatarLetterFromName,
-	mapChannelDto,
-	mapGuildDto,
-	mapGuildUserDto,
-	mapMessageDto,
-	mapRoleDto,
-	mapUserDto,
-} from "../mappers";
+import { avatarLetterFromName, mapChannelDto, mapGuildDto, mapGuildUserDto, mapMessageDto, mapRoleDto, mapUserDto } from "../mappers";
 import { useInviteAutoOpen } from "./useInviteAutoOpen";
 
 type DrocsidViewMode = "chat" | "userSettings" | "serverSettings" | "createServer";
@@ -229,12 +221,7 @@ export function DrocsidMainView() {
 			const guildId = activeServer.guildId;
 
 			try {
-				const [guildDto, rolesDto, channelsDto, usersDto] = await Promise.all([
-					api.getGuild(guildId),
-					api.getRoles(guildId),
-					api.getAllChannels(guildId),
-					api.getGuildUsers(guildId),
-				]);
+				const [guildDto, rolesDto, channelsDto, usersDto] = await Promise.all([api.getGuild(guildId), api.getRoles(guildId), api.getAllChannels(guildId), api.getGuildUsers(guildId)]);
 
 				if (isCancelled()) {
 					return;
@@ -389,10 +376,9 @@ export function DrocsidMainView() {
 		},
 		joinGuildById: async (guildId) => {
 			if (!api) return;
-			await api.addUserToGuild(guildId);
+			// await api.addUserToGuild(guildId);
 		},
 	});
-
 
 	if (isBooting) {
 		return (
@@ -469,15 +455,7 @@ export function DrocsidMainView() {
 	} else if (sideMode === "friends") {
 		mainContent = <DrocsidChatView title="Prywatne wiadomości" messages={[]} isDm sendDisabledReason="Brak endpointów do DM w backendzie." />;
 	} else {
-		mainContent = (
-			<DrocsidChatView
-				title={activeChannel ? activeChannel.name : "brak-kanału"}
-				messages={serverMessages}
-				isDm={false}
-				onSendMessage={handleSendChannelMessage}
-				isSending={isSending}
-			/>
-		);
+		mainContent = <DrocsidChatView title={activeChannel ? activeChannel.name : "brak-kanału"} messages={serverMessages} isDm={false} onSendMessage={handleSendChannelMessage} isSending={isSending} />;
 	}
 
 	return (
