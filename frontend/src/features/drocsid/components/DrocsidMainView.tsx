@@ -100,6 +100,27 @@ function runCancelableEffect(job: CancelableJob) {
 	};
 }
 
+async function fileToBase64(file: File): Promise<string> {
+	const dataUrl = await new Promise<string>((resolve, reject) => {
+		const reader = new FileReader();
+		reader.onerror = () => reject(new Error("Nie udało się odczytać pliku"));
+		reader.onload = () => resolve(String(reader.result ?? ""));
+		reader.readAsDataURL(file);
+	});
+
+	const idx = dataUrl.indexOf("base64,");
+	if (idx < 0) {
+		throw new Error("Nie udało się zrobić base64 z pliku");
+	}
+
+	return dataUrl.slice(idx + "base64,".length);
+}
+
+function buildImageMessageContent(url: string): string {
+	const safe = (url ?? "").trim();
+	return `<img src="${safe}">`;
+}
+
 export function DrocsidMainView() {
 	const { theme } = useDrocsidTheme();
 	const api = useDrocsidApi();
@@ -123,6 +144,13 @@ export function DrocsidMainView() {
 
 	const friends = EMPTY_FRIENDS;
 	const activeFriendId: string | null = null;
+
+	useEffect(() => {
+		document.body.classList.add("drocsid-lock");
+		return () => {
+			document.body.classList.remove("drocsid-lock");
+		};
+	}, []);
 
 	const fallbackUser: DrocsidUser | null = useMemo(() => {
 		if (!callerId) {
@@ -357,6 +385,55 @@ export function DrocsidMainView() {
 		[api, activeGuildId, activeChId]
 	);
 
+	const handleSendChannelImage = useCallback(
+		async (file: File) => {
+			if (!api) return;
+			if (!activeGuildId || !activeChId) return;
+
+			if (!file.type.startsWith("image/")) {
+				throw new Error("To nie jest obrazek");
+			}
+
+			setIsSending(true);
+
+			try {
+				const base64 = await fileToBase64(file);
+
+				const uploaded = await api.uploadImage(base64, file.name || "image.png");
+				const url = (uploaded?.url ?? "").trim();
+
+				if (!url) {
+					throw new Error("Upload nie zwrócił url");
+				}
+
+				const content = buildImageMessageContent(url);
+				const dto = await api.createMessage(activeChId, content);
+				const msg = mapMessageDto(dto, { timestamp: dto.timestamp ?? new Date().toISOString() });
+
+				setServers((prev) =>
+					prev.map((g) => {
+						if (g.guildId !== activeGuildId) {
+							return g;
+						}
+
+						return {
+							...g,
+							channels: g.channels.map((ch) => {
+								if (ch.channelId !== activeChId) {
+									return ch;
+								}
+								return { ...ch, messages: [...(ch.messages ?? []), msg] };
+							}),
+						};
+					})
+				);
+			} finally {
+				setIsSending(false);
+			}
+		},
+		[api, activeGuildId, activeChId]
+	);
+
 	const guildsLoaded = !isBooting && !bootError;
 	const channelsLoaded = !!activeServer?.guildId && hydratedGuildIds.has(activeServer.guildId);
 
@@ -376,7 +453,6 @@ export function DrocsidMainView() {
 		},
 		joinGuildById: async (guildId) => {
 			if (!api) return;
-			// await api.addUserToGuild(guildId);
 		},
 	});
 
@@ -421,7 +497,7 @@ export function DrocsidMainView() {
 
 	if (viewMode === "createServer") {
 		mainContent = (
-			<div className="h-full p-4" style={{ backgroundColor: theme.mainChat.background }}>
+			<div className="h-full min-h-0 overflow-y-auto p-4" style={{ backgroundColor: theme.mainChat.background }}>
 				<DrocsidCreateServer
 					onCancel={() => setViewMode("chat")}
 					onCreated={async (guildId) => {
@@ -435,13 +511,13 @@ export function DrocsidMainView() {
 		);
 	} else if (viewMode === "userSettings") {
 		mainContent = (
-			<div className="h-full p-4" style={{ backgroundColor: theme.mainChat.background }}>
+			<div className="h-full min-h-0 overflow-y-auto p-4" style={{ backgroundColor: theme.mainChat.background }}>
 				<DrocsidUserSettings user={effectiveUser} onUserUpdated={(u) => setCurrentUser(u)} onClose={() => setViewMode("chat")} />
 			</div>
 		);
 	} else if (viewMode === "serverSettings") {
 		mainContent = (
-			<div className="h-full p-4" style={{ backgroundColor: theme.mainChat.background }}>
+			<div className="h-full min-h-0 overflow-y-auto p-4" style={{ backgroundColor: theme.mainChat.background }}>
 				<DrocsidServerSettings
 					server={activeServer}
 					callerId={effectiveUser.id}
@@ -455,13 +531,13 @@ export function DrocsidMainView() {
 	} else if (sideMode === "friends") {
 		mainContent = <DrocsidChatView title="Prywatne wiadomości" messages={[]} isDm sendDisabledReason="Brak endpointów do DM w backendzie." />;
 	} else {
-		mainContent = <DrocsidChatView title={activeChannel ? activeChannel.name : "brak-kanału"} messages={serverMessages} isDm={false} onSendMessage={handleSendChannelMessage} isSending={isSending} />;
+		mainContent = <DrocsidChatView title={activeChannel ? activeChannel.name : "brak-kanału"} messages={serverMessages} isDm={false} onSendMessage={handleSendChannelMessage} onSendImage={handleSendChannelImage} isSending={isSending} />;
 	}
 
 	return (
-		<section className="h-full w-full">
+		<section className="h-[100dvh] w-full overflow-hidden">
 			<div
-				className="h-full min-h-screen grid"
+				className="h-full min-h-0 grid"
 				style={{
 					backgroundColor: theme.appBackground,
 					gridTemplateColumns: `${DROCSID_LAYOUT.serversWidth} ${DROCSID_LAYOUT.channelsWidth} ${DROCSID_LAYOUT.mainWidth}`,
@@ -500,7 +576,7 @@ export function DrocsidMainView() {
 					currentUser={effectiveUser}
 				/>
 
-				{mainContent}
+				<div className="h-full min-h-0 overflow-hidden">{mainContent}</div>
 			</div>
 		</section>
 	);
