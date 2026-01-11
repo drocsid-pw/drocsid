@@ -599,6 +599,7 @@ export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 		event.preventDefault();
 		setSaveError(null);
 
+
 		if (!api) {
 			setSaveError("Missing API (auth). Please sign in again.");
 			return;
@@ -633,14 +634,14 @@ export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 			});
 
 			const updatableRoles = roles.filter((r) => !r.system);
-			await Promise.all(
-				updatableRoles.map((r) =>
-					api.putRole(server.guildId, r.guildRoleId, {
-						roleName: r.roleName.trim(),
-						permissions: recordToPermissionsString(r.permissions),
-					})
-				)
-			);
+			// await Promise.all(
+			// 	updatableRoles.map((r) =>
+			// 		api.putRole(server.guildId, r.guildRoleId, {
+			// 			roleName: r.roleName.trim(),
+			// 			permissions: recordToPermissionsString(r.permissions),
+			// 		})
+			// 	)
+			// );
 
 			const originalRealChannelIds = (server.channels ?? [])
 				.map((c) => c.channelId)
@@ -659,6 +660,7 @@ export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 
 			const results = await Promise.all(
 				nextChannels.map(async (ch) => {
+					console.log("saving channel", ch);
 					const payload = buildChannelPayload(ch, server.guildId);
 
 					if (isTempChannelId(ch.channelId)) {
