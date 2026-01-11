@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS guild_users (
 
 CREATE TABLE IF NOT EXISTS roles (
     role_id             bigint PRIMARY KEY,
+    guild_id            bigint,
     name                text,
     position            smallint,
     read_permission     boolean,

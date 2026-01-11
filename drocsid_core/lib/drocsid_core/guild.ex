@@ -46,6 +46,26 @@ defmodule DrocsidCore.GuildProcess do
     call(guild_id, {:list_messages, caller_id, channel_id, limit, offset})
   end
 
+  def delete_channel(guild_id, caller_id, channel_id) do
+    call(guild_id, {:delete_channel, caller_id, channel_id})
+  end
+
+  def delete_guild_user(guild_id, caller_id, guild_user_id) do
+    call(guild_id, {:delete_guild_user, caller_id, guild_user_id})
+  end
+
+  def delete_guild(guild_id, caller_id) do
+    call(guild_id, {:delete_guild, caller_id})
+  end
+
+  def create_role(guild_id, caller_id, name, position, permissions) do
+    call(guild_id, {:create_role, caller_id, name, position, permissions})
+  end
+
+  def delete_role(guild_id, caller_id, role_id) do
+    call(guild_id, {:delete_role, caller_id, role_id})
+  end
+
   ## ========== GenServer start/link ==========
 
   def start_link(guild_id) do
@@ -203,6 +223,76 @@ defmodule DrocsidCore.GuildProcess do
       e ->
         require Logger
         Logger.error("get_guild failed: #{Exception.message(e)}")
+        {:reply, {:error, :db_error}, state}
+    end
+  end
+
+  def handle_call({:delete_channel, caller_id, channel_id}, _from, %{guild_id: guild_id} = state) do
+    try do
+      :ok = DrocsidCore.DB.delete_channel(channel_id)
+      {:reply, :ok, state}
+    rescue
+      e ->
+        require Logger
+        Logger.error("delete_channel failed: #{Exception.message(e)}")
+        {:reply, {:error, :db_error}, state}
+    end
+  end
+
+  def handle_call({:delete_guild_user, caller_id, guild_user_id}, _from, %{guild_id: guild_id} = state) do
+    try do
+      :ok = DrocsidCore.DB.delete_guild_user(guild_user_id)
+      {:reply, :ok, state}
+    rescue
+      e ->
+        require Logger
+        Logger.error("delete_guild_user failed: #{Exception.message(e)}")
+        {:reply, {:error, :db_error}, state}
+    end
+  end
+
+  def handle_call({:delete_guild, caller_id}, _from, %{guild_id: guild_id} = state) do
+    try do
+      :ok = DrocsidCore.DB.delete_guild(guild_id)
+      {:reply, :ok, state}
+    rescue
+      e ->
+        require Logger
+        Logger.error("delete_guild failed: #{Exception.message(e)}")
+        {:reply, {:error, :db_error}, state}
+    end
+  end
+
+  def handle_call({:create_role, caller_id, name, position, permissions}, _from, %{guild_id: guild_id} = state) do
+    try do
+      role_id = DrocsidCore.DB.insert_role(
+        guild_id,
+        name,
+        position,
+        Map.get(permissions, :read_permission, false),
+        Map.get(permissions, :write_perm, false),
+        Map.get(permissions, :guild_edit_perm, false),
+        Map.get(permissions, :channel_edit_perm, false),
+        Map.get(permissions, :user_edit_perm, false),
+        Map.get(permissions, :message_del_perm, false)
+      )
+      {:reply, {:ok, role_id}, state}
+    rescue
+      e ->
+        require Logger
+        Logger.error("create_role failed: #{Exception.message(e)}")
+        {:reply, {:error, :db_error}, state}
+    end
+  end
+
+  def handle_call({:delete_role, caller_id, role_id}, _from, %{guild_id: guild_id} = state) do
+    try do
+      :ok = DrocsidCore.DB.delete_role(role_id)
+      {:reply, :ok, state}
+    rescue
+      e ->
+        require Logger
+        Logger.error("delete_role failed: #{Exception.message(e)}")
         {:reply, {:error, :db_error}, state}
     end
   end

@@ -39,9 +39,30 @@ defmodule DrocsidCore.ChannelServer do
     %Channel.Channel{}
   end
 
-  def delete_channel(request, _stream) do
-    Logger.info("DeleteChannel: #{inspect(request)}")
-    %Common.ResponseMessage{text: "not implemented yet"}
+  def delete_channel(%{caller_id: caller_id, channel_id: channel_id}, _stream) do
+    Logger.info("DeleteChannel: #{channel_id}")
+    cid =
+      case Integer.parse(caller_id) do
+        {i, ""} -> i
+        _ -> raise GRPC.RPCError, status: :invalid_argument, message: "caller_id must be an integer"
+      end
+    chid =
+      case Integer.parse(channel_id) do
+        {i, ""} -> i
+        _ -> raise GRPC.RPCError, status: :invalid_argument, message: "channel_id must be an integer"
+      end
+    gid =
+      case get_guild_id(chid) do
+        {:ok, i} -> i
+        _ -> raise GRPC.RPCError, status: :invalid_argument, message: "channel id incorrect"
+      end
+    with :ok <- GuildProcess.delete_channel(gid, cid, chid) do
+      %Common.ResponseMessage{text: "Channel deleted successfully"}
+    else
+      _ -> raise GRPC.RPCError,
+        status: :internal,
+        message: "Failed to delete channel"
+    end
   end
 
   # messages

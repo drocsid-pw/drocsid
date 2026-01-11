@@ -405,4 +405,250 @@ defmodule DrocsidCore.DB do
       end
     end
   end
+
+  ## ========== ROLES ==========
+
+  def insert_role(
+        guild_id,
+        name,
+        position,
+        read_permission,
+        write_perm,
+        guild_edit_perm,
+        channel_edit_perm,
+        user_edit_perm,
+        message_del_perm
+      ) do
+    query = """
+    INSERT INTO roles (
+      role_id, guild_id, name, position, read_permission, write_perm,
+      guild_edit_perm, channel_edit_perm, user_edit_perm, message_del_perm
+    ) VALUES (
+      :role_id, :guild_id, :name, :position, :read_permission, :write_perm,
+      :guild_edit_perm, :channel_edit_perm, :user_edit_perm, :message_del_perm
+    )
+    """
+
+    prepared = Xandra.prepare!(@conn, query)
+    role_id = DrocsidCore.Snowflake.new()
+
+    params = [
+      role_id,
+      guild_id,
+      name,
+      position,
+      read_permission,
+      write_perm,
+      guild_edit_perm,
+      channel_edit_perm,
+      user_edit_perm,
+      message_del_perm
+    ]
+
+    case Xandra.execute(@conn, prepared, params) do
+      {:ok, %Xandra.Void{}} ->
+        role_id
+
+      {:error, error} ->
+        require Logger
+        Logger.error("insert_role failed: #{inspect(error)}")
+        {:error, error}
+    end
+  end
+
+  def get_role(role_id) do
+    query = """
+    SELECT role_id, guild_id, name, position, read_permission, write_perm,
+           guild_edit_perm, channel_edit_perm, user_edit_perm, message_del_perm
+    FROM roles
+    WHERE role_id = ?
+    """
+
+    prepared = Xandra.prepare!(@conn, query)
+    params = [role_id]
+
+    with {:ok, %Xandra.Page{} = page} <- Xandra.execute(@conn, prepared, params) do
+      case Enum.to_list(page) do
+        [row] -> {:ok, row}
+        [] -> :not_found
+      end
+    end
+  end
+
+  def get_roles_by_ids(role_ids) when is_list(role_ids) do
+    if Enum.empty?(role_ids) do
+      {:ok, []}
+    else
+      placeholders = Enum.map_join(role_ids, ", ", fn _ -> "?" end)
+      query = """
+      SELECT role_id, guild_id, name, position, read_permission, write_perm,
+             guild_edit_perm, channel_edit_perm, user_edit_perm, message_del_perm
+      FROM roles
+      WHERE role_id IN (#{placeholders})
+      """
+
+      prepared = Xandra.prepare!(@conn, query)
+
+      with {:ok, %Xandra.Page{} = page} <- Xandra.execute(@conn, prepared, role_ids) do
+        {:ok, Enum.to_list(page)}
+      end
+    end
+  end
+
+  def get_roles_for_guild_user(guild_user_id) do
+    query = """
+    SELECT guild_user_role_id, guild_user_id, role_id
+    FROM guild_user_roles
+    WHERE guild_user_id = ?
+    ALLOW FILTERING
+    """
+
+    prepared = Xandra.prepare!(@conn, query)
+    params = [guild_user_id]
+
+    with {:ok, %Xandra.Page{} = page} <- Xandra.execute(@conn, prepared, params) do
+      role_ids = Enum.map(Enum.to_list(page), & &1.role_id)
+      get_roles_by_ids(role_ids)
+    end
+  end
+
+  def get_roles_for_guild(guild_id) do
+    query = """
+    SELECT role_id, guild_id, name, position, read_permission, write_perm,
+           guild_edit_perm, channel_edit_perm, user_edit_perm, message_del_perm
+    FROM roles
+    WHERE guild_id = ?
+    ALLOW FILTERING
+    """
+
+    prepared = Xandra.prepare!(@conn, query)
+    params = [guild_id]
+
+    with {:ok, %Xandra.Page{} = page} <- Xandra.execute(@conn, prepared, params) do
+      {:ok, Enum.to_list(page)}
+    end
+  end
+
+  def insert_guild_user_role(guild_user_id, role_id) do
+    query = """
+    INSERT INTO guild_user_roles (guild_user_role_id, guild_user_id, role_id)
+    VALUES (:guild_user_role_id, :guild_user_id, :role_id)
+    """
+
+    prepared = Xandra.prepare!(@conn, query)
+    id = DrocsidCore.Snowflake.new()
+    params = [id, guild_user_id, role_id]
+
+    case Xandra.execute(@conn, prepared, params) do
+      {:ok, %Xandra.Void{}} ->
+        id
+
+      {:error, error} ->
+        require Logger
+        Logger.error("insert_guild_user_role failed: #{inspect(error)}")
+        {:error, error}
+    end
+  end
+
+  def delete_guild_user_role(guild_user_role_id) do
+    query = """
+    DELETE FROM guild_user_roles
+    WHERE guild_user_role_id = ?
+    """
+
+    prepared = Xandra.prepare!(@conn, query)
+    params = [guild_user_role_id]
+
+    case Xandra.execute(@conn, prepared, params) do
+      {:ok, %Xandra.Void{}} ->
+        :ok
+
+      {:error, error} ->
+        require Logger
+        Logger.error("delete_guild_user_role failed: #{inspect(error)}")
+        {:error, error}
+    end
+  end
+
+  ## ========== DELETE OPERATIONS ==========
+
+  def delete_channel(channel_id) do
+    query = """
+    DELETE FROM channels
+    WHERE channel_id = ?
+    """
+
+    prepared = Xandra.prepare!(@conn, query)
+    params = [channel_id]
+
+    case Xandra.execute(@conn, prepared, params) do
+      {:ok, %Xandra.Void{}} ->
+        :ok
+
+      {:error, error} ->
+        require Logger
+        Logger.error("delete_channel failed: #{inspect(error)}")
+        {:error, error}
+    end
+  end
+
+  def delete_guild_user(guild_user_id) do
+    query = """
+    DELETE FROM guild_users
+    WHERE guild_user_id = ?
+    """
+
+    prepared = Xandra.prepare!(@conn, query)
+    params = [guild_user_id]
+
+    case Xandra.execute(@conn, prepared, params) do
+      {:ok, %Xandra.Void{}} ->
+        :ok
+
+      {:error, error} ->
+        require Logger
+        Logger.error("delete_guild_user failed: #{inspect(error)}")
+        {:error, error}
+    end
+  end
+
+  def delete_guild(guild_id) do
+    query = """
+    DELETE FROM guilds
+    WHERE guild_id = ?
+    """
+
+    prepared = Xandra.prepare!(@conn, query)
+    params = [guild_id]
+
+    case Xandra.execute(@conn, prepared, params) do
+      {:ok, %Xandra.Void{}} ->
+        :ok
+
+      {:error, error} ->
+        require Logger
+        Logger.error("delete_guild failed: #{inspect(error)}")
+        {:error, error}
+    end
+  end
+
+  def delete_role(role_id) do
+    query = """
+    DELETE FROM roles
+    WHERE role_id = ?
+    """
+
+    prepared = Xandra.prepare!(@conn, query)
+    params = [role_id]
+
+    case Xandra.execute(@conn, prepared, params) do
+      {:ok, %Xandra.Void{}} ->
+        :ok
+
+      {:error, error} ->
+        require Logger
+        Logger.error("delete_role failed: #{inspect(error)}")
+        {:error, error}
+    end
+  end
 end
