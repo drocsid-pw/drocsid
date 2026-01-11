@@ -485,6 +485,12 @@ export function DrocsidMainView() {
 		},
 		joinGuildById: async (guildId) => {
 			if (!api) return;
+
+			await api.addUserToGuild(guildId);
+			await reloadGuilds(guildId);
+
+			setSideMode("servers");
+			setViewMode("chat");
 		},
 	});
 
