@@ -6,21 +6,23 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 )
 
 func AzuriteUploadImage(file []byte, azuriteURL string, name string, sasToken string) (string, error) {
-
 	url := fmt.Sprintf("%s/%s?%s", azuriteURL, name, sasToken)
-	ret_url := fmt.Sprintf("%s/%s", azuriteURL, name)
+	retURL := fmt.Sprintf("%s/%s", azuriteURL, name)
+
+	// FOR DEV PURPOSE CHANGE DNS NAME TO LOCALHOST
+	retURL = strings.Replace(retURL, "cdn", "localhost", 1)
 
 	reader := bytes.NewReader(file)
 
-	req, err := http.NewRequestWithContext(context.Background(), "PUT", url, reader)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodPut, url, reader)
 	if err != nil {
 		return "", fmt.Errorf("failed to create request: %w", err)
 	}
 
-	// Required Azurite headers
 	req.Header.Set("x-ms-blob-type", "BlockBlob")
 	req.Header.Set("Content-Type", "image/png")
 	req.ContentLength = int64(len(file))
@@ -36,22 +38,20 @@ func AzuriteUploadImage(file []byte, azuriteURL string, name string, sasToken st
 		return "", fmt.Errorf("upload failed (%s): %s", resp.Status, string(body))
 	}
 
-	return ret_url, nil
+	return retURL, nil
 }
 
 func AzuriteUploadVideo(file []byte, azuriteURL string, name string, sasToken string) (string, error) {
-
 	url := fmt.Sprintf("%s/%s?%s", azuriteURL, name, sasToken)
-	ret_url := fmt.Sprintf("%s/%s", azuriteURL, name)
+	retURL := fmt.Sprintf("%s/%s", azuriteURL, name)
 
 	reader := bytes.NewReader(file)
 
-	req, err := http.NewRequestWithContext(context.Background(), "PUT", url, reader)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodPut, url, reader)
 	if err != nil {
 		return "", fmt.Errorf("failed to create request: %w", err)
 	}
 
-	// Required Azurite headers
 	req.Header.Set("x-ms-blob-type", "BlockBlob")
 	req.Header.Set("Content-Type", "video/mp4")
 	req.Header.Set("x-ms-blob-content-type", "video/mp4")
@@ -59,7 +59,6 @@ func AzuriteUploadVideo(file []byte, azuriteURL string, name string, sasToken st
 	req.Header.Set("Content-Disposition", "inline")
 	req.Header.Set("Cache-Control", "public, max-age=31536000")
 	req.Header.Set("x-ms-blob-cache-control", "public, max-age=31536000")
-
 	req.ContentLength = int64(len(file))
 
 	resp, err := http.DefaultClient.Do(req)
@@ -73,5 +72,5 @@ func AzuriteUploadVideo(file []byte, azuriteURL string, name string, sasToken st
 		return "", fmt.Errorf("upload failed (%s): %s", resp.Status, string(body))
 	}
 
-	return ret_url, nil
+	return retURL, nil
 }
