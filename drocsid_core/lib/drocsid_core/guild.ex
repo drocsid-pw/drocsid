@@ -253,6 +253,14 @@ defmodule DrocsidCore.GuildProcess do
 
   def handle_call({:delete_guild, caller_id}, _from, %{guild_id: guild_id} = state) do
     try do
+      # Delete all guild_users first
+      case DrocsidCore.DB.get_users_for_guild(guild_id) do
+        {:ok, users} ->
+          Enum.each(users, fn user ->
+            DrocsidCore.DB.delete_guild_user(user["guild_user_id"])
+          end)
+        _ -> :ok
+      end
       :ok = DrocsidCore.DB.delete_guild(guild_id)
       {:reply, :ok, state}
     rescue
