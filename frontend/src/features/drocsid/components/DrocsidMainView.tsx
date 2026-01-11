@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { DrocsidChannel, DrocsidFriend, DrocsidGuild, DrocsidUser } from "../types";
 import { DrocsidServersBar } from "./DrocsidServersBar";
 import { DrocsidChannelsBar } from "./DrocsidChannelsBar";
@@ -125,6 +125,8 @@ export function DrocsidMainView() {
 	const { theme } = useDrocsidTheme();
 	const api = useDrocsidApi();
 	const { callerId, payload, clearToken } = useAuth();
+	const messagesPollInFlightRef = useRef(false);
+	const messagesLoadedOnceRef = useRef(false);
 
 	const [bootError, setBootError] = useState<string | null>(null);
 	const [isBooting, setIsBooting] = useState(true);
@@ -301,16 +303,30 @@ export function DrocsidMainView() {
 			return;
 		}
 
-		return runCancelableEffect(async ({ isCancelled }) => {
-			const guildId = activeServer.guildId;
-			const channelId = activeChannelId;
+		let cancelled = false;
+
+		const guildId = activeServer.guildId;
+		const channelId = activeChannelId;
+
+		messagesLoadedOnceRef.current = false;
+
+		const load = async () => {
+			if (cancelled) return;
+
+			if (document.visibilityState === "hidden") {
+				return;
+			}
+
+			if (messagesPollInFlightRef.current) {
+				return;
+			}
+
+			messagesPollInFlightRef.current = true;
 
 			try {
 				const list = await api.getMessages(channelId, 0, 50);
 
-				if (isCancelled()) {
-					return;
-				}
+				if (cancelled) return;
 
 				const mapped = (list.messages ?? []).map((m) => mapMessageDto(m)).reverse();
 
@@ -326,13 +342,29 @@ export function DrocsidMainView() {
 						};
 					})
 				);
+
+				messagesLoadedOnceRef.current = true;
 			} catch (e) {
-				if (isCancelled()) {
-					return;
+				if (cancelled) return;
+
+				if (!messagesLoadedOnceRef.current) {
+					setBootError(getErrorText(e));
 				}
-				setBootError(getErrorText(e));
+			} finally {
+				messagesPollInFlightRef.current = false;
 			}
-		});
+		};
+
+		void load();
+
+		const intervalId = window.setInterval(() => {
+			void load();
+		}, 5000);
+
+		return () => {
+			cancelled = true;
+			window.clearInterval(intervalId);
+		};
 	}, [api, activeChannelId, activeServer?.guildId]);
 
 	const serverMessages = useMemo(() => activeChannel?.messages ?? [], [activeChannel?.messages]);
