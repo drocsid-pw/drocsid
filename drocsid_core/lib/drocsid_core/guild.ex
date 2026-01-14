@@ -1,5 +1,6 @@
 defmodule DrocsidCore.GuildProcess do
   use GenServer
+  require Logger
 
   alias DrocsidCore.DB
 
@@ -256,10 +257,15 @@ defmodule DrocsidCore.GuildProcess do
       # Delete all guild_users first
       case DrocsidCore.DB.get_users_for_guild(guild_id) do
         {:ok, users} ->
+          Logger.info("Deleting #{length(users)} guild_users for guild #{guild_id}")
           Enum.each(users, fn user ->
-            DrocsidCore.DB.delete_guild_user(user["guild_user_id"])
+            guild_user_id = user["guild_user_id"] || Map.get(user, :guild_user_id) || Map.get(user, "guild_user_id")
+            Logger.info("Deleting guild_user: #{inspect(guild_user_id)}")
+            DrocsidCore.DB.delete_guild_user(guild_user_id)
           end)
-        _ -> :ok
+        error ->
+          Logger.warning("Failed to get users for guild #{guild_id}: #{inspect(error)}")
+          :ok
       end
       :ok = DrocsidCore.DB.delete_guild(guild_id)
       {:reply, :ok, state}
