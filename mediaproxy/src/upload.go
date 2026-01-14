@@ -14,7 +14,7 @@ func AzuriteUploadImage(file []byte, azuriteURL string, name string, sasToken st
 	retURL := fmt.Sprintf("%s/%s", azuriteURL, name)
 
 	// FOR DEV PURPOSE CHANGE DNS NAME TO LOCALHOST
-	retURL = strings.Replace(retURL, "cdn", "localhost", 1)
+	retURL = strings.Replace(retURL, "cdn", "cdn.drocsid.eu", 1)
 
 	reader := bytes.NewReader(file)
 

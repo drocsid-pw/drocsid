@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-const backendTarget = process.env.DROCSID_BACKEND_URL ?? "http://localhost:8080";
+const backendTarget = process.env.DROCSID_BACKEND_URL ?? "http://drocsid.eu:8080";
 
 export default defineConfig({
 	plugins: [react()],
