@@ -1,0 +1,12 @@
+services:
+    frontend:
+        build:
+            target: dev
+        volumes:
+            - ./frontend:/app
+            - /app/node_modules
+        stdin_open: true
+        tty: true
+        environment:
+            CHOKIDAR_USEPOLLING: "true"
+            WATCHPACK_POLLING: "true"
