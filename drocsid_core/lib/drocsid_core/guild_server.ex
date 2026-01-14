@@ -281,24 +281,48 @@ defmodule DrocsidCore.GuildServer do
   # guild user managment
   def add_user(%{caller_id: caller_id, guild_id: guild_id}, _stream) do
     Logger.info("AddUser called: #{guild_id} #{caller_id}")
+
+    Logger.info("raw caller_id=#{inspect(caller_id)} guild_id=#{inspect(guild_id)}")
+
     cid =
       case Integer.parse(caller_id) do
         {i, ""} -> i
         _ -> raise GRPC.RPCError, status: :invalid_argument, message: "caller_id must be an integer"
       end
+
     gid =
       case Integer.parse(guild_id) do
         {i, ""} -> i
         _ -> raise GRPC.RPCError, status: :invalid_argument, message: "guild_id must be an integer"
       end
-    with {:ok, guild_user_id } <- GuildProcess.add_guild_user(gid, cid) do
-      %GuildUser.GuildUser{
-        guild_user_id: Integer.to_string(guild_user_id),
-      }
-    else
-      _ -> raise GRPC.RPCError,
-        status: :invalid_argument,
-        message: "Invalid username"
+
+    Logger.info("cid, gid: #{cid} #{gid}")
+
+    case DrocsidCore.DB.get_guild_user_by_uid(gid, cid) do
+      {:ok, row} ->
+        # already in guild -> return existing membership
+        %GuildUser.GuildUser{
+          guild_user_id: Integer.to_string(row.guild_user_id)
+        }
+
+      :not_found ->
+        with {:ok, guild_user_id} <- GuildProcess.add_guild_user(gid, cid) do
+          %GuildUser.GuildUser{
+            guild_user_id: Integer.to_string(guild_user_id)
+          }
+        else
+          _ ->
+            raise GRPC.RPCError,
+              status: :internal,
+              message: "Failed to add user to guild"
+        end
+
+      {:error, err} ->
+        Logger.error("get_guild_user_by_uid failed: #{inspect(err)}")
+
+        raise GRPC.RPCError,
+          status: :internal,
+          message: "Failed to check guild membership"
     end
   end
 
