@@ -1,20 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
 import type { DrocsidChannel, DrocsidGuild, DrocsidGuildUser, DrocsidRole } from "../types";
 import { useDrocsidTheme } from "../theme-provider";
-import {
-	PERMISSION_FLAGS,
-	type PermissionFlag,
-	recordToPermissionsString,
-	type PermissionsRecord,
-	permissionsListToRecord,
-	recordToPermissionsList,
-} from "../permissions";
+import { PERMISSION_FLAGS, type PermissionFlag, recordToPermissionsString, type PermissionsRecord, permissionsListToRecord, recordToPermissionsList } from "../permissions";
 import { rolesToRoleForms, type RoleForm } from "../roles";
 import { useDrocsidApi } from "../../../api/useDrocsidApi";
 import { isDrocsidApiError } from "../../../api/http";
 import { mapChannelDto, mapGuildDto, mapGuildUserDto, mapRoleDto } from "../mappers";
 import { DrocsidInvitePanel } from "./DrocsidInvitePanel";
-
 
 type DrocsidServerSettingsProps = {
 	server: DrocsidGuild | null;
@@ -78,9 +70,7 @@ function getUserRoleIds(user: DrocsidGuildUser): string[] {
 
 function setUserRoleIds(user: DrocsidGuildUser, rolesSnapshot: DrocsidRole[], roleIds: string[]): DrocsidGuildUser {
 	const unique = Array.from(new Set(roleIds));
-	const resolvedRoles: DrocsidRole[] = unique
-		.map((id) => rolesSnapshot.find((r) => r.guildRoleId === id))
-		.filter((x): x is DrocsidRole => !!x);
+	const resolvedRoles: DrocsidRole[] = unique.map((id) => rolesSnapshot.find((r) => r.guildRoleId === id)).filter((x): x is DrocsidRole => !!x);
 
 	return {
 		...user,
@@ -98,9 +88,7 @@ function ensureFullOverridesForChannel(channel: DrocsidChannel, roles: DrocsidRo
 	const nextRoles = roles.map((base) => {
 		const prev = existing.get(base.guildRoleId);
 
-		const prevRecord = prev
-			? permissionsListToRecord(prev.permissionsRaw ?? "")
-			: permissionsListToRecord(base.permissionsRaw ?? "");
+		const prevRecord = prev ? permissionsListToRecord(prev.permissionsRaw ?? "") : permissionsListToRecord(base.permissionsRaw ?? "");
 
 		const raw = recordToPermissionsString(prevRecord);
 
@@ -599,7 +587,6 @@ export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 		event.preventDefault();
 		setSaveError(null);
 
-
 		if (!api) {
 			setSaveError("Missing API (auth). Please sign in again.");
 			return;
@@ -643,15 +630,9 @@ export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 			// 	)
 			// );
 
-			const originalRealChannelIds = (server.channels ?? [])
-				.map((c) => c.channelId)
-				.filter((id) => id.length > 0 && !isTempChannelId(id));
+			const originalRealChannelIds = (server.channels ?? []).map((c) => c.channelId).filter((id) => id.length > 0 && !isTempChannelId(id));
 
-			const keptRealChannelIds = new Set(
-				nextChannels
-					.map((c) => c.channelId)
-					.filter((id) => id.length > 0 && !isTempChannelId(id))
-			);
+			const keptRealChannelIds = new Set(nextChannels.map((c) => c.channelId).filter((id) => id.length > 0 && !isTempChannelId(id)));
 
 			const removedRealChannelIds = originalRealChannelIds.filter((id) => !keptRealChannelIds.has(id));
 			if (removedRealChannelIds.length > 0) {
@@ -714,12 +695,7 @@ export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 				)
 			);
 
-			const [guildDto, rolesDto, channelsDto, usersDto] = await Promise.all([
-				api.getGuild(server.guildId),
-				api.getRoles(server.guildId),
-				api.getAllChannels(server.guildId),
-				api.getGuildUsers(server.guildId),
-			]);
+			const [guildDto, rolesDto, channelsDto, usersDto] = await Promise.all([api.getGuild(server.guildId), api.getRoles(server.guildId), api.getAllChannels(server.guildId), api.getGuildUsers(server.guildId)]);
 
 			const refreshed: DrocsidGuild = {
 				...mapGuildDto(guildDto),
@@ -755,21 +731,12 @@ export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 				<div className="grid gap-4 md:grid-cols-2">
 					<label className="flex flex-col gap-1 text-sm">
 						<span className={`font-medium ${ui.label}`}>Name</span>
-						<input
-							value={guildName}
-							onChange={(event) => setGuildName(event.target.value)}
-							className={`px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 ${ui.input}`}
-						/>
+						<input value={guildName} onChange={(event) => setGuildName(event.target.value)} className={`px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 ${ui.input}`} />
 					</label>
 
 					<label className="flex flex-col gap-1 text-sm">
 						<span className={`font-medium ${ui.label}`}>Icon</span>
-						<input
-							value={guildIcon}
-							onChange={(event) => setGuildIcon(event.target.value)}
-							className={`px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 ${ui.input}`}
-							placeholder="✨"
-						/>
+						<input value={guildIcon} onChange={(event) => setGuildIcon(event.target.value)} className={`px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 ${ui.input}`} placeholder="✨" />
 					</label>
 				</div>
 
@@ -792,9 +759,10 @@ export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 						<button
 							type="button"
 							onClick={handleDeleteServer}
-							disabled={isSaving || isDeleting}
+							// disabled={isSaving || isDeleting}
+							disabled={true}
 							className={`px-4 py-2 text-sm rounded-lg border transition disabled:opacity-60 ${ui.buttonDanger}`}>
-							{isDeleting ? "Deleting..." : "Delete server"}
+							{isDeleting ? "Deleting..." : "Deleting blocked"}
 						</button>
 					</div>
 				</div>
@@ -844,13 +812,7 @@ export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 										{PERMISSION_FLAGS.map((flag) => (
 											<td key={flag} className="px-3 py-2 text-center align-middle">
 												<label className="inline-flex items-center justify-center" title={flag}>
-													<input
-														type="checkbox"
-														disabled={disabled}
-														checked={role.permissions[flag]}
-														onChange={() => handleToggleRolePermission(role.guildRoleId, flag)}
-														className="h-4 w-4 disabled:opacity-60"
-													/>
+													<input type="checkbox" disabled={disabled} checked={role.permissions[flag]} onChange={() => handleToggleRolePermission(role.guildRoleId, flag)} className="h-4 w-4 disabled:opacity-60" />
 												</label>
 											</td>
 										))}
@@ -896,11 +858,7 @@ export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 					<div className="flex items-center gap-2">
 						{!isAddingChannel ? (
 							<>
-								<button
-									type="button"
-									className={`px-3 py-2 text-sm rounded-lg border transition ${ui.buttonGhost}`}
-									onClick={startAddChannel}
-									disabled={isSaving || isDeleting}>
+								<button type="button" className={`px-3 py-2 text-sm rounded-lg border transition ${ui.buttonGhost}`} onClick={startAddChannel} disabled={isSaving || isDeleting}>
 									Add channel
 								</button>
 
@@ -921,18 +879,10 @@ export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 									placeholder="new-channel"
 									className={`w-56 px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 ${ui.input}`}
 								/>
-								<button
-									type="button"
-									className={`px-3 py-2 text-sm rounded-lg border transition ${ui.buttonGhost}`}
-									onClick={confirmAddChannel}
-									disabled={isSaving || isDeleting}>
+								<button type="button" className={`px-3 py-2 text-sm rounded-lg border transition ${ui.buttonGhost}`} onClick={confirmAddChannel} disabled={isSaving || isDeleting}>
 									Create
 								</button>
-								<button
-									type="button"
-									className={`px-3 py-2 text-sm rounded-lg border transition ${ui.buttonGhost}`}
-									onClick={cancelAddChannel}
-									disabled={isSaving || isDeleting}>
+								<button type="button" className={`px-3 py-2 text-sm rounded-lg border transition ${ui.buttonGhost}`} onClick={cancelAddChannel} disabled={isSaving || isDeleting}>
 									Cancel
 								</button>
 							</div>
@@ -948,10 +898,7 @@ export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 
 				<label className="flex flex-col gap-1 text-sm">
 					<span className={`font-medium ${ui.label}`}>Channel</span>
-					<select
-						value={channelId}
-						onChange={(e) => setSelectedChannelId(e.target.value)}
-						className={`px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 ${ui.input}`}>
+					<select value={channelId} onChange={(e) => setSelectedChannelId(e.target.value)} className={`px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 ${ui.input}`}>
 						{channelsDraft.map((c) => (
 							<option key={c.channelId} value={c.channelId}>
 								#{c.name}
@@ -996,12 +943,7 @@ export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 											{PERMISSION_FLAGS.map((flag) => (
 												<td key={flag} className="px-3 py-2 text-center align-middle">
 													<label className="inline-flex items-center justify-center" title={flag}>
-														<input
-															type="checkbox"
-															checked={row.permissions[flag]}
-															onChange={() => handleToggleOverridePermission(row.guildRoleId, flag)}
-															className="h-4 w-4"
-														/>
+														<input type="checkbox" checked={row.permissions[flag]} onChange={() => handleToggleOverridePermission(row.guildRoleId, flag)} className="h-4 w-4" />
 													</label>
 												</td>
 											))}
@@ -1081,13 +1023,7 @@ export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 											return (
 												<td key={r.guildRoleId} className="px-3 py-2 text-center align-middle">
 													<label className="inline-flex items-center justify-center" title={r.roleName}>
-														<input
-															type="checkbox"
-															checked={checked}
-															disabled={isOwner || isEveryone}
-															onChange={() => toggleUserRole(u.guildUserId, r.guildRoleId)}
-															className="h-4 w-4"
-														/>
+														<input type="checkbox" checked={checked} disabled={isOwner || isEveryone} onChange={() => toggleUserRole(u.guildUserId, r.guildRoleId)} className="h-4 w-4" />
 													</label>
 												</td>
 											);
@@ -1112,14 +1048,7 @@ export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 		);
 	};
 
-	const sectionContent =
-		activeSection === "general"
-			? renderGeneral()
-			: activeSection === "roles"
-				? renderRoles()
-				: activeSection === "channels"
-					? renderChannels()
-					: renderMembers();
+	const sectionContent = activeSection === "general" ? renderGeneral() : activeSection === "roles" ? renderRoles() : activeSection === "channels" ? renderChannels() : renderMembers();
 
 	return (
 		<section className={`h-full rounded-2xl border p-4 shadow-sm flex flex-col ${ui.panel}`}>
@@ -1133,34 +1062,22 @@ export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 				<nav className={`w-52 shrink-0 border-r pr-4 ${ui.border}`}>
 					<ul className="space-y-1 text-sm">
 						<li>
-							<button
-								type="button"
-								onClick={() => setActiveSection("general")}
-								className={`w-full text-left px-3 py-2 rounded-lg transition ${activeSection === "general" ? ui.navActive : ui.navIdle}`}>
+							<button type="button" onClick={() => setActiveSection("general")} className={`w-full text-left px-3 py-2 rounded-lg transition ${activeSection === "general" ? ui.navActive : ui.navIdle}`}>
 								General
 							</button>
 						</li>
 						<li>
-							<button
-								type="button"
-								onClick={() => setActiveSection("roles")}
-								className={`w-full text-left px-3 py-2 rounded-lg transition ${activeSection === "roles" ? ui.navActive : ui.navIdle}`}>
+							<button type="button" onClick={() => setActiveSection("roles")} className={`w-full text-left px-3 py-2 rounded-lg transition ${activeSection === "roles" ? ui.navActive : ui.navIdle}`}>
 								Roles
 							</button>
 						</li>
 						<li>
-							<button
-								type="button"
-								onClick={() => setActiveSection("channels")}
-								className={`w-full text-left px-3 py-2 rounded-lg transition ${activeSection === "channels" ? ui.navActive : ui.navIdle}`}>
+							<button type="button" onClick={() => setActiveSection("channels")} className={`w-full text-left px-3 py-2 rounded-lg transition ${activeSection === "channels" ? ui.navActive : ui.navIdle}`}>
 								Channels
 							</button>
 						</li>
 						<li>
-							<button
-								type="button"
-								onClick={() => setActiveSection("members")}
-								className={`w-full text-left px-3 py-2 rounded-lg transition ${activeSection === "members" ? ui.navActive : ui.navIdle}`}>
+							<button type="button" onClick={() => setActiveSection("members")} className={`w-full text-left px-3 py-2 rounded-lg transition ${activeSection === "members" ? ui.navActive : ui.navIdle}`}>
 								Members
 							</button>
 						</li>
@@ -1171,18 +1088,11 @@ export function DrocsidServerSettings(props: DrocsidServerSettingsProps) {
 					{sectionContent}
 
 					<div className={`border-t pt-4 mt-auto flex justify-end gap-3 ${ui.border}`}>
-						<button
-							type="button"
-							className={`px-4 py-2 text-sm rounded-lg border transition ${ui.buttonGhost}`}
-							onClick={resetAll}
-							disabled={isSaving || isDeleting}>
+						<button type="button" className={`px-4 py-2 text-sm rounded-lg border transition ${ui.buttonGhost}`} onClick={resetAll} disabled={isSaving || isDeleting}>
 							Reset
 						</button>
 
-						<button
-							type="submit"
-							className={`px-4 py-2 text-sm rounded-lg transition ${ui.buttonPrimary} disabled:opacity-60`}
-							disabled={isSaving || isDeleting || !isDirty}>
+						<button type="submit" className={`px-4 py-2 text-sm rounded-lg transition ${ui.buttonPrimary} disabled:opacity-60`} disabled={isSaving || isDeleting || !isDirty}>
 							{isSaving ? "Saving..." : "Save changes"}
 						</button>
 					</div>
