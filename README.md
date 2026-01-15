@@ -104,6 +104,6 @@ App deployment relays on Docker.
 ### Initialization
 
 1. docker compose up --build
-2. wait until finish
+2. wait until cassandra init finishes
 3. run docker compose up --build once again
 4. enter http://localhost:5173
