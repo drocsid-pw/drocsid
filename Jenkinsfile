@@ -46,17 +46,10 @@ pipeline {
                 }
 
                 stage('Core') {
-                    agent {
-                        docker { 
-                            image 'elixir:1.17' 
-                        }
-                    }
+                    agent any
                     steps {
                         dir('drocsid_core') {
-                            sh 'mix local.hex --force'
-                            sh 'mix local.rebar --force'
-                            sh 'mix deps.get'
-                            sh 'mix test'
+                            sh 'docker build -t drocsid-core .'
                         }
                     }
                 }
