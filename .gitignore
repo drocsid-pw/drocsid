@@ -17,3 +17,4 @@ output.txt
 output_proto.txt
 output_frontend.txt
 output_backend.txt
+jenkins/jenkins_home
