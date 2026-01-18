@@ -3,10 +3,13 @@ services:
         build:
             context: ./frontend
             dockerfile: Dockerfile
+            args:
+                GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID}
+                VITE_API_BASE_URL: ${VITE_API_BASE_URL}
         ports:
             - "5173:5173"
         env_file:
-            - ./frontend/.env.local
+            - ./.env
 
     backend:
         build:
@@ -16,7 +19,7 @@ services:
             - "8080:8080"
             - "9090:9090"
         env_file:
-            - ./spring_grpc/.env
+            - ./.env
         environment:            
             DB_HOST: mysql
             DB_PORT: 3306
@@ -85,7 +88,7 @@ services:
         volumes:
             - cdn:/workspace/data
         env_file:
-            - ./cdn/.env
+            - ./.env
         ports:
             - "10000:10000"
 
@@ -95,8 +98,20 @@ services:
             dockerfile: Dockerfile
         ports:
             - "9000:9000"
+        env_file:
+            - ./.env
+    
+    rp:
+        build:
+            context: ./nginx
+        ports:
+            - "8090:8090"
+        depends_on:
+            - backend
+            - frontend
+            - cdn
 
 volumes:
-    cdn:
+    cdn: {}
     mysql_data: {}
     cassandra_data: {}

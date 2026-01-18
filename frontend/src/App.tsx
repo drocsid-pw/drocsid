@@ -5,10 +5,10 @@ import Landing from "./pages/Landing";
 import DrocsidApp from "./pages/DrocsidApp";
 import { AuthProvider } from "./auth/auth";
 
-const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const googleClientId = import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID;
 
 if (!googleClientId) {
-	throw new Error("Brakuje zmiennej środowiskowej VITE_GOOGLE_CLIENT_ID");
+	throw new Error("Brakuje zmiennej środowiskowej VITE_GOOGLE_OAUTH_CLIENT_ID");
 }
 
 const linkClass = ({ isActive }: { isActive: boolean }) => `px-3 py-2 rounded-xl transition hover:bg-slate-100 ${isActive ? "bg-slate-200 font-medium" : ""}`;

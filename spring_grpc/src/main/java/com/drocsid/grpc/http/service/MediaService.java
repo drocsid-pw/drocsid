@@ -19,9 +19,9 @@ import org.springframework.stereotype.Service;
 public class MediaService {
 
     private static final String API_URL = "http://mediaproxy:9000/uploadImage";
-    private static final String ACCOUNT_NAME = "devstoreaccount1";
+    private static final String ACCOUNT_NAME = System.getenv("AZURE_STORAGE_ACCOUNT");
     private static final String CONTAINER_NAME = "drocsid";
-    private static final String ACCOUNT_KEY = "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==";
+    private static final String ACCOUNT_KEY = System.getenv("AZURE_STORAGE_ACCOUNT_KEY");
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final HttpClient httpClient = HttpClient.newHttpClient();
