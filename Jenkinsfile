@@ -2,7 +2,6 @@ pipeline {
     agent none
 
     environment {
-        // Ensure strictly necessary paths are available, though usually default is fine
         PATH = "/usr/bin:/usr/local/bin:$PATH"
     }
 
@@ -20,7 +19,7 @@ pipeline {
                     agent {
                         docker { 
                             image 'node:24-bookworm-slim' 
-                            args '-u root:root' // Ensure permission to write to workspace if needed
+                            args '-u root:root' 
                         }
                     }
                     steps {
@@ -35,13 +34,13 @@ pipeline {
                     agent {
                         docker { 
                             image 'maven:3.9-eclipse-temurin-17' 
-                            args '-v /root/.m2:/root/.m2' // Optional: Cache maven repo
+                            args '-v /root/.m2:/root/.m2' 
                         }
                     }
                     steps {
                         dir('spring_grpc') {
-                            sh 'mvn clean install -DskipTests' // Build first
-                            sh 'mvn test'                      // Then test
+                            sh 'mvn clean install -DskipTests'
+                            sh 'mvn test' 
                         }
                     }
                 }
@@ -63,10 +62,9 @@ pipeline {
                 }
 
                 stage('Mediaproxy') {
-                    agent any // Running on the Jenkins controller (which checks out code and has docker cli)
+                    agent any 
                     steps {
                         script {
-                            // Build the docker image as verification
                             sh 'docker build -t mediaproxy ./mediaproxy'
                         }
                     }
