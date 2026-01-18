@@ -15,8 +15,9 @@ services:
         ports:
             - "8080:8080"
             - "9090:9090"
-        environment:
-            GOOGLE_OAUTH_CLIENT_ID: "494375853488-nu5h6bsffjafo3s2srddijrgstqvs7nc.apps.googleusercontent.com"
+        env_file:
+            - ./spring_grpc/.env
+        environment:            
             DB_HOST: mysql
             DB_PORT: 3306
             DB_NAME: token_id_caller_id_mapping
@@ -33,6 +34,8 @@ services:
         container_name: cassandra
         ports:
             - "9042:9042"
+        volumes:
+            - cassandra_data:/var/lib/cassandra
 
     cassandra-init:
         image: cassandra:4.1
@@ -96,3 +99,4 @@ services:
 volumes:
     cdn:
     mysql_data: {}
+    cassandra_data: {}
