@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"crypto/sha256"
+	"fmt"
 )
 
 type Request struct {
@@ -35,7 +37,12 @@ func uploadVideoHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Received SAS Token: %s", req.SASToken)
 	log.Printf("Received file with %d bytes", len(req.File))
 
-	url, err := AzuriteUploadVideo(req.File, cdnUrl, req.FileName+".mp4", req.SASToken)
+	h := sha256.New()
+	h.Write(req.File)
+	filename := h.Sum(nil)
+	log.Printf("SHA256: %x", filename)
+
+	url, err := AzuriteUploadVideo(req.File, cdnUrl, fmt.Sprintf("%x.mp4", filename), req.SASToken)
 	if err != nil {
 		log.Fatal(err)
 		http.Error(w, "Error while uploading file", http.StatusInternalServerError)
@@ -68,6 +75,12 @@ func uploadImageHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Received SAS Token: %s", req.SASToken)
 	log.Printf("Received file with %d bytes", len(req.File))
 
+	h := sha256.New()
+	h.Write(req.File)
+	filename := h.Sum(nil)
+	log.Printf("SHA256: %x", filename)
+
+
 	standard_jpg, err := CompressJPG(req.File, 100, 1)
 	if err != nil {
 		log.Fatal(err)
@@ -89,21 +102,21 @@ func uploadImageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	url, err := AzuriteUploadImage(standard_jpg, cdnUrl, req.FileName+".jpg", req.SASToken)
+	url, err := AzuriteUploadImage(standard_jpg, cdnUrl, fmt.Sprintf("%x.jpg", filename), req.SASToken)
 	if err != nil {
 		log.Fatal(err)
 		http.Error(w, "Error while uploading file", http.StatusInternalServerError)
 		return
 	}
 
-	_, err = AzuriteUploadImage(standard_compressed, cdnUrl, req.FileName+"_.jpg", req.SASToken)
+	_, err = AzuriteUploadImage(standard_compressed, cdnUrl, fmt.Sprintf("%x_.jpg", filename), req.SASToken)
 	if err != nil {
 		log.Fatal(err)
 		http.Error(w, "Error while uploading file", http.StatusInternalServerError)
 		return
 	}
 
-	_, err = AzuriteUploadImage(extreme_compressed, cdnUrl, req.FileName+"__.jpg", req.SASToken)
+	_, err = AzuriteUploadImage(extreme_compressed, cdnUrl, fmt.Sprintf("%x__.jpg", filename), req.SASToken)
 	if err != nil {
 		log.Fatal(err)
 		http.Error(w, "Error while uploading file", http.StatusInternalServerError)

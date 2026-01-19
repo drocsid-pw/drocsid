@@ -3,7 +3,7 @@ package com.drocsid.grpc.http.controller;
 import org.springframework.web.bind.annotation.*;
 
 import com.drocsid.grpc.auth.JwtAuthService;
-import com.drocsid.grpc.http.dto.ImageDto;
+import com.drocsid.grpc.http.dto.MediaDto;
 import com.drocsid.grpc.http.service.MediaService;
 
 import jakarta.validation.Valid;
@@ -22,7 +22,7 @@ public class MediaController {
     }
     
     @PostMapping("/uploadImage")
-    public ImageDto uploadImage(
+    public MediaDto uploadImage(
             @RequestHeader("Authorization") String authorization,
             @Valid @RequestBody UploadImageBody body) {
 
@@ -39,8 +39,32 @@ public class MediaController {
         }
     }
 
+    @PostMapping("/uploadVideo")
+    public MediaDto uploadVideo(
+            @RequestHeader("Authorization") String authorization,
+            @Valid @RequestBody UploadVideoBody body) {
+
+        jwtAuthService.checkAuth(authorization);
+        String file = body.getFile();
+        String filename = body.getFilename();
+
+        try {
+            return mediaService.uploadVideo(file, filename);
+        }
+        catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            throw e;
+        }
+    }
+
     @Data
     public static class UploadImageBody {
+        private String file;
+        private String filename;
+    }
+
+    @Data
+    public static class UploadVideoBody {
         private String file;
         private String filename;
     }

@@ -58,6 +58,26 @@ function tryParseImageUrlFromMessageContent(raw: string): string | null {
 	return url;
 }
 
+function tryParseVideoUrlFromMessageContent(raw: string): string | null {
+	const s = (raw ?? "").trim();
+	if (!s) return null;
+
+	const match = s.match(/^\s*<video\b[^>]*\bsrc\s*=\s*(["'])(.*?)\1[^>]*>\s*<\/video>\s*$/i);
+	if (!match) return null;
+
+	const url = (match[2] ?? "").trim();
+	if (!url) return null;
+
+	const lower = url.toLowerCase();
+	const isHttp = lower.startsWith("http://") || lower.startsWith("https://");
+	const isRelative = lower.startsWith("/");
+	if (!isHttp && !isRelative) {
+		return null;
+	}
+
+	return url;
+}
+
 type MessageListProps = {
 	messages: DrocsidMessage[];
 	textColor: string;
@@ -79,6 +99,7 @@ function MessageList(props: MessageListProps) {
 		<div className="space-y-4">
 			{messages.map((message) => {
 				const imgUrl = tryParseImageUrlFromMessageContent(message.content);
+				const videoUrl = tryParseVideoUrlFromMessageContent(message.content);
 
 				return (
 					<div key={message.messageId} className="flex gap-3">
@@ -96,6 +117,10 @@ function MessageList(props: MessageListProps) {
 								{imgUrl ? (
 									<a href={imgUrl} target="_blank" rel="noreferrer" className="inline-block mt-1">
 										<img src={imgUrl} alt="uploaded" className="max-w-[520px] w-full rounded-xl border border-slate-700/20 dark:border-white/10" loading="lazy" />
+									</a>
+								) : videoUrl ? (
+									<a href={videoUrl} target="_blank" rel="noreferrer" className="inline-block mt-1">
+										<video src={videoUrl} controls className="max-w-[520px] w-full rounded-xl border border-slate-700/20 dark:border-white/10" />
 									</a>
 								) : (
 									message.content
@@ -161,7 +186,7 @@ function Composer(props: ComposerProps) {
 					<input
 						ref={fileInputRef}
 						type="file"
-						accept="image/*"
+						accept="image/*,video/*"
 						className="hidden"
 						onChange={async (e) => {
 							const file = e.target.files?.[0] ?? null;
@@ -253,8 +278,8 @@ export function DrocsidChatView(props: DrocsidChatViewProps) {
 				return;
 			}
 
-			if (!file.type.startsWith("image/")) {
-				setLocalError("To nie wygląda jak obrazek.");
+			if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) {
+				setLocalError("To nie wygląda jak obrazek lub video.");
 				return;
 			}
 

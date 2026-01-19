@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"os"
 )
 
 func AzuriteUploadImage(file []byte, azuriteURL string, name string, sasToken string) (string, error) {
@@ -14,7 +15,7 @@ func AzuriteUploadImage(file []byte, azuriteURL string, name string, sasToken st
 	retURL := fmt.Sprintf("%s/%s", azuriteURL, name)
 
 	// FOR DEV PURPOSE CHANGE DNS NAME TO LOCALHOST
-	retURL = strings.Replace(retURL, "cdn", "cdn.drocsid.eu", 1)
+	retURL = strings.Replace(retURL, "http://cdn:10000", os.Getenv("CDN_PUBLIC_HOST"), 1)
 
 	reader := bytes.NewReader(file)
 
@@ -44,6 +45,8 @@ func AzuriteUploadImage(file []byte, azuriteURL string, name string, sasToken st
 func AzuriteUploadVideo(file []byte, azuriteURL string, name string, sasToken string) (string, error) {
 	url := fmt.Sprintf("%s/%s?%s", azuriteURL, name, sasToken)
 	retURL := fmt.Sprintf("%s/%s", azuriteURL, name)
+
+	retURL = strings.Replace(retURL, "http://cdn:10000", os.Getenv("CDN_PUBLIC_HOST"), 1)
 
 	reader := bytes.NewReader(file)
 

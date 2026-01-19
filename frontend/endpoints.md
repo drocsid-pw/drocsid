@@ -360,7 +360,7 @@ Body:
 { "file": "<base64>", "filename": "avatar.png" }
 ```
 
-Response: `ImageDto`
+Response: `MediaDto`
 
 ```json
 { "message": "...", "url": "..." }

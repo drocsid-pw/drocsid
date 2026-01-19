@@ -91,19 +91,29 @@ App deployment relays on Docker.
 -   use Drocsid Servers
     -   send messages
     -   send images
+    -   send videos
 -   change color theme
 
 ### Functionalities we didn't manage to complete
 
 -   adding friends
--   manaigng roles
--   sending videos / gifs
+-   managing roles
+-   sending gifs
 
 ## RUNBOOK
 
+### Env file
+Setup in root directory .env file with this variables:
+-   CDN_PUBLIC_HOST pointing to <protocol>://<public_url>/cdn
+-   VITE_API_BASE_URL=<protocol>://<public_url>/api
+-   GOOGLE_OAUTH_CLIENT_ID=<your google oauth client id>
+-   AZURE_STORAGE_ACCOUNT=devstoreaccount1
+-   AZURE_STORAGE_ACCOUNT_KEY=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==
+
 ### Initialization
 
-1. docker compose up --build
-2. wait until cassandra init finishes
-3. run docker compose up --build once again
-4. enter http://localhost:5173
+1. Setup .env in root directory
+2. docker compose up --build
+3. wait until cassandra init finishes
+4. run docker compose up --build once again
+5. enter http://localhost:8090

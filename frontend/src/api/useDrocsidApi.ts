@@ -47,6 +47,7 @@ export function useDrocsidApi() {
 			deleteMessage: (channelId: string, messageId: string) => api.deleteMessage(auth, channelId, messageId),
 
 			uploadImage: (file: string, filename: string) => api.uploadImage(auth, { file, filename }),
+			uploadVideo: (file: string, filename: string) => api.uploadVideo(auth, { file, filename }),
 		};
 	}, [token, callerId]);
 }
