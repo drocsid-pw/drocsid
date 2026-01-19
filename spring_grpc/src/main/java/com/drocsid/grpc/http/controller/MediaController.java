@@ -53,7 +53,7 @@ public class MediaController {
         }
         catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
-            return null;
+            throw e;
         }
     }
 
