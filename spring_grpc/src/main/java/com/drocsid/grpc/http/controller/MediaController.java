@@ -44,7 +44,7 @@ public class MediaController {
             @RequestHeader("Authorization") String authorization,
             @Valid @RequestBody UploadVideoBody body) {
 
-        String authedUserId = jwtAuthService.checkAuth(authorization);
+        jwtAuthService.checkAuth(authorization);
         String file = body.getFile();
         String filename = body.getFilename();
 
