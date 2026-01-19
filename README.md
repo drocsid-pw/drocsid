@@ -97,7 +97,7 @@ App deployment relays on Docker.
 ### Functionalities we didn't manage to complete
 
 -   adding friends
--   manaigng roles
+-   managing roles
 -   sending gifs
 
 ## RUNBOOK
