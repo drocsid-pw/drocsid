@@ -507,7 +507,7 @@ export function DrocsidMainView() {
 				return;
 			}
 
-			throw new Error("To nie jest obrazek");
+			throw new Error("Nieobsługiwany typ pliku. Dozwolone są tylko obrazki i wideo.");
 
 		},
 		[api, activeGuildId, activeChId]
