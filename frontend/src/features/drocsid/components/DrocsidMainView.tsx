@@ -121,6 +121,11 @@ function buildImageMessageContent(url: string): string {
 	return `<img src="${safe}">`;
 }
 
+function buildVideoMessageContent(url: string): string {
+	const safe = (url ?? "").trim();
+	return `<video src="${safe}" controls></video>`;
+}
+
 export function DrocsidMainView() {
 	const { theme } = useDrocsidTheme();
 	const api = useDrocsidApi();
@@ -422,46 +427,88 @@ export function DrocsidMainView() {
 			if (!api) return;
 			if (!activeGuildId || !activeChId) return;
 
-			if (!file.type.startsWith("image/")) {
-				throw new Error("To nie jest obrazek");
-			}
+			if (file.type.startsWith("image/")) {
+				setIsSending(true);
 
-			setIsSending(true);
+				try {
+					const base64 = await fileToBase64(file);
 
-			try {
-				const base64 = await fileToBase64(file);
+					const uploaded = await api.uploadImage(base64, file.name || "image.png");
+					const url = (uploaded?.url ?? "").trim();
 
-				const uploaded = await api.uploadImage(base64, file.name || "image.png");
-				const url = (uploaded?.url ?? "").trim();
+					if (!url) {
+						throw new Error("Upload nie zwrócił url");
+					}
 
-				if (!url) {
-					throw new Error("Upload nie zwrócił url");
+					const content = buildImageMessageContent(url);
+					const dto = await api.createMessage(activeChId, content);
+					const msg = mapMessageDto(dto, { timestamp: dto.timestamp ?? new Date().toISOString() });
+
+					setServers((prev) =>
+						prev.map((g) => {
+							if (g.guildId !== activeGuildId) {
+								return g;
+							}
+
+							return {
+								...g,
+								channels: g.channels.map((ch) => {
+									if (ch.channelId !== activeChId) {
+										return ch;
+									}
+									return { ...ch, messages: [...(ch.messages ?? []), msg] };
+								}),
+							};
+						})
+					);
+				} finally {
+					setIsSending(false);
 				}
-
-				const content = buildImageMessageContent(url);
-				const dto = await api.createMessage(activeChId, content);
-				const msg = mapMessageDto(dto, { timestamp: dto.timestamp ?? new Date().toISOString() });
-
-				setServers((prev) =>
-					prev.map((g) => {
-						if (g.guildId !== activeGuildId) {
-							return g;
-						}
-
-						return {
-							...g,
-							channels: g.channels.map((ch) => {
-								if (ch.channelId !== activeChId) {
-									return ch;
-								}
-								return { ...ch, messages: [...(ch.messages ?? []), msg] };
-							}),
-						};
-					})
-				);
-			} finally {
-				setIsSending(false);
+				return;
 			}
+
+			if (file.type.startsWith("video/")) {
+				setIsSending(true);
+
+				try {
+					const base64 = await fileToBase64(file);
+
+					const uploaded = await api.uploadVideo(base64, file.name || "video.mp4");
+					const url = (uploaded?.url ?? "").trim();
+
+					if (!url) {
+						throw new Error("Upload nie zwrócił url");
+					}
+
+					const content = buildVideoMessageContent(url);
+					const dto = await api.createMessage(activeChId, content);
+					const msg = mapMessageDto(dto, { timestamp: dto.timestamp ?? new Date().toISOString() });
+
+					setServers((prev) =>
+						prev.map((g) => {
+							if (g.guildId !== activeGuildId) {
+								return g;
+							}
+
+							return {
+								...g,
+								channels: g.channels.map((ch) => {
+									if (ch.channelId !== activeChId) {
+										return ch;
+									}
+									return { ...ch, messages: [...(ch.messages ?? []), msg] };
+								}),
+							};
+						})
+					);
+				} finally {
+					setIsSending(false);
+				}
+				return;
+			}
+
+			throw new Error("To nie jest obrazek");
+
 		},
 		[api, activeGuildId, activeChId]
 	);

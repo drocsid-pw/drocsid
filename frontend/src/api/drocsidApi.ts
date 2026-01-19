@@ -66,7 +66,7 @@ export type ResponseMessageDto = {
 	text: Nullable<string>;
 };
 
-export type ImageDto = {
+export type MediaDto = {
 	url?: Nullable<string>;
 	hash?: Nullable<string>;
 	filename?: Nullable<string>;
@@ -255,8 +255,12 @@ export async function deleteMessage(auth: ApiAuth, channelId: string, messageId:
 }
 
 /// MEDIA
-export async function uploadImage(auth: ApiAuth, body: { file: string; filename: string }): Promise<ImageDto> {
-	return authedPost<ImageDto>(auth, "/media/uploadImage", { body });
+export async function uploadImage(auth: ApiAuth, body: { file: string; filename: string }): Promise<MediaDto> {
+	return authedPost<MediaDto>(auth, "/media/uploadImage", { body });
+}
+
+export async function uploadVideo(auth: ApiAuth, body: { file: string; filename: string }): Promise<MediaDto> {
+	return authedPost<MediaDto>(auth, "/media/uploadVideo", { body });
 }
 
 /// MISC

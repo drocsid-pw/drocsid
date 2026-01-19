@@ -91,13 +91,14 @@ App deployment relays on Docker.
 -   use Drocsid Servers
     -   send messages
     -   send images
+    -   send videos
 -   change color theme
 
 ### Functionalities we didn't manage to complete
 
 -   adding friends
 -   manaigng roles
--   sending videos / gifs
+-   sending gifs
 
 ## RUNBOOK
 

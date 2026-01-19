@@ -46,6 +46,8 @@ func AzuriteUploadVideo(file []byte, azuriteURL string, name string, sasToken st
 	url := fmt.Sprintf("%s/%s?%s", azuriteURL, name, sasToken)
 	retURL := fmt.Sprintf("%s/%s", azuriteURL, name)
 
+	retURL = strings.Replace(retURL, "http://cdn:10000", os.Getenv("CDN_PUBLIC_HOST"), 1)
+
 	reader := bytes.NewReader(file)
 
 	req, err := http.NewRequestWithContext(context.Background(), http.MethodPut, url, reader)
